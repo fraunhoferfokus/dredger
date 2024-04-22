@@ -3,7 +3,7 @@ FROM ${ARCH}/golang:alpine AS builder
 
 ARG ARCH
 
-RUN apk update && apk add --no-cache git ca-certificates && update-ca-certificates && add upx
+RUN apk update && apk add --no-cache git ca-certificates && update-ca-certificates && apk add upx
 
 WORKDIR /go/src/app
 ENV USER=appuser
