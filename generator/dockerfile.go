@@ -33,6 +33,10 @@ func generateDockerfile(conf GeneratorConfig, serverConf ServerConfig) {
 	filePath = filepath.Join(config.Path, fileName)
 	templateFile = "templates/gitlab-ci.yml.tmpl"
 
+	fileName = ".gitignore"
+	filePath = filepath.Join(config.Path, fileName)
+	templateFile = "templates/gitignore.tmpl"
+
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		log.Debug().Msg("CREATE .gitlab-ci")
 		fs.GenerateFile(filePath)
