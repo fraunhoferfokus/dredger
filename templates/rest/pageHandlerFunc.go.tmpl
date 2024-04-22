@@ -1,0 +1,118 @@
+// Edit this file, as it is a specific handler function for your service
+package rest
+
+import (
+    "{{ .ModuleName }}/core/tracing"
+    "{{ .ModuleName }}/core/log"
+    "{{ .ModuleName }}/entities"
+    "{{ .ModuleName }}/usecases"
+    "{{ .ModuleName }}/web/pages"
+
+    "encoding/json"
+    "encoding/xml"
+    "io"
+	"net/http"
+    "strconv"
+
+	"github.com/labstack/echo/v4"
+	"go.opentelemetry.io/otel/trace"
+	"gopkg.in/yaml.v2"
+)
+
+// {{ .Summary }}
+func {{ .OperationID }}(c echo.Context) error {
+	// trace span
+	ctx := c.Request().Context()
+	ctx, span := tracing.Tracer.Start(ctx, "logMessage")
+	defer span.End()
+
+	log.Info().Str("traceId", span.SpanContext().TraceID().String()).Str("spanId", span.SpanContext().SpanID().String()).Str("path", "/").Msg("{{ .OperationID }}")
+
+	session, err := getSession(c)
+	if err != nil {
+		log.Error().Err(err).Msg("{{ .OperationID }} failed")
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+    {{- if eq .Method "POST" "PUT" "PATCH" }}
+
+        // Parse body
+        contentType := c.Request().Header.Get("Content-Type")
+        body, err := io.ReadAll(c.Request().Body)
+        if err != nil {
+            log.Error().Err(err).Str("traceId", span.SpanContext().TraceID().String()).Str("spanId", span.SpanContext().SpanID().String()).Msg("Can't read body")
+            return c.String(http.StatusBadRequest, "Can't read body")
+        }
+
+        {{ if eq .Schema "" }}
+            var content interface{}
+        {{ else }}
+            var content entities.{{- .Schema }}
+        {{ end }}
+        if contentType == "application/json" {
+            err := json.Unmarshal(body, &content)
+            if err != nil {
+                log.Error().Err(err).Str("traceId", span.SpanContext().TraceID().String()).Str("spanId", span.SpanContext().SpanID().String()).Msg("Could not unmarshall JSON input")
+                return c.String(http.StatusBadRequest, "Could not unmarshall JSON input")
+            }
+        } else if contentType == "application/yaml" {
+            err := yaml.Unmarshal(body, &content)
+            if err != nil {
+                log.Error().Err(err).Str("traceId", span.SpanContext().TraceID().String()).Str("spanId", span.SpanContext().SpanID().String()).Msg("Could not unmarshall YAML input")
+                return c.String(http.StatusBadRequest, "Could not unmarshall YAML input")
+            }
+        } else if contentType == "application/xml" {
+            err := xml.Unmarshal(body, &content)
+            if err != nil {
+                log.Error().Err(err).Str("traceId", span.SpanContext().TraceID().String()).Str("spanId", span.SpanContext().SpanID().String()).Msg("Could not unmarshall XML input")
+                return c.String(http.StatusBadRequest, "Could not unmarshall XML input")
+            }
+        } else {
+            log.Error().Str("content type", contentType).Str("traceId", span.SpanContext().TraceID().String()).Str("spanId", span.SpanContext().SpanID().String()).Msg("Wrong content type")
+            return c.String(http.StatusUnsupportedMediaType, "Wrong content type")
+        }
+
+        {{ if ne .Schema "" }}
+            // validate content
+            if err := content.Validate(); err != nil {
+                return c.String(http.StatusUnprocessableEntity, err.Error())
+            }
+        {{ end }}
+
+        // var content contains the payload from the request body
+    {{- end }}
+
+    {{ range $name, $type := .PathParams }}
+        {{ if eq $type "int32" "int64" "integer" }}
+            {{ $name }}, _ := strconv.Atoi(c.Param("{{ $name }}"))
+        {{ else if eq $type "float" "double" "number" }}
+            {{ $name }}, _ := strconv.ParseFloat(c.Param("{{ $name }}"))
+        {{ else if eq $type "bool" }}
+            {{ $name }}, _ := strconv.ParseBool(c.Param("{{ $name }}"))
+        {{ else}}
+            {{ $name }} := c.Param("{{ $name }}")
+        {{ end }}
+    {{- end }}
+
+    {{ range $name, $type := .QueryParams }}
+        {{ if eq $type "int32" "int64" "integer" }}
+            {{ $name }}, _ := strconv.Atoi(c.QueryParam("{{ $name }}"))
+        {{ else if eq $type "float" "double" "number" }}
+            {{ $name }}, _ := strconv.ParseFloat(c.QueryParam("{{ $name }}"))
+        {{ else if eq $type "bool" }}
+            {{ $name }}, _ := strconv.ParseBool(c.QueryParam("{{ $name }}"))
+        {{ else }}
+            {{ $name }} := c.QueryParam("{{ $name }}")
+        {{ end }}
+    {{- end }}
+
+    // implement your functionality best using a function from a separate file, e.g. {{ .OperationID }}Do.go
+
+    {{ range .Responses }}
+            // {{ .StatusCode }} => {{ .Description }}
+    {{- end }}
+
+
+	lzr := i18n.NewLocalizer(pages.Bundle, pages.Language(c))
+	return Render(c, http.StatusOK, pages.{{ .OperationID }}(lzr))
+}

@@ -1,0 +1,4 @@
+# Edit this file, as it is a specific handler function for your service
+Languages = "Sprache"
+en = "Englisch"
+de = "Deutsch"

@@ -1,0 +1,6 @@
+build
+dredger
+.idea
+examples/*/src
+go.work.sum
+.DS_Store
