@@ -133,6 +133,9 @@ func generateHandlerFuncStub(op *openapi3.Operation, method string, path string,
 	if conf.OperationID == "GetInfo" {
 		templateFile = "templates/rest/getInfo.go.tmpl"
 	}
+	if conf.OperationID == "GetRobots" {
+		templateFile = "templates/rest/getRobots.go.tmpl"
+	}
 
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filePath, templateFile, conf)

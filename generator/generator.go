@@ -80,7 +80,7 @@ func GenerateServer(conf GeneratorConfig) error {
 	generateLogger(conf)
 	generateTracing(conf)
 
-	generateLifecycleFiles(spec)
+	generateLifecycleFiles(spec, conf)
 
 	generateHandlerFuncs(spec, conf)
 
