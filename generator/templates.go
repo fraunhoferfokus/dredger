@@ -8,11 +8,18 @@ import (
 	fs "dredger/fileUtils"
 
 	"github.com/Masterminds/sprig/v3"
+	"github.com/gobeam/stringy"
 	"github.com/rs/zerolog/log"
 )
 
+func snakecase(s string) string {
+	return stringy.New(s).SnakeCase("?", "").Get()
+}
+
 func createFileFromTemplate(filePath string, tmplPath string, config interface{}) {
 	templateName := path.Base(tmplPath)
+	funcmap := sprig.FuncMap()
+	funcmap["snakecase"] = snakecase
 
 	// Create file and open it
 	fs.GenerateFile(filePath)
@@ -24,7 +31,7 @@ func createFileFromTemplate(filePath string, tmplPath string, config interface{}
 	defer file.Close()
 
 	// Parse the template and write into file
-	tmpl := template.Must(template.New(templateName).Funcs(sprig.FuncMap()).ParseFS(TmplFS, tmplPath))
+	tmpl := template.Must(template.New(templateName).Funcs(funcmap).ParseFS(TmplFS, tmplPath))
 	tmplErr := tmpl.Execute(file, config)
 	if tmplErr != nil {
 		log.Fatal().Err(tmplErr).Msg("Failed executing template.")

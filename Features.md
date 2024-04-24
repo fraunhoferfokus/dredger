@@ -24,6 +24,8 @@ The generated service can be configured using the default values, a _.env_ file,
 
 Standard handler _livez_ and _readyz_ for the lifecycle of the service will be generated. Further, an handler _infoz_ iss added to get the meta information about the service at runtime.
 
+To restrict the web crawlers a handler for _robots.txt_ is generated and adaptable.
+
 ### Doc
 
 The comprehensive documentation of a service should be contained in the OpenAPI specification. Therefor, the OpenAPI documentation will also be embedded with the service and online available at runtime (_/doc_).

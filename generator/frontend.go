@@ -61,6 +61,9 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	createFileFromTemplate(filepath.Join(localesPath, "locale.de.toml"), "templates/web/pages/locales/locale.de.toml", conf)
 	createFileFromTemplate(filepath.Join(localesPath, "locale.en.toml"), "templates/web/pages/locales/locale.en.toml", conf)
 
+	// files in public directory
+	fs.CopyWebFile("web", publicPath, "README-public.md", false)
+
 	log.Info().Msg("Created Frontend successfully.")
 }
 

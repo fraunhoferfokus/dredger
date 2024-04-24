@@ -7,6 +7,7 @@ require (
 	github.com/a-h/templ v0.2.663
 	github.com/cucumber/godog v0.12.5
 	github.com/getkin/kin-openapi v0.124.0
+	github.com/gobeam/stringy v0.0.6
 	github.com/huandu/xstrings v1.4.0
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/rs/zerolog v1.32.0
