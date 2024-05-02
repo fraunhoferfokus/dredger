@@ -12,24 +12,6 @@ builds:
       - windows
       - darwin
 
-checksum:
-  name_template: 'checksums.txt'
-
-signs:
-  - id: checksums
-    cmd: cosign
-    stdin: '{{ .Env.COSIGN_PASSWORD }}'
-    output: true
-    artifacts: checksum
-    args:
-      - sign-blob
-      - --yes
-      - --key
-      - env://COSIGN_PRIVATE_KEY
-      - '--output-certificate=${certificate}'
-      - '--output-signature=${signature}'
-      - '${artifact}'
-
 archives:
   - format: tar.gz
     name_template: >-
@@ -41,7 +23,7 @@ archives:
       {{- if .Arm }}v{{ .Arm }}{{ end }}
 
 snapshot:
-  name_template: "{{ incpatch version }}-next"
+  name_template: "{{ incpatch .Version }}-next"
 
 changelog:
   sort: asc
