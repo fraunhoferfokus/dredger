@@ -111,7 +111,7 @@ func init() {
 	generateCmd.Flags().StringVarP(&projectPath, "output", "o", "src", "path where generated code gets stored")
 	generateCmd.Flags().StringVarP(&projectName, "name", "n", "default", "module name of generated code")
 	// optional code generation
-	generateCmd.Flags().BoolVarP(&databaseFlag, "database", "d", false, "add sqlite3 database in generated code")
+	generateCmd.Flags().BoolVarP(&databaseFlag, "database", "D", false, "add sqlite3 database in generated code")
 	generateCmd.Flags().BoolVarP(&frontendFlag, "frontend", "f", false, "add frontend code")
 
 	// add generate command
