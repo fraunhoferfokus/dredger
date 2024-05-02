@@ -40,15 +40,15 @@ Generates a REST API template from a given OpenAPI Specification file. Let's tak
 You can check how the file looks like <a href="./examples/stores.yaml">here</a></br>
 
 -   Step 1: We navigate to the repository folder
--   Step 2: Run the command `go run main.go generate ./examples/stores.yaml -o ./build -n build -l -d`. A description of the flags can be found below.
+-   Step 2: Run the command `go run main.go generate ./examples/stores.yaml -o ./build -n build -f -D`. A description of the flags can be found below.
 -   Step 3: We can now navigate to the output folder (in this case `build`) and run `go run main.go` to launch the REST API.
 
 Generation flags:
 
--   `-o [Output path]`. Specifies the output path for the generated REST API.
--   `-n [Module name]`. Specifies the go module name.
--   `-d [Use database]`. Generates boilerplate code for a basic SQLite database.
--   `-H [Use HTTP2]`. Enables HTTP2 support.
+-   `-f`               Add frontend code.
+-   `-o [Output path]` Specifies the output path for the generated REST API.
+-   `-n [Module name]` Specifies the go module name.
+-   `-D`               Generates boilerplate code for a basic SQLite database.
 
 For typical tasks you can use the [just](https://just.systems/man/en/) recipes:
 
