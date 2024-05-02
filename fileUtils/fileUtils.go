@@ -64,7 +64,7 @@ func CopyFile(sourcePath string, destinationPath string, fileName string) {
 }
 
 func CopyWebFile(sourcePath string, destinationPath string, fileName string, overwrite bool) {
-	src := filepath.Join(sourcePath, fileName)
+	src := filepath.ToSlash(filepath.Join(sourcePath, fileName))
 	if _, err := os.Stat(src); errors.Is(err, os.ErrNotExist) || overwrite {
 		//Read all the contents of the source file
 		bytesRead, err := templates.WebFS.ReadFile(src)
