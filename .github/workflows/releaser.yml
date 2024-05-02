@@ -1,0 +1,36 @@
+# This workflow will publish the artifacts with goreleaser
+name: Release
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+   contents: write
+   packages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 1.22
+          cache: true
+      - name: Set up tools
+        run: |
+          go install golang.org/x/tools/cmd/goimports@latest
+          go install github.com/a-h/templ/cmd/templ@latest
+      - name: Templ
+        run: templ generate web/pages/*.templ
+      - uses: goreleaser/goreleaser-action@v5
+        with:
+          version: v1.24.0
+          args: release --clean
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
