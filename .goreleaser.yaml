@@ -36,4 +36,4 @@ changelog:
       - '^test:'
 
 sboms:
-  - artifacts: source
+  - artifacts: any
