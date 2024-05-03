@@ -26,7 +26,7 @@ jobs:
         run: |
           go install golang.org/x/tools/cmd/goimports@latest
           go install github.com/a-h/templ/cmd/templ@latest
-          sudo apt-get install -y upx
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
       - name: Templ
         run: templ generate web/pages/*.templ
       - uses: goreleaser/goreleaser-action@v5
