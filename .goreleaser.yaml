@@ -12,6 +12,9 @@ builds:
       - windows
       - darwin
 
+upx:
+  - enabled: true
+
 archives:
   - format: tar.gz
     name_template: >-
@@ -31,3 +34,6 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+
+sboms:
+  - artifacts: archive
