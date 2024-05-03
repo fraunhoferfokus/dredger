@@ -36,4 +36,8 @@ changelog:
       - '^test:'
 
 sboms:
-  - artifacts: any
+  - documents:
+      - "{{ .ProjectName }}.cdx.sbom"
+    artifacts: source
+    cmd: cyclonedx-gomod
+    args: ["app",  "-json", "-output", "$document", "$artifact"]
