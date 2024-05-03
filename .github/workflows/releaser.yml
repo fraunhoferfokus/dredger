@@ -15,6 +15,11 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: Generate SBOM
+        uses: CycloneDX/gh-gomod-generate-sbom@v2
+        with:
+          version: v1
+          args: mod -licenses -json -output bom.json
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -26,8 +31,6 @@ jobs:
         run: |
           go install golang.org/x/tools/cmd/goimports@latest
           go install github.com/a-h/templ/cmd/templ@latest
-          go install github.com/CycloneDX/cyclonedx-gomod/cmd/cyclonedx-gomod@latest
-          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
       - name: Templ
         run: templ generate web/pages/*.templ
       - uses: goreleaser/goreleaser-action@v5
