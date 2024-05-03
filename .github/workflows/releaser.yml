@@ -28,14 +28,14 @@ jobs:
           go install github.com/a-h/templ/cmd/templ@latest
       - name: Templ
         run: templ generate web/pages/*.templ
-      - name: Generate SBOM
-        uses: CycloneDX/gh-gomod-generate-sbom@v2
-        with:
-          version: v1
-          args: mod -licenses -json -output bom.json
       - uses: goreleaser/goreleaser-action@v5
         with:
           version: v1.24.0
           args: release --clean
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      - name: Generate SBOM
+        uses: CycloneDX/gh-gomod-generate-sbom@v2
+        with:
+          version: v1
+          args: mod -licenses -json -output bom.json
