@@ -16,10 +16,20 @@ func snakecase(s string) string {
 	return stringy.New(s).SnakeCase("?", "").Get()
 }
 
+func camelcase(s string) string {
+	return stringy.New(s).CamelCase("?", "", "#", "").Get()
+}
+
+func lcFirst(s string) string {
+	return stringy.New(s).LcFirst()
+}
+
 func createFileFromTemplate(filePath string, tmplPath string, config interface{}) {
 	templateName := path.Base(tmplPath)
 	funcmap := sprig.FuncMap()
+	funcmap["camelcase"] = camelcase
 	funcmap["snakecase"] = snakecase
+	funcmap["lcfirst"] = lcFirst
 
 	// Create file and open it
 	fs.GenerateFile(filePath)

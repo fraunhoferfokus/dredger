@@ -3,14 +3,14 @@ package main
 
 import (
 	{{- if .AddDatabase}}
-		"{{.ModuleName}}/db"
+		"{{ lcfirst ( camelcase .ModuleName ) }}/db"
 	{{- end}}
-	"{{.ModuleName}}/core"
-	"{{.ModuleName}}/core/log"
-	"{{.ModuleName}}/core/tracing"
-	"{{.ModuleName}}/rest"
-	"{{.ModuleName}}/rest/middleware"
-	"embed"
+	"{{ lcfirst ( camelcase .ModuleName ) }}/core"
+	"{{ lcfirst ( camelcase .ModuleName ) }}/core/log"
+	"{{ lcfirst ( camelcase .ModuleName ) }}/core/tracing"
+	"{{ lcfirst ( camelcase .ModuleName ) }}/rest"
+	"{{ lcfirst ( camelcase .ModuleName ) }}/rest/middleware"
+	_ "embed"
 	"context"
 
 	{{- if .AddDatabase}}

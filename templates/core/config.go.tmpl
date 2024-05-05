@@ -3,7 +3,7 @@ package core
 
 import (
 	"flag"
-    "{{.ModuleName}}/core/log"
+    "{{ lcfirst ( camelcase .ModuleName ) }}/core/log"
 	"strings"
 
 	"github.com/joho/godotenv"

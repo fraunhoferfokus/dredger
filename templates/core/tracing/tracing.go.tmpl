@@ -1,8 +1,8 @@
 package tracing
 
 import (
-	"{{ .ModuleName }}/core"
-	"{{ .ModuleName }}/core/log"
+	"{{ lcfirst ( camelcase .ModuleName ) }}/core"
+	"{{ lcfirst ( camelcase .ModuleName ) }}/core/log"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/jaeger"

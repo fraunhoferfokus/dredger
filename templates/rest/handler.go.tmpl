@@ -2,8 +2,8 @@
 package rest
 
 import (
-    // "{{.ModuleName}}/rest/middleware"
-    "{{.ModuleName}}/core"
+    // "{{ lcfirst ( camelcase .ModuleName ) }}/rest/middleware"
+    "{{ lcfirst ( camelcase .ModuleName ) }}/core"
 
     "github.com/labstack/echo/v4"
 	"github.com/google/uuid"
