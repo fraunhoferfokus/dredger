@@ -29,6 +29,7 @@ var (
 // Default values
 func init() {
 	if core.AppConfig.Policy == "" {
+		log.Info().Msg("use default policy")
 		core.AppConfig.Policy = authz
 	}
 	if core.AppConfig.Realm == "" {
@@ -86,14 +87,17 @@ func checkAuthorization(authorizationHeader string) (string, bool) {
 	}
 
 	if strings.ToLower(parts[0]) != "basic" {
+		log.Debug().Msg("No basic authorisation")
 		return "", false
 	}
 	token, err := base64.StdEncoding.DecodeString(parts[1])
 	if err != nil {
+		log.Debug().Msg("Failed to decode the authorisation token")
 		return "", false
 	}
 	tokenParts := strings.Split(string(token), ":")
 	if len(tokenParts) != 2 {
+		log.Debug().Msg("Authorisation token to short")
 		return "", false
 	}
 	user := tokenParts[0]
@@ -184,7 +188,7 @@ func checkPolicy(c echo.Context) Action {
 	// extract input from request
 	authorization := req.Header.Get(core.AppConfig.AuthorizationHeader)
 	role, authorized := checkAuthorization(authorization)
-	if !authorized && (core.AppConfig.OpaSvc != "" || core.AppConfig.Policy != "") && (core.AppConfig.ParticipantUser != "" || core.AppConfig.StaffUser != "") {
+	if !authorized && core.AppConfig.OpaSvc == "" && core.AppConfig.Policy == "" && (core.AppConfig.ParticipantUser != "" || core.AppConfig.StaffUser != "") {
 		log.Debug().Str("authorization", authorization).Msg("Authorization failed")
 		return Authorize
 	}

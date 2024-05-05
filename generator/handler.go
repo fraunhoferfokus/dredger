@@ -71,7 +71,7 @@ func generateHandlerFuncStub(op *openapi3.Operation, method string, path string,
 	hasHtmlResponse := false
 	if op.Responses != nil {
 		for _, resRef := range op.Responses.Map() {
-			for cKey, _ := range resRef.Value.Content {
+			for cKey := range resRef.Value.Content {
 				if cKey == "text/html" {
 					hasHtmlResponse = true
 				}
