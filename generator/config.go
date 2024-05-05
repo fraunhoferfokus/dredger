@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 func generateConfigFiles(serverConf ServerConfig) {
@@ -36,6 +37,10 @@ func generateConfigFiles(serverConf ServerConfig) {
 	templateFile = "templates/core/version"
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filePath, templateFile, serverConf)
-		extCmd.RunCommand("ln -s "+filePath+" .", config.Path)
+		if runtime.GOOS == "windows" {
+			extCmd.RunCommand("mklink /h "+fileName+" "+filePath, config.Path)
+		} else {
+			extCmd.RunCommand("ln -s "+filePath+" "+fileName, config.Path)
+		}
 	}
 }

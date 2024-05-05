@@ -11,12 +11,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func generateEmptyFrontend(spec *openapi3.T, conf GeneratorConfig) {
+func generateEmptyFrontend(_ *openapi3.T, conf GeneratorConfig) {
 	frontendPath := filepath.Join(conf.OutputPath, "web")
 	createFileFromTemplate(filepath.Join(frontendPath, "README.md"), "templates/web/README.md.tmpl", nil)
 }
 
-func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
+func generateFrontend(_ *openapi3.T, conf GeneratorConfig) {
 	generateOpenAPIDoc(conf)
 
 	// create folders
