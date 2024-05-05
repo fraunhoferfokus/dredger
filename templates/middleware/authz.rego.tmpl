@@ -1,4 +1,4 @@
-package {{.ModuleName}}.authz
+package {{ lcfirst ( camelcase .ModuleName ) }}.authz
 
 default allowEntrypoint = true
 default allowAccess = true

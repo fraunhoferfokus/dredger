@@ -2,11 +2,11 @@
 package rest
 
 import (
-    "{{ .ModuleName }}/core/tracing"
-    "{{ .ModuleName }}/core/log"
-    "{{ .ModuleName }}/entities"
-    "{{ .ModuleName }}/usecases"
-    "{{ .ModuleName }}/web/pages"
+    "{{ lcfirst ( camelcase .ModuleName ) }}/core/tracing"
+    "{{ lcfirst ( camelcase .ModuleName ) }}/core/log"
+    "{{ lcfirst ( camelcase .ModuleName ) }}/entities"
+    "{{ lcfirst ( camelcase .ModuleName ) }}/usecases"
+    "{{ lcfirst ( camelcase .ModuleName ) }}/web/pages"
 
     "encoding/json"
     "encoding/xml"

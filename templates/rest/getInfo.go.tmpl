@@ -2,7 +2,7 @@
 package rest
 
 import (
-	"{{ .ModuleName }}/core"
+	"{{ lcfirst ( camelcase .ModuleName ) }}/core"
 	"net/http"
 
 	"github.com/labstack/echo/v4"

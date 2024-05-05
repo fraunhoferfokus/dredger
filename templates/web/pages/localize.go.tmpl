@@ -11,8 +11,8 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
 
-	"{{ .ModuleName }}/core"
-	"{{ .ModuleName }}/core/log"
+	"{{ lcfirst ( camelcase .ModuleName ) }}/core"
+	"{{ lcfirst ( camelcase .ModuleName ) }}/core/log"
 )
 
 //go:embed locales/locale.*.toml

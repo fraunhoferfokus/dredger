@@ -8,8 +8,8 @@ import (
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/rs/zerolog"
 
-	"{{ .ModuleName }}/core"
-	"{{ .ModuleName }}/core/log/logger"
+	"{{ lcfirst ( camelcase .ModuleName ) }}/core"
+	"{{ lcfirst ( camelcase .ModuleName ) }}/core/log/logger"
 )
 
 var log logger.ZeroLog
