@@ -20,7 +20,7 @@ run: build
     go run . -p {{"{{port}}"}}
 
 generate:
-	dredger generate OpenAPI.yaml -o . -n {{"{{program}}"}}
+	dredger generate OpenAPI.yaml -o . -f -n {{"{{program}}"}}
 
 sbom-build:
 	GOARCH=amd64 GOOS=linux cyclonedx-gomod mod -licenses -json -output sbom.json
