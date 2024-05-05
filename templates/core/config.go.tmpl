@@ -2,9 +2,8 @@
 package core
 
 import (
-	_ "embed"
 	"flag"
-    "log"
+    "{{.ModuleName}}/core/log"
 	"strings"
 
 	"github.com/joho/godotenv"
@@ -18,6 +17,7 @@ type Config struct {
 	Service             string
 	Sid                 string   `ignored:"true"`
 	Name                string   `default:"{{.ModuleName}}"`
+	Title               string
 	Port                string   `default:"8080"`
 	ApiKeys             []string `default:"" split_words:"true"`
 	AuthorizationHeader string   `default:"" split_words:"true"`
@@ -49,7 +49,8 @@ func init() {
 	AppConfig.Name = os.Getenv(stringy.New("{{.ModuleName}}_NAME").SnakeCase("?", "").ToUpper())
 	AppConfig.Host, _ = os.Hostname()
 	AppConfig.User = os.Getenv("USER")
-	AppConfig.Sid, _ := uuid.NewUUID()
+	sid, _ := uuid.NewUUID()
+	AppConfig.Sid = sid.String()
 
 	// parse command line arguments
 	flag.StringVar(&AppConfig.Port, "port", AppConfig.Port, "AppConfig.Port to listen by the server")
@@ -72,13 +73,16 @@ func init() {
 		log.Debug().Err(err).Msg("Didn't found .env file")
 	}
 
-	err := envconfig.Process(stringy.New(AppConfig.Name).SnakeCase("?", "").ToUpper(), &AppConfig)
+	err = envconfig.Process(stringy.New(AppConfig.Name).SnakeCase("?", "").ToUpper(), &AppConfig)
 	if err != nil {
 		log.Fatal().Err(err).Str("name", stringy.New(AppConfig.Name).SnakeCase("?", "").ToUpper()).Msg("Couldn't read environment settings")
 	}
 
 	flag.Parse()
 	log.Setup(AppConfig.Name, AppInfo.Service, AppConfig.LogFile, AppConfig.Debug)
+	if AppConfig.SessionKey == "" {
+		AppConfig.SessionKey = AppConfig.Name
+	}
 
 	log.Debug().Str("name", AppConfig.Name).Any("environment", AppConfig).Msg("Got environment")
 	AppInfo.Name = AppConfig.Name

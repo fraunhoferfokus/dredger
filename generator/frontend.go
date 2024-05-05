@@ -2,6 +2,8 @@ package generator
 
 import (
 	fs "dredger/fileUtils"
+	"errors"
+	"os"
 	"path/filepath"
 	"reflect"
 	"strconv"
@@ -57,9 +59,13 @@ func generateFrontend(_ *openapi3.T, conf GeneratorConfig) {
 	// files in pages directory
 	fs.CopyWebFile("web/pages", restPath, "render.go", true)
 	createFileFromTemplate(filepath.Join(pagesPath, "localize.go"), "templates/web/pages/localize.go.tmpl", conf)
-	createFileFromTemplate(filepath.Join(pagesPath, "languages.templ"), "templates/web/pages/languages.templ.tmpl", conf)
-	createFileFromTemplate(filepath.Join(localesPath, "locale.de.toml"), "templates/web/pages/locales/locale.de.toml", conf)
-	createFileFromTemplate(filepath.Join(localesPath, "locale.en.toml"), "templates/web/pages/locales/locale.en.toml", conf)
+	if _, err := os.Stat(filepath.Join(pagesPath, "languages.templ")); errors.Is(err, os.ErrNotExist) {
+		createFileFromTemplate(filepath.Join(pagesPath, "languages.templ"), "templates/web/pages/languages.templ.tmpl", conf)
+	}
+	if _, err := os.Stat(filepath.Join(localesPath, "locale.de.toml")); errors.Is(err, os.ErrNotExist) {
+		createFileFromTemplate(filepath.Join(localesPath, "locale.de.toml"), "templates/web/pages/locales/locale.de.toml", conf)
+		createFileFromTemplate(filepath.Join(localesPath, "locale.en.toml"), "templates/web/pages/locales/locale.en.toml", conf)
+	}
 
 	// files in public directory
 	fs.CopyWebFile("web", publicPath, "README-public.md", false)
