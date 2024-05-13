@@ -70,7 +70,7 @@ For typical tasks you can use the [just](https://just.systems/man/en/) recipes:
 
 # Examples
 
-You can find a few OpenAPI 3 Specification file examples <a href="./examples">here</a>.
+You can find a few OpenAPI 3 Specification file examples [here](./examples). There is also a minimal [OpenAPI.yaml](./examples/OpenAPI.yaml.min-example) file as starting point for your service.
 
 # Contributions
 

@@ -51,6 +51,7 @@ func generateFrontend(_ *openapi3.T, conf GeneratorConfig) {
 	fs.CopyWebFile("web/css", stylesheetPath, "bootstrap-icons.min.css", true)
 	fs.CopyWebFile("web/css", stylesheetPath, "bootstrap.min.css", true)
 	fs.CopyWebFile("web/css", stylesheetPath, "pico.min.css", true)
+	fs.CopyWebFile("web/css", stylesheetPath, "pico.colors.min.css", true)
 	fs.CopyWebFile("web/css", stylesheetPath, "simple.min.css", true)
 
 	// files in web directory
