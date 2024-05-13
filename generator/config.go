@@ -1,11 +1,11 @@
 package generator
 
 import (
-	extCmd "dredger/cmd"
 	"errors"
 	"os"
 	"path/filepath"
-	"runtime"
+
+	"github.com/rs/zerolog/log"
 )
 
 func generateConfigFiles(serverConf ServerConfig) {
@@ -37,10 +37,13 @@ func generateConfigFiles(serverConf ServerConfig) {
 	templateFile = "templates/core/version"
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filePath, templateFile, serverConf)
-		if runtime.GOOS == "windows" {
-			extCmd.RunCommand("mklink /h "+fileName+" "+filePath, config.Path)
-		} else {
-			extCmd.RunCommand("ln -s "+filePath+" "+fileName, config.Path)
+		if err = os.Symlink(filePath, fileName); err != nil {
+			log.Error().Err(err).Str("source", filePath).Str("target", fileName).Msg("Could not create symbolic Link")
 		}
+		// if runtime.GOOS == "windows" {
+		// 	extCmd.RunCommand("mklink /h "+fileName+" "+filePath, config.Path)
+		// } else {
+		// 	extCmd.RunCommand("ln -s "+filePath+" "+fileName, config.Path)
+		// }
 	}
 }

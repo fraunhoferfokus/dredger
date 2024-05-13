@@ -1,12 +1,13 @@
 package generator
 
 import (
+	"fmt"
 	"math"
 	"path/filepath"
 	"strings"
-	"unicode"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/gobeam/stringy"
 )
 
 var IMPORT_UUID bool
@@ -42,7 +43,7 @@ type ImportsConfig struct {
 
 func GenerateTypes(spec *openapi3.T, pConf ProjectConfig) {
 	if spec != nil && spec.Components != nil {
-		schemaDefs := generateStructDefs(&spec.Components.Schemas)
+		schemaDefs := generateTypeDefs(&spec.Components.Schemas)
 		imports := generateImports()
 		var conf ModelCOnfig
 		conf.Imports = imports
@@ -58,11 +59,102 @@ func GenerateTypes(spec *openapi3.T, pConf ProjectConfig) {
 	}
 }
 
-func generateStructDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
+func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 	schemaDefs := make(map[string][]TypeDefinition, len(*schemas))
 
 	for schemaName, ref := range *schemas {
-		schemaDefs[schemaName] = generateTypeDefs(&ref.Value.Properties)
+		fmt.Printf("%s: %#v\n\n", schemaName, ref.Value.Type)
+		var goType string
+		if ref.Value.Type.Includes("number") {
+			switch ref.Value.Format {
+			case "float":
+				goType = "float32"
+			case "double":
+				goType = "float64"
+			default:
+				goType = "float"
+			}
+			schemaDefs[schemaName] = []TypeDefinition{{
+				schemaName,
+				goType,
+				ref.Value.MinLength,
+				uintOrMax(ref.Value.MaxLength),
+				ref.Value.Pattern,
+				floatOrMin(ref.Value.Min),
+				floatOrMax(ref.Value.Max),
+				stringy.New(schemaName).LcFirst(),
+				[]TypeDefinition{},
+			}}
+		} else if ref.Value.Type.Includes("integer") {
+			goType = "int"
+			if ref.Value.Format != "" {
+				goType = ref.Value.Format
+			}
+			schemaDefs[schemaName] = []TypeDefinition{{
+				schemaName,
+				goType,
+				ref.Value.MinLength,
+				uintOrMax(ref.Value.MaxLength),
+				ref.Value.Pattern,
+				floatOrMin(ref.Value.Min),
+				floatOrMax(ref.Value.Max),
+				stringy.New(schemaName).LcFirst(),
+				[]TypeDefinition{},
+			}}
+		} else if ref.Value.Type.Includes("boolean") {
+			goType = "bool"
+			schemaDefs[schemaName] = []TypeDefinition{{
+				schemaName,
+				goType,
+				ref.Value.MinLength,
+				uintOrMax(ref.Value.MaxLength),
+				ref.Value.Pattern,
+				floatOrMin(ref.Value.Min),
+				floatOrMax(ref.Value.Max),
+				stringy.New(schemaName).LcFirst(),
+				[]TypeDefinition{},
+			}}
+		} else if ref.Value.Type.Includes("string") {
+			switch ref.Value.Format {
+			case "binary":
+				goType = "[]byte"
+			case "date":
+				IMPORT_TIME = true
+				goType = "time.Time"
+			case "uuid":
+				IMPORT_UUID = true
+				goType = "uuid.UUID"
+			default:
+				goType = "string"
+			}
+			schemaDefs[schemaName] = []TypeDefinition{{
+				schemaName,
+				goType,
+				ref.Value.MinLength,
+				uintOrMax(ref.Value.MaxLength),
+				ref.Value.Pattern,
+				floatOrMin(ref.Value.Min),
+				floatOrMax(ref.Value.Max),
+				stringy.New(schemaName).LcFirst(),
+				[]TypeDefinition{},
+			}}
+		} else if ref.Value.Type.Includes("array") {
+			items, _ := toGoType(ref.Value.Items)
+			goType = "[]" + items
+			schemaDefs[schemaName] = []TypeDefinition{{
+				schemaName,
+				goType,
+				ref.Value.MinLength,
+				uintOrMax(ref.Value.MaxLength),
+				ref.Value.Pattern,
+				floatOrMin(ref.Value.Min),
+				floatOrMax(ref.Value.Max),
+				stringy.New(schemaName).LcFirst(),
+				[]TypeDefinition{},
+			}}
+		} else if ref.Value.Type.Includes("object") {
+			schemaDefs[schemaName] = generatePropertyDefs(&ref.Value.Properties)
+		}
 	}
 	return schemaDefs
 }
@@ -88,19 +180,16 @@ func floatOrMax(x *float64) float64 {
 	return math.MaxFloat64
 }
 
-func generateTypeDefs(properties *openapi3.Schemas) []TypeDefinition {
+func generatePropertyDefs(properties *openapi3.Schemas) []TypeDefinition {
 	typeDefs := make([]TypeDefinition, len(*properties))
 	i := 0
 	for name, property := range *properties {
 		goType, nested := toGoType(property)
 		var nestedGoTypes []TypeDefinition
 		if nested {
-			nestedGoTypes = generateTypeDefs(&property.Value.Properties)
+			nestedGoTypes = generatePropertyDefs(&property.Value.Properties)
 		}
 
-		// first letter to lower case
-		marshalName := []rune(name)
-		marshalName[0] = unicode.ToLower(marshalName[0])
 		propertyDef := TypeDefinition{
 			name,
 			goType,
@@ -109,7 +198,7 @@ func generateTypeDefs(properties *openapi3.Schemas) []TypeDefinition {
 			property.Value.Pattern,
 			floatOrMin(property.Value.Min),
 			floatOrMax(property.Value.Max),
-			string(marshalName),
+			stringy.New(name).LcFirst(),
 			nestedGoTypes,
 		}
 		typeDefs[i], i = propertyDef, i+1

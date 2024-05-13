@@ -49,7 +49,7 @@ download-style:
     curl -o templates/web/js/hyperscript.js -L https://unpkg.com/hyperscript.org@latest
     curl -o templates/web/css/simple.min.css -L https://unpkg.com/simpledotcss/simple.min.css
     curl -o templates/web/css/pico.min.css -L https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css
-
+    curl -o templates/web/css/pico.colors.min.css -L https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css
 certificate:
     go run $GOROOT/src/crypto/tls/generate_cert.go --host localhost`
 
