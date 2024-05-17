@@ -38,7 +38,7 @@ func generateConfigFiles(serverConf ServerConfig) {
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filePath, templateFile, serverConf)
 		if err = os.Symlink(filePath, fileName); err != nil {
-			log.Error().Err(err).Str("source", filePath).Str("target", fileName).Msg("Could not create symbolic Link")
+			log.Warn().Err(err).Str("source", filePath).Str("target", fileName).Msg("Could not create symbolic Link, please create it manually")
 		}
 		// if runtime.GOOS == "windows" {
 		// 	extCmd.RunCommand("mklink /h "+fileName+" "+filePath, config.Path)
