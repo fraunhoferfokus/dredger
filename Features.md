@@ -16,6 +16,26 @@ If an API endpoint contains a tag _builtin_ in your _tags_, then no handler code
 
 If an API endpoint contains a tag _page_ in your _tags_, then a [templ](https://templ.guide/) template will also be created. A templ template allows to write HTML pages mixed with go code and generate a go function, which can be used easily in your handlers. Further, a localizer and a language selector (_languages.templ_) is setup to translate strings using a [i18n library](github.com/nicksnyder/go-i18n/v2/i18n) for internationalization.
 
+### Server Side Events
+
+If in the OpenAPI specification for the API endpoints the path "/events" with the builtin operations _get_ and _post_ are given, additional code for Server Side Events (_SSE_) (_rest/handleEvents.go_) will be generated. Especially, for tasks, which will need longer the functions _ProgressPico_ and _ProgressBootstrap_ (_rest/progress.go_) can be used to send using server side events a _progress bar_ code to HTMX for Pico and Bootstrap CSS, e.g.
+
+	f := func() {
+		_, err := http.Get("http://localhost:9090/slowz")
+		if err != nil {
+			log.Warn().Err(err).Msg("Slow call failed")
+		}
+	}
+	ProgressPico(f)
+
+The _progress bar_ itself need to be declared in the frontend, e.g.
+
+    <script src="js/sse.js"></script>
+
+    <div hx-ext="sse" sse-connect="/events?stream=progress" sse-swap="Progress"></div>
+
+and will be visible, when a call start, progress over time and reappear at the end.
+
 ### Configuration
 
 The generated service can be configured using the default values, a _.env_ file, environment variables and the command line options (highest priority).

@@ -3,9 +3,11 @@ package generator
 import (
 	fs "dredger/fileUtils"
 	"errors"
+	"net/http"
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -18,8 +20,19 @@ func generateEmptyFrontend(_ *openapi3.T, conf GeneratorConfig) {
 	createFileFromTemplate(filepath.Join(frontendPath, "README.md"), "templates/web/README.md.tmpl", nil)
 }
 
-func generateFrontend(_ *openapi3.T, conf GeneratorConfig) {
+func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	generateOpenAPIDoc(conf)
+
+	if spec.Paths.Find("/events") == nil || (spec.Paths.Find("/events").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/events").Operations()[http.MethodGet].Tags, "builtin")) {
+		log.Debug().Msg("Generating default /events endpoint.")
+
+		op := openapi3.NewOperation()
+		op.AddResponse(200, createOAPIResponse("The service supports sse"))
+		op.AddResponse(http.StatusOK, createOAPIResponse("The service don't support sse"))
+		updateOAPIOperation(op, "HandleEvents", "support for sse", "200")
+		spec.AddOperation("/events", http.MethodGet, op)
+		spec.AddOperation("/events", http.MethodPost, op)
+	}
 
 	// create folders
 	restPath := filepath.Join(conf.OutputPath, "rest")
@@ -46,6 +59,7 @@ func generateFrontend(_ *openapi3.T, conf GeneratorConfig) {
 	fs.CopyWebFile("web/js", javascriptPath, "htmx.min.js", true)
 	fs.CopyWebFile("web/js", javascriptPath, "hyperscript.js", true)
 	fs.CopyWebFile("web/js", javascriptPath, "rapidoc-min.js", true)
+	fs.CopyWebFile("web/js", javascriptPath, "sse.js", true)
 
 	// files in stylesheet directory
 	fs.CopyWebFile("web/css", stylesheetPath, "bootstrap-icons.min.css", true)
@@ -59,6 +73,7 @@ func generateFrontend(_ *openapi3.T, conf GeneratorConfig) {
 
 	// files in pages directory
 	fs.CopyWebFile("web/pages", restPath, "render.go", true)
+	fs.CopyWebFile("web/pages", restPath, "progress.go", true)
 	createFileFromTemplate(filepath.Join(pagesPath, "localize.go"), "templates/web/pages/localize.go.tmpl", conf)
 	if _, err := os.Stat(filepath.Join(pagesPath, "languages.templ")); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filepath.Join(pagesPath, "languages.templ"), "templates/web/pages/languages.templ.tmpl", conf)

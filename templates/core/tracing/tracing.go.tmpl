@@ -20,17 +20,12 @@ func InitTracer() (*sdktrace.TracerProvider, error) {
 	var exporter sdktrace.SpanExporter
 	var err error
 	// output traces locally on stdout
-	if core.AppConfig.JaegerCollector != "" {
-		// Jaeger exporter no longer supported
-		log.Warn().Msg("Jaeger tracing exporter no longer supported")
-	} else {
-		exporter, err = stdout.New(stdout.WithPrettyPrint())
-		if err != nil {
-			log.Error().Err(err).Msg("creating stdout tracing exporter failed")
-			return nil, err
-		}
-		log.Info().Msg("created stdout tracing exporter")
+	exporter, err = stdout.New(stdout.WithPrettyPrint())
+	if err != nil {
+		log.Error().Err(err).Msg("creating stdout tracing exporter failed")
+		return nil, err
 	}
+	log.Info().Msg("created stdout tracing exporter")
 
 	tp := sdktrace.NewTracerProvider(
 		sdktrace.WithSampler(sdktrace.ParentBased(sdktrace.AlwaysSample())),
