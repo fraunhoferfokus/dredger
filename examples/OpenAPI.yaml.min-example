@@ -70,6 +70,29 @@ paths:
             application/json:
               schema:
                 type: string
+  /events:
+    get:
+      summary: SSE events service
+      tags:
+        - builtin
+      responses:
+        "200":
+          description: SSE event communication
+          content:
+            text/plain:
+              schema:
+                type: string
+    post:
+      summary: SSE events service
+      tags:
+        - builtin
+      responses:
+        "200":
+          description: SSE event communication
+          content:
+            text/plain:
+              schema:
+                type: string
   /robots.txt:
     get:
       summary: return robots.txt to restrict web crawlers

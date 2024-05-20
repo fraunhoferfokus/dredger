@@ -106,7 +106,7 @@ func {{ .OperationID }}(c echo.Context) error {
         {{ end }}
     {{- end }}
 
-    // implement your functionality best using a function from a separate file, e.g. {{ .OperationID }}Do.go
+    // implement your functionality best using a function from a separate file, e.g. usecases/{{ .OperationID }}Do.go
 
     {{ range .Responses }}
             // {{ .StatusCode }} => {{ .Description }}
