@@ -39,6 +39,7 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	frontendPath := filepath.Join(conf.OutputPath, "web")
 	javascriptPath := filepath.Join(frontendPath, "js")
 	stylesheetPath := filepath.Join(frontendPath, "css")
+	fontsPath := filepath.Join(stylesheetPath, "fonts")
 	pagesPath := filepath.Join(frontendPath, "pages")
 	localesPath := filepath.Join(pagesPath, "locales")
 	publicPath := filepath.Join(frontendPath, "public")
@@ -46,6 +47,7 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	fs.GenerateFolder(frontendPath)
 	fs.GenerateFolder(javascriptPath)
 	fs.GenerateFolder(stylesheetPath)
+	fs.GenerateFolder(fontsPath)
 	fs.GenerateFolder(pagesPath)
 	fs.GenerateFolder(localesPath)
 	fs.GenerateFolder(publicPath)
@@ -63,6 +65,8 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 
 	// files in stylesheet directory
 	fs.CopyWebFile("web/css", stylesheetPath, "bootstrap-icons.min.css", true)
+	fs.CopyWebFile("web/css/fonts", fontsPath, "bootstrap-icons.woff", true)
+	fs.CopyWebFile("web/css/fonts", fontsPath, "bootstrap-icons.woff2", true)
 	fs.CopyWebFile("web/css", stylesheetPath, "bootstrap.min.css", true)
 	fs.CopyWebFile("web/css", stylesheetPath, "pico.min.css", true)
 	fs.CopyWebFile("web/css", stylesheetPath, "pico.colors.min.css", true)
