@@ -37,13 +37,16 @@ tools:
 
 # Download rapidoc, an OpenAPI documentation viewer
 download-rapidoc:
-    curl -o templates/web/js/rapidoc-min.js -L https://unpkg.com/rapidoc/dist/rapidoc-min.js
+    curl -o templates/web/css/rapidoc-min.js -L https://unpkg.com/rapidoc/dist/rapidoc-min.js
 
 # Download frontend libraries
-download-style:
+# woff Dateien müssen aus dem ZIP manuell nach fonts/ kopiert werden!
+download-bootstrap:
     curl -o templates/web/css/bootstrap.min.css -L https://cdn.jsdelivr.net/npm/bootstrap@latest/dist/css/bootstrap.min.css
-    curl -o templates/web/css/bootstrap-icons.min.css -L https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css
+    curl -o templates/web/css/bootstrap-icons.min.css -L https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css
+    curl -o templates/web/css/bootstrap-icons-1.11.3.zip -L https://github.com/twbs/icons/releases/download/v1.11.3/bootstrap-icons-1.11.3.zip
     curl -o templates/web/js/bootstrap.bundle.min.js -L https://cdn.jsdelivr.net/npm/bootstrap@latest/dist/js/bootstrap.bundle.min.js
+download-style: download-bootstrap
     curl -o templates/web/js/htmx.min.js -L https://unpkg.com/htmx.org@latest
     curl -o templates/web/js/htmx-sse.js -L https://unpkg.com/htmx.org/dist/ext/sse.js
     curl -o templates/web/js/hyperscript.js -L https://unpkg.com/hyperscript.org@latest

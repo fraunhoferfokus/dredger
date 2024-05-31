@@ -12,9 +12,9 @@ import (
 var durationSum int = 100 // 10 Seconds as initial duration
 var durationNb int = 1
 
-const picoNull = `<progress value=\"0\"max=\"100\" />`
+const picoNull = `<progress value="0" max="100" />`
 const picoEndless = `<progress />`
-const picoProgress = `<progress value=\"%d\"max=\"100\" />`
+const picoProgress = `<progress value="%d" max="100" />`
 const picoEmpty = `<div/>`
 
 func ProgressPico(f func()) {

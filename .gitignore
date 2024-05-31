@@ -5,3 +5,4 @@ examples/*/src
 go.work.sum
 .DS_Store
 dist
+templates/web/css/bootstrap-icons-*.zip

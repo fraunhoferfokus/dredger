@@ -10,6 +10,7 @@ require (
 	github.com/gobeam/stringy v0.0.7
 	github.com/huandu/xstrings v1.4.0
 	github.com/labstack/echo/v4 v4.12.0
+	github.com/r3labs/sse/v2 v2.10.0
 	github.com/rs/zerolog v1.32.0
 	github.com/spf13/cobra v1.8.0
 )
@@ -36,6 +37,7 @@ require (
 	golang.org/x/net v0.24.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/text v0.15.0 // indirect
+	gopkg.in/cenkalti/backoff.v1 v1.1.0 // indirect
 )
 
 require (
