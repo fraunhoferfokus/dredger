@@ -2,7 +2,7 @@ go 1.22.3
 
 use (
 	.
-	// examples/stores/src
-	// examples/simple/src
-	tmp
+// examples/stores/src
+// examples/simple/src
+// tmp
 )
