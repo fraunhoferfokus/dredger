@@ -1,0 +1,31 @@
+// Edit this file, as it is a specific handler function for your service
+package rest
+
+import (
+	"{{ lcfirst ( camelcase .ModuleName ) }}/core/log"
+	"{{ lcfirst ( camelcase .ModuleName ) }}/core/tracing"
+	"{{ lcfirst ( camelcase .ModuleName ) }}/web/pages"
+
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+)
+
+// successfully deliver index page
+func GetRoot(c echo.Context) error {
+	// trace span
+	ctx := c.Request().Context()
+	ctx, span := tracing.Tracer.Start(ctx, "logMessage")
+	defer span.End()
+
+	log.Info().Str("traceId", span.SpanContext().TraceID().String()).Str("spanId", span.SpanContext().SpanID().String()).Str("path", "/index.html").Msg("GetIndex")
+
+	// session, err := getSession(c)
+	// if err != nil {
+	// 	log.Error().Err(err).Msg("GetIndex failed")
+	// 	return c.NoContent(http.StatusInternalServerError)
+	// }
+
+	lzr := i18n.NewLocalizer(pages.Bundle, pages.Language(c))
+	return Render(c, http.StatusOK, pages.Index(lzr))
+}

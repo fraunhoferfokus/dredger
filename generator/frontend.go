@@ -27,8 +27,7 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 		log.Debug().Msg("Generating default /events endpoint.")
 
 		op := openapi3.NewOperation()
-		op.AddResponse(200, createOAPIResponse("The service supports sse"))
-		op.AddResponse(http.StatusOK, createOAPIResponse("The service don't support sse"))
+		op.AddResponse(http.StatusOK, createOAPIResponse("The service support sse"))
 		updateOAPIOperation(op, "HandleEvents", "support for sse", "200")
 		spec.AddOperation("/events", http.MethodGet, op)
 		spec.AddOperation("/events", http.MethodPost, op)
@@ -81,6 +80,30 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	createFileFromTemplate(filepath.Join(pagesPath, "localize.go"), "templates/web/pages/localize.go.tmpl", conf)
 	if _, err := os.Stat(filepath.Join(pagesPath, "languages.templ")); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filepath.Join(pagesPath, "languages.templ"), "templates/web/pages/languages.templ.tmpl", conf)
+	}
+	if spec.Paths.Find("/index.html") != nil && spec.Paths.Find("/index.html").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/index.html").Operations()[http.MethodGet].Tags, "builtin") {
+		if _, err := os.Stat(filepath.Join(pagesPath, "index.templ")); errors.Is(err, os.ErrNotExist) {
+			createFileFromTemplate(filepath.Join(pagesPath, "index.templ"), "templates/web/pages/index.templ.tmpl", conf)
+		}
+		op := openapi3.NewOperation()
+		op.AddResponse(http.StatusOK, createOAPIResponse("The service delivers index page"))
+		updateOAPIOperation(op, "GetIndex", "successfully deliver index page", "200")
+		spec.AddOperation("/index.html", http.MethodGet, op)
+	}
+	if spec.Paths.Find("/") != nil && spec.Paths.Find("/").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/").Operations()[http.MethodGet].Tags, "builtin") {
+		op := openapi3.NewOperation()
+		op.AddResponse(http.StatusOK, createOAPIResponse("The service delivers index page"))
+		updateOAPIOperation(op, "GetRoot", "successfully deliver index page", "200")
+		spec.AddOperation("/", http.MethodGet, op)
+	}
+	if spec.Paths.Find("/content.html") != nil && spec.Paths.Find("/content.html").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/content.html").Operations()[http.MethodGet].Tags, "builtin") {
+		if _, err := os.Stat(filepath.Join(pagesPath, "content.templ")); errors.Is(err, os.ErrNotExist) {
+			createFileFromTemplate(filepath.Join(pagesPath, "content.templ"), "templates/web/pages/content.templ.tmpl", conf)
+		}
+		op := openapi3.NewOperation()
+		op.AddResponse(http.StatusOK, createOAPIResponse("The service delivers content page"))
+		updateOAPIOperation(op, "GetContent", "successfully deliver content page", "200")
+		spec.AddOperation("/content.html", http.MethodGet, op)
 	}
 	if _, err := os.Stat(filepath.Join(localesPath, "locale.de.toml")); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filepath.Join(localesPath, "locale.de.toml"), "templates/web/pages/locales/locale.de.toml", conf)
