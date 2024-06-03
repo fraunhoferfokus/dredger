@@ -2,6 +2,7 @@ package cli
 
 import (
 	extCmd "dredger/cmd"
+	"dredger/core"
 	gen "dredger/generator"
 	"errors"
 	"os"
@@ -24,6 +25,15 @@ var rootCmd = &cobra.Command{
 	Use:   "dredger",
 	Short: "Create server and client API code from OpenApi Spec",
 	Long:  "Generate Go-Server code and RapidDoc-Clientcode for your application by providing an OpenAPI Specification",
+}
+
+var showVersion = &cobra.Command{
+	Use:   "version",
+	Short: "Show the version of the dredger tool",
+	Args:  cobra.ExactArgs(0),
+	Run: func(cmd *cobra.Command, args []string) {
+		println("dredger v" + core.Version)
+	},
 }
 
 var generateBdd = &cobra.Command{
@@ -119,4 +129,7 @@ func init() {
 
 	//add bdd command
 	rootCmd.AddCommand(generateBdd)
+
+	// add version command
+	rootCmd.AddCommand(showVersion)
 }
