@@ -28,11 +28,11 @@ func {{ .OperationID }}(c echo.Context) error {
 
 	log.Info().Str("traceId", span.SpanContext().TraceID().String()).Str("spanId", span.SpanContext().SpanID().String()).Str("path", "/").Msg("{{ .OperationID }}")
 
-	session, err := getSession(c)
-	if err != nil {
-		log.Error().Err(err).Msg("{{ .OperationID }} failed")
-		return c.NoContent(http.StatusInternalServerError)
-	}
+	// session, err := getSession(c)
+	// if err != nil {
+	// 	log.Error().Err(err).Msg("{{ .OperationID }} failed")
+	// 	return c.NoContent(http.StatusInternalServerError)
+	// }
 
     {{- if eq .Method "POST" "PUT" "PATCH" }}
 

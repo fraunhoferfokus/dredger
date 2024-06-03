@@ -12,7 +12,7 @@ The code is basically structured using the clean architecture principles. The co
 
 For each API endpoint in the OpenAPI specification a basic stub handler code will be generated. The name of the handler is based on the _operationId_ of the API endpoint. The handler code includes general code for the observation and logging. It can be adapted by adding the required business logic.
 
-If an API endpoint contains a tag _builtin_ in your _tags_, then no handler code will be generated. The tag _builtin_ should especially be used for default API endpoints for the lifecycle functions, the default stylesheets or the default javascript files.
+If an API endpoint contains a tag _builtin_ in your _tags_, then no generic handler code will be generated. The tag _builtin_ should especially be used for default API endpoints for the lifecycle functions, the default stylesheets, the default javascript files and the _/index.html_ or _/content.html_ files.
 
 If an API endpoint contains a tag _page_ in your _tags_, then a [templ](https://templ.guide/) template will also be created. A templ template allows to write HTML pages mixed with go code and generate a go function, which can be used easily in your handlers. Further, a localizer and a language selector (_languages.templ_) is setup to translate strings using a [i18n library](github.com/nicksnyder/go-i18n/v2/i18n) for internationalization.
 
