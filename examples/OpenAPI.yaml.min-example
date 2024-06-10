@@ -110,7 +110,7 @@ paths:
         "200":
           description: successfully deliver index.html
           content:
-            text/plain:
+            text/html:
               schema:
                 type: string
   /content.html:
@@ -122,7 +122,7 @@ paths:
         "200":
           description: successfully deliver content.html
           content:
-            text/plain:
+            text/html:
               schema:
                 type: string
 

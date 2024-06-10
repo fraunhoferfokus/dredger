@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/huandu/xstrings"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
@@ -90,8 +91,8 @@ var generateCmd = &cobra.Command{
 		fileName := "go.mod"
 		filePath := filepath.Join(config.OutputPath, fileName)
 		if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
-			log.Info().Msg("RUN `go mod init " + projectName + "`")
-			extCmd.RunCommand("go mod init "+projectName, projectDestination)
+			log.Info().Msg("RUN `go mod init " + xstrings.FirstRuneToLower(xstrings.ToCamelCase(projectName)) + "`")
+			extCmd.RunCommand("go mod init "+xstrings.FirstRuneToLower(xstrings.ToCamelCase(projectName)), projectDestination)
 		}
 
 		log.Info().Msg("RUN `goimports`")
