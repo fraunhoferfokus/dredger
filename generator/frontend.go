@@ -77,7 +77,7 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 
 	// files in pages directory
 	fs.CopyWebFile("web/pages", restPath, "render.go", true)
-	fs.CopyWebFile("web/pages", restPath, "progress.go", true)
+	createFileFromTemplate(filepath.Join(restPath, "progress.go"), "templates/web/pages/progress.go.tmpl", conf)
 	createFileFromTemplate(filepath.Join(pagesPath, "localize.go"), "templates/web/pages/localize.go.tmpl", conf)
 	if _, err := os.Stat(filepath.Join(pagesPath, "languages.templ")); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filepath.Join(pagesPath, "languages.templ"), "templates/web/pages/languages.templ.tmpl", conf)

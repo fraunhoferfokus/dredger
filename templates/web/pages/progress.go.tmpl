@@ -6,10 +6,13 @@ import (
 	"time"
 
 	"github.com/r3labs/sse/v2"
+
+	"{{ lcfirst ( camelcase .ModuleName ) }}/core"
 )
 
 // learn medium duration
-var durationSum int = 100 // 10 Seconds as initial duration
+// ToDo: use a map for more than one progress case
+var durationSum int = core.AppConfig.ProgressDuration // initial duration in deciseconds
 var durationNb int = 1
 
 const picoNull = `<progress value="0" max="100" />`
