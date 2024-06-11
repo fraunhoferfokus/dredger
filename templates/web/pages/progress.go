@@ -64,15 +64,9 @@ func ProgressPico(f func()) {
 	}
 }
 
-const bsNull = `<div class="progress" role="progressbar" aria-label="Fortschritt " aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-  <div class="progress-bar" style="width: 0%"></div>
-</div>`
-const bsEndless = `<div class="progress" role="progressbar" aria-label="Fortschritt" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
-<div class="progress-bar" style="width: 100%"></div>
-</div>`
-const bsProgress = `<div class="progress" role="progressbar" aria-label="Fortschritt" aria-valuenow="%d" aria-valuemin="0" aria-valuemax="100">
-<div class="progress-bar" style="width: %d%%"></div>
-</div>`
+const bsNull = `<div class="progress" role="progressbar" aria-label="Fortschritt " aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: 0%"></div></div>`
+const bsEndless = `<div class="progress" role="progressbar" aria-label="Fortschritt" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: 100%"></div></div>`
+const bsProgress = `<div class="progress" role="progressbar" aria-label="Fortschritt" aria-valuenow="%d" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: %d%%"></div></div>`
 const bsEmpty = `<div/>`
 
 func ProgressBootstrap(f func()) {
