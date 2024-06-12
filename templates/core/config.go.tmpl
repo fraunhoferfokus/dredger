@@ -37,7 +37,8 @@ type Config struct {
 	Tracing             bool     `default:"false"`
 	Language            string   `default:"de"`
 	Languages           []string `default:"en,de"`
-	UseSse              bool     `default:"false"`
+	UseSse              bool     `default:"false" split_words:"true"`
+	ProgressDuration    int      `default:"100" split_words:"true"`
 	ConfigExt
 }
 
