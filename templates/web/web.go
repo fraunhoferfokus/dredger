@@ -10,5 +10,8 @@ var Css embed.FS
 //go:embed js
 var Js embed.FS
 
+//go:embed images
+var Images embed.FS
+
 //go:embed public
 var Public embed.FS
