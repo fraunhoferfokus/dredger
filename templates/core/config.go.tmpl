@@ -79,6 +79,9 @@ func init() {
 		log.Fatal().Err(err).Str("name", stringy.New(AppConfig.Name).SnakeCase("?", "").ToUpper()).Msg("Couldn't read environment settings")
 	}
 
+    // extend custom flags
+	init_ext()
+
 	flag.Parse()
 	log.Setup(AppConfig.Name, AppInfo.Service, AppConfig.LogFile, AppConfig.Debug)
 	if AppConfig.SessionKey == "" {
