@@ -14,6 +14,7 @@ import (
 
 type Config struct {
 	Debug               bool     `default:"false"`
+	Version             bool     `default:"false"`
 	Service             string
 	Sid                 string   `ignored:"true"`
 	Name                string   `default:"{{.ModuleName}}"`
@@ -59,6 +60,7 @@ func init() {
 	flag.StringVar(&AppConfig.Name, "name", AppConfig.Name, "Name of the service")
 	flag.StringVar(&AppConfig.Name, "n", AppConfig.Name, "Name of the service")
 	flag.BoolVar(&AppConfig.Debug, "d", AppConfig.Debug, "enable debugging level for logging")
+	flag.BoolVar(&AppConfig.Version, "V", AppConfig.Version, "print version")
 
 	if AppConfig.Name == "" {
 		AppConfig.Name = AppInfo.Service
@@ -83,6 +85,13 @@ func init() {
 	init_ext()
 
 	flag.Parse()
+
+    //  print app version
+	if AppConfig.Version {
+		println("version", version)
+		os.Exit(0)
+	}
+
 	log.Setup(AppConfig.Name, AppInfo.Service, AppConfig.LogFile, AppConfig.Debug)
 	if AppConfig.SessionKey == "" {
 		AppConfig.SessionKey = AppConfig.Name
