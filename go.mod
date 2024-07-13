@@ -6,13 +6,12 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/a-h/templ v0.2.663
 	github.com/cucumber/godog v0.12.5
-	github.com/getkin/kin-openapi v0.124.0
+	github.com/getkin/kin-openapi v0.126.0
 	github.com/gobeam/stringy v0.0.7
-	github.com/huandu/xstrings v1.4.0
+	github.com/huandu/xstrings v1.5.0
 	github.com/labstack/echo/v4 v4.12.0
-	github.com/r3labs/sse/v2 v2.10.0
-	github.com/rs/zerolog v1.32.0
-	github.com/spf13/cobra v1.8.0
+	github.com/rs/zerolog v1.33.0
+	github.com/spf13/cobra v1.8.1
 )
 
 replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.16
@@ -33,11 +32,10 @@ require (
 	github.com/spf13/cast v1.6.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	golang.org/x/crypto v0.23.0 // indirect
+	golang.org/x/crypto v0.25.0 // indirect
 	golang.org/x/net v0.24.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/text v0.15.0 // indirect
-	gopkg.in/cenkalti/backoff.v1 v1.1.0 // indirect
+	golang.org/x/text v0.16.0 // indirect
 )
 
 require (
@@ -55,6 +53,6 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/otiai10/copy v1.14.0
 	github.com/spf13/pflag v1.0.5 // indirect
-	golang.org/x/sys v0.20.0 // indirect
+	golang.org/x/sys v0.22.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
