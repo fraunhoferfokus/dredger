@@ -11,7 +11,7 @@ import (
 )
 
 func generateLifecycleFiles(spec *openapi3.T, conf GeneratorConfig) {
-	if spec.Paths.Find("/livez") == nil || (spec.Paths.Find("/livez").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/livez").Operations()[http.MethodGet].Tags, "builtin")) {
+	if spec.Paths.Find("/livez") != nil && (spec.Paths.Find("/livez").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/livez").Operations()[http.MethodGet].Tags, "builtin")) {
 		log.Debug().Msg("Generating default /livez endpoint.")
 
 		op := openapi3.NewOperation()
@@ -20,7 +20,7 @@ func generateLifecycleFiles(spec *openapi3.T, conf GeneratorConfig) {
 		spec.AddOperation("/livez", http.MethodGet, op)
 	}
 
-	if spec.Paths.Find("/readyz") == nil || (spec.Paths.Find("/readyz").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/readyz").Operations()[http.MethodGet].Tags, "builtin")) {
+	if spec.Paths.Find("/readyz") != nil && (spec.Paths.Find("/readyz").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/readyz").Operations()[http.MethodGet].Tags, "builtin")) {
 		log.Debug().Msg("Generating default /readyz endpoint.")
 
 		op := openapi3.NewOperation()
@@ -30,7 +30,7 @@ func generateLifecycleFiles(spec *openapi3.T, conf GeneratorConfig) {
 		spec.AddOperation("/readyz", http.MethodGet, op)
 	}
 
-	if spec.Paths.Find("/robots.txt") == nil || (spec.Paths.Find("/robots.txt").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/robots.txt").Operations()[http.MethodGet].Tags, "builtin")) {
+	if spec.Paths.Find("/robots.txt") != nil && (spec.Paths.Find("/robots.txt").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/robots.txt").Operations()[http.MethodGet].Tags, "builtin")) {
 		log.Debug().Msg("Generating default /robots.txt endpoint.")
 
 		op := openapi3.NewOperation()

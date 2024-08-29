@@ -39,7 +39,7 @@ func generateHandlerFuncStub(op *openapi3.Operation, method string, path string,
 		log.Warn().Msg("No summary found for endpoint: " + methodPath)
 	}
 
-	conf.OperationID = xstrings.ToCamelCase(op.OperationID)
+	conf.OperationID = xstrings.FirstRuneToUpper(xstrings.ToCamelCase(op.OperationID))
 	if op.OperationID == "" {
 		log.Error().Msg("No operation ID found for endpoint: " + methodPath)
 		return conf, errors.New("no operation id, can't create function")
@@ -149,10 +149,9 @@ func generateHandlerFuncStub(op *openapi3.Operation, method string, path string,
 		templateFile = "templates/rest/handleEvents.go.tmpl"
 	}
 
+	log.Debug().Str("operation", conf.OperationID).Str("template", templateFile).Msg("Generate handler")
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filePath, templateFile, conf)
-	} else {
-		log.Debug().Err(err).Str("template", templateFile).Msg("Creating handler failed")
 	}
 	// remove unused imports
 	extCmd.RunCommand("goimports -w "+fileName, filepath.Join(config.Path, RestPkg))
