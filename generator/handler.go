@@ -121,6 +121,7 @@ func generateHandlerFuncStub(op *openapi3.Operation, method string, path string,
 		}
 	}
 
+	canBeEdited := true
 	fileName := xstrings.FirstRuneToLower(xstrings.ToCamelCase(conf.OperationID)) + ".go"
 	filePath := filepath.Join(config.Path, RestPkg, fileName)
 	templateFile := "templates/rest/handlerFunc.go.tmpl"
@@ -128,12 +129,15 @@ func generateHandlerFuncStub(op *openapi3.Operation, method string, path string,
 		templateFile = "templates/rest/pageHandlerFunc.go.tmpl"
 	}
 	if conf.OperationID == "GetLive" {
+		canBeEdited = false
 		templateFile = "templates/rest/getLive.go.tmpl"
 	}
 	if conf.OperationID == "GetInfo" {
+		canBeEdited = false
 		templateFile = "templates/rest/getInfo.go.tmpl"
 	}
 	if conf.OperationID == "GetRobots" {
+		canBeEdited = false
 		templateFile = "templates/rest/getRobots.go.tmpl"
 	}
 	if conf.OperationID == "GetIndex" {
@@ -146,11 +150,12 @@ func generateHandlerFuncStub(op *openapi3.Operation, method string, path string,
 		templateFile = "templates/rest/getContent.go.tmpl"
 	}
 	if conf.OperationID == "HandleEvents" {
+		canBeEdited = false
 		templateFile = "templates/rest/handleEvents.go.tmpl"
 	}
 
 	log.Debug().Str("operation", conf.OperationID).Str("template", templateFile).Msg("Generate handler")
-	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+	if _, err := os.Stat(filePath); !canBeEdited || errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filePath, templateFile, conf)
 	}
 	// remove unused imports
