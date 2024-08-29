@@ -26,7 +26,7 @@ func generateInfoFiles(spec *openapi3.T, serverConf ServerConfig) {
 		createFileFromTemplate(filePath, templateFile, serverConf)
 	}
 
-	if spec.Paths.Find("/infoz") == nil || (spec.Paths.Find("/infoz").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/infoz").Operations()[http.MethodGet].Tags, "builtin")) {
+	if spec.Paths.Find("/infoz") != nil && (spec.Paths.Find("/infoz").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/infoz").Operations()[http.MethodGet].Tags, "builtin")) {
 		log.Debug().Msg("Generating default /infoz endpoint.")
 
 		op := openapi3.NewOperation()

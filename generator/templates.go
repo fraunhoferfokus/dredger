@@ -48,7 +48,7 @@ func createFileFromTemplate(filePath string, tmplPath string, config interface{}
 		panic(tmplErr)
 	}
 
-	log.Info().Msg("CREATE " + filePath)
+	log.Info().Str("template", templateName).Msg("CREATE " + filePath)
 }
 
 func createFileFromTemplates(filePath string, tmplPaths []string, config interface{}) {

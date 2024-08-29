@@ -12,5 +12,6 @@ var HandleEvents echo.HandlerFunc
 func init() {
 	SseServer = sse.New()
 	SseServer.CreateStream("progress")
+	SseServer.CreateStream("notice")
 	HandleEvents = echo.WrapHandler(SseServer)
 }

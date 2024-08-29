@@ -24,16 +24,6 @@ func generateEmptyFrontend(_ *openapi3.T, conf GeneratorConfig) {
 func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	generateOpenAPIDoc(conf)
 
-	if spec.Paths.Find("/events") == nil || (spec.Paths.Find("/events").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/events").Operations()[http.MethodGet].Tags, "builtin")) {
-		log.Debug().Msg("Generating default /events endpoint.")
-
-		op := openapi3.NewOperation()
-		op.AddResponse(http.StatusOK, createOAPIResponse("The service support sse"))
-		updateOAPIOperation(op, "HandleEvents", "support for sse", "200")
-		spec.AddOperation("/events", http.MethodGet, op)
-		spec.AddOperation("/events", http.MethodPost, op)
-	}
-
 	// create folders
 	restPath := filepath.Join(conf.OutputPath, "rest")
 	frontendPath := filepath.Join(conf.OutputPath, "web")
@@ -79,7 +69,6 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 
 	// files in pages directory
 	fs.CopyWebFile("web/pages", restPath, "render.go", true)
-	createFileFromTemplate(filepath.Join(restPath, "progress.go"), "templates/web/pages/progress.go.tmpl", conf)
 	createFileFromTemplate(filepath.Join(pagesPath, "localize.go"), "templates/web/pages/localize.go.tmpl", conf)
 	if _, err := os.Stat(filepath.Join(pagesPath, "languages.templ")); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filepath.Join(pagesPath, "languages.templ"), "templates/web/pages/languages.templ.tmpl", conf)
@@ -115,6 +104,19 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 
 	// files in public directory
 	fs.CopyWebFile("web", publicPath, "README-public.md", false)
+
+	// support for events
+	if spec.Paths.Find("/events") != nil && spec.Paths.Find("/events").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/events").Operations()[http.MethodGet].Tags, "builtin") {
+		log.Debug().Msg("Generating default /events endpoint.")
+		createFileFromTemplate(filepath.Join(restPath, "progress.go"), "templates/web/pages/progress.go.tmpl", conf)
+		createFileFromTemplate(filepath.Join(restPath, "notice.go"), "templates/web/pages/notice.go.tmpl", conf)
+
+		op := openapi3.NewOperation()
+		op.AddResponse(http.StatusOK, createOAPIResponse("The service support sse"))
+		updateOAPIOperation(op, "HandleEvents", "support for sse", "200")
+		spec.AddOperation("/events", http.MethodGet, op)
+		spec.AddOperation("/events", http.MethodPost, op)
+	}
 
 	log.Info().Msg("Created Frontend successfully.")
 }
