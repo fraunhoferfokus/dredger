@@ -64,6 +64,9 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	fs.CopyWebFile("web/css", stylesheetPath, "pico.colors.min.css", true)
 	fs.CopyWebFile("web/css", stylesheetPath, "simple.min.css", true)
 
+	// files in images directory
+	fs.CopyWebFile("web/images", imagesPath, "favicon.ico", false)
+
 	// files in web directory
 	fs.CopyWebFile("web", frontendPath, "web.go", true)
 
