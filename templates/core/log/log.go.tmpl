@@ -37,7 +37,7 @@ func Setup(name string, service string, logFilename string, debug bool) {
 	console := zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339}).
 		With().
 		Timestamp().
-		Str("service", service).
+		Str("svc", service).
 		Str("name", name).
 		Logger()
 
@@ -58,7 +58,7 @@ func Setup(name string, service string, logFilename string, debug bool) {
 		logger := zerolog.New(logfile).
 			With().
 			Timestamp().
-			Str("service", service).
+			Str("svc", service).
 			Str("name", name).
 			Logger()
 		if debug {

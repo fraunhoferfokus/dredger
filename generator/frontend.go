@@ -25,6 +25,7 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	generateOpenAPIDoc(conf)
 
 	// create folders
+	corePath := filepath.Join(conf.OutputPath, "core")
 	restPath := filepath.Join(conf.OutputPath, "rest")
 	frontendPath := filepath.Join(conf.OutputPath, "web")
 	javascriptPath := filepath.Join(frontendPath, "js")
@@ -32,7 +33,7 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	imagesPath := filepath.Join(frontendPath, "images")
 	fontsPath := filepath.Join(stylesheetPath, "fonts")
 	pagesPath := filepath.Join(frontendPath, "pages")
-	localesPath := filepath.Join(pagesPath, "locales")
+	localesPath := filepath.Join(corePath, "locales")
 	publicPath := filepath.Join(frontendPath, "public")
 
 	fs.GenerateFolder(frontendPath)
@@ -70,9 +71,15 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	// files in web directory
 	fs.CopyWebFile("web", frontendPath, "web.go", true)
 
+	// files in core directory
+	createFileFromTemplate(filepath.Join(corePath, "localize.go"), "templates/core/localize.go.tmpl", conf)
+	if _, err := os.Stat(filepath.Join(localesPath, "locale.de.toml")); errors.Is(err, os.ErrNotExist) {
+		createFileFromTemplate(filepath.Join(localesPath, "locale.de.toml"), "templates/core/locales/locale.de.toml", conf)
+		createFileFromTemplate(filepath.Join(localesPath, "locale.en.toml"), "templates/core/locales/locale.en.toml", conf)
+	}
+
 	// files in pages directory
 	fs.CopyWebFile("web/pages", restPath, "render.go", true)
-	createFileFromTemplate(filepath.Join(pagesPath, "localize.go"), "templates/web/pages/localize.go.tmpl", conf)
 	if _, err := os.Stat(filepath.Join(pagesPath, "languages.templ")); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filepath.Join(pagesPath, "languages.templ"), "templates/web/pages/languages.templ.tmpl", conf)
 	}
@@ -99,10 +106,6 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 		op.AddResponse(http.StatusOK, createOAPIResponse("The service delivers content page"))
 		updateOAPIOperation(op, "GetContent", "successfully deliver content page", "200")
 		spec.AddOperation("/content.html", http.MethodGet, op)
-	}
-	if _, err := os.Stat(filepath.Join(localesPath, "locale.de.toml")); errors.Is(err, os.ErrNotExist) {
-		createFileFromTemplate(filepath.Join(localesPath, "locale.de.toml"), "templates/web/pages/locales/locale.de.toml", conf)
-		createFileFromTemplate(filepath.Join(localesPath, "locale.en.toml"), "templates/web/pages/locales/locale.en.toml", conf)
 	}
 
 	// files in public directory

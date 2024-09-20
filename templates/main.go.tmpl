@@ -10,6 +10,7 @@ import (
 	"{{ lcfirst ( camelcase .ModuleName ) }}/core/tracing"
 	"{{ lcfirst ( camelcase .ModuleName ) }}/rest"
 	"{{ lcfirst ( camelcase .ModuleName ) }}/rest/middleware"
+	"{{ lcfirst ( camelcase .ModuleName ) }}/web"
 	_ "embed"
 	"context"
 
@@ -28,7 +29,7 @@ var embeddedFS embed.FS
 func main() {
     // ToDo: Add basic command line options as _-n_/_-name_ and _-d_/_-debug_ using flags
 
-	log.Info().Str("svc", core.AppConfig.Service).Msg("Starting service")
+	log.Info().Msg("Starting service")
 
 	// init Opentelemetry
     if core.AppConfig.Tracing {

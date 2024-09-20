@@ -13,7 +13,7 @@ templ Languages(lzr *i18n.Localizer) {
             <a class="nav-link"
                 _={ "on click call sessionStorage.setItem('pd_language','"+language+"')"}
                 href={ templ.URL("index.html?language=" + language) }>
-                    { localize(lzr,language) }
+                    { core.Localize(lzr,language) }
             </a>
         </li>
 	}

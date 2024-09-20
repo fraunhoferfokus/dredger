@@ -2,6 +2,7 @@
 package rest
 
 import (
+    "{{ lcfirst ( camelcase .ModuleName ) }}/core"
     "{{ lcfirst ( camelcase .ModuleName ) }}/core/tracing"
     "{{ lcfirst ( camelcase .ModuleName ) }}/core/log"
     "{{ lcfirst ( camelcase .ModuleName ) }}/entities"
@@ -113,6 +114,6 @@ func {{ .OperationID }}(c echo.Context) error {
     {{- end }}
 
 
-	lzr := i18n.NewLocalizer(pages.Bundle, pages.Language(c))
+	lzr := i18n.NewLocalizer(core.Bundle, core.Language(c))
 	return Render(c, http.StatusOK, pages.{{ .OperationID }}(lzr))
 }
