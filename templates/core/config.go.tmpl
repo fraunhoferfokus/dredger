@@ -69,7 +69,7 @@ func init() {
 		AppConfig.Title = AppConfig.Name
 	}
 
-	log.Setup(AppConfig.Name, AppInfo.Service, AppConfig.LogFile, AppConfig.Debug)
+	log.Setup(AppConfig.Name, AppConfig.Service, AppConfig.LogFile, AppConfig.Debug)
 
 	err := godotenv.Load()
 	if err != nil {
@@ -92,7 +92,7 @@ func init() {
 		os.Exit(0)
 	}
 
-	log.Setup(AppConfig.Name, AppInfo.Service, AppConfig.LogFile, AppConfig.Debug)
+	log.Setup(AppConfig.Name, AppConfig.Service, AppConfig.LogFile, AppConfig.Debug)
 	if AppConfig.SessionKey == "" {
 		AppConfig.SessionKey = AppConfig.Name
 	}
