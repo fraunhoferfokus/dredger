@@ -48,7 +48,7 @@ var (
 )
 
 func init() {
-	AppConfig.Service = stringy.New("{{.ModuleName}}").SnakeCase("?", "").ToUpper()
+	AppConfig.Service = service
 	AppConfig.Host, _ = os.Hostname()
 	AppConfig.User = os.Getenv("USER")
 	sid, _ := uuid.NewUUID()
@@ -63,7 +63,7 @@ func init() {
 	flag.BoolVar(&AppConfig.Version, "V", AppConfig.Version, "print version")
 
 	if AppConfig.Name == "" {
-		AppConfig.Name = AppConfig.Service
+		AppConfig.Name = service
 	}
 	if AppConfig.Title == "" {
 		AppConfig.Title = AppConfig.Name
