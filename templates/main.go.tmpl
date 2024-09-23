@@ -29,7 +29,7 @@ var embeddedFS embed.FS
 func main() {
     // ToDo: Add basic command line options as _-n_/_-name_ and _-d_/_-debug_ using flags
 
-	log.Info().Msg("Starting service")
+	log.Info().Str("port", core.AppConfig.PortNb).Msg("Starting service")
 
 	// init Opentelemetry
     if core.AppConfig.Tracing {
@@ -74,8 +74,8 @@ func main() {
 
 
 	if core.AppConfig.CertPem != "" && core.AppConfig.KeyPem != "" {
-		e.Logger.Fatal(e.StartTLS(":" + core.AppConfig.Port, []byte(core.AppConfig.CertPem), []byte(core.AppConfig.KeyPem)))
+		e.Logger.Fatal(e.StartTLS(":" + core.AppConfig.PortNb, []byte(core.AppConfig.CertPem), []byte(core.AppConfig.KeyPem)))
 	} else {
-		e.Logger.Fatal(e.Start(":" + core.AppConfig.Port))
+		e.Logger.Fatal(e.Start(":" + core.AppConfig.PortNb))
 	}
 }

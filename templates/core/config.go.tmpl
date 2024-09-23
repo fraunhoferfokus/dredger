@@ -19,7 +19,7 @@ type Config struct {
 	Sid                 string   `ignored:"true"`
 	Name                string   `default:"{{.ModuleName}}"`
 	Title               string
-	Port                string   `default:"8080"`
+	PortNb              string   `default:"8080"` // Port is a reserved name in k8s
 	ApiKeys             []string `default:"" split_words:"true"`
 	AuthorizationHeader string   `default:"" split_words:"true"`
 	SessionKey          string   `default:"" split_words:"true"`
@@ -55,12 +55,15 @@ func init() {
 	AppConfig.Sid = sid.String()
 
 	// parse command line arguments
-	flag.StringVar(&AppConfig.Port, "port", AppConfig.Port, "AppConfig.Port to listen by the server")
-	flag.StringVar(&AppConfig.Port, "p", AppConfig.Port, "AppConfig.Port to listen by the server")
+	flag.StringVar(&AppConfig.PortNb, "port", AppConfig.PortNb, "AppConfig.PortNb to listen by the server")
+	flag.StringVar(&AppConfig.PortNb, "p", AppConfig.PortNb, "AppConfig.PortNb to listen by the server")
 	flag.StringVar(&AppConfig.Name, "name", AppConfig.Name, "Name of the service")
 	flag.StringVar(&AppConfig.Name, "n", AppConfig.Name, "Name of the service")
 	flag.BoolVar(&AppConfig.Debug, "d", AppConfig.Debug, "enable debugging level for logging")
 	flag.BoolVar(&AppConfig.Version, "V", AppConfig.Version, "print version")
+    flag.Parse()
+
+	log.Debug().Str("name", AppConfig.Name).Any("environment", os.Environ()).Msg("Got environment")
 
 	if AppConfig.Name == "" {
 		AppConfig.Name = service
@@ -97,6 +100,6 @@ func init() {
 		AppConfig.SessionKey = AppConfig.Name
 	}
 
-	log.Debug().Str("name", AppConfig.Name).Any("environment", AppConfig).Msg("Got environment")
+	log.Debug().Str("name", AppConfig.Name).Any("config", AppConfig).Msg("Got configuration")
 	AppInfo.Name = AppConfig.Name
 }
