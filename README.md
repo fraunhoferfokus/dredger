@@ -53,6 +53,7 @@ Generation flags:
 For typical tasks you can use the [just](https://just.systems/man/en/) recipes:
 
     build              # Build the local dredger binary
+    download-elements  # Download elements, an OpenAPI documentation viewer
     download-rapidoc   # Download rapidoc, an OpenAPI documentation viewer
     download-style     # Download frontend libraries
     generate           # Generate the source code in the target directory ./src from the OpenAPI file provided in the environment variable OPEN_API_PATH
