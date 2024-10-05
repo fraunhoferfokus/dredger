@@ -78,14 +78,42 @@ default allowEntrypoint = false
 
 default allowAccess = false
 
+#
+# examples how you could set permission for each path in the API endpoint
+#
+
 allowEntrypoint {
-#    user
+    user
 #	getMethod
 #   input.path == "/livez"
 }
 
 allowAccess {
-#	user
+	user
 #	getMethod
 #   input.path == "/livez"
 }
+
+#allowEntrypoint {
+#   staffuser
+#	postMethod
+#   input.path == "/admin"
+#}
+
+#allowAccess {
+#   staffuser
+#	postMethod
+#   input.path == "/admin"
+#}
+
+#allowEntrypoint {
+#   api
+#	deleteMethod
+#   input.path == "/func"
+#}
+
+#allowAccess {
+#   api
+#	deleteMethod
+#   input.path == "/func"
+#}
