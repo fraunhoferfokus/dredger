@@ -27,8 +27,9 @@ test:
 	go test ./... -v
 
 # Update required tools and libraries
-update: download-rapidoc download-style
+update: download-rapidoc download-elements download-style
     go get -u
+    go mod tidy
 
 # Install additionally required tools
 tools:
@@ -37,7 +38,12 @@ tools:
 
 # Download rapidoc, an OpenAPI documentation viewer
 download-rapidoc:
-    curl -o templates/web/css/rapidoc-min.js -L https://unpkg.com/rapidoc/dist/rapidoc-min.js
+    curl -o templates/web/js/rapidoc-min.js -L https://unpkg.com/rapidoc/dist/rapidoc-min.js
+
+# Download elements, an OpenAPI documentation viewer (https://stoplight.io/open-source/elements)
+download-elements:
+    curl -o templates/web/js/elements.min.js -L https://unpkg.com/@stoplight/elements/web-components.min.js
+    curl -o templates/web/css/elements.min.css -L https://unpkg.com/@stoplight/elements/styles.min.css
 
 # Download frontend libraries
 # woff Dateien müssen aus dem ZIP manuell nach fonts/ kopiert werden!

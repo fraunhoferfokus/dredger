@@ -53,8 +53,9 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	fs.CopyWebFile("web/js", javascriptPath, "htmx-sse.js", true)
 	fs.CopyWebFile("web/js", javascriptPath, "htmx.min.js", true)
 	fs.CopyWebFile("web/js", javascriptPath, "hyperscript.js", true)
-	fs.CopyWebFile("web/js", javascriptPath, "rapidoc-min.js", true)
 	fs.CopyWebFile("web/js", javascriptPath, "sse.js", true)
+	fs.CopyWebFile("web/js", javascriptPath, "rapidoc-min.js", true)
+	fs.CopyWebFile("web/js", javascriptPath, "elements.min.js", true)
 
 	// files in stylesheet directory
 	fs.CopyWebFile("web/css", stylesheetPath, "bootstrap-icons.min.css", true)
@@ -63,7 +64,7 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	fs.CopyWebFile("web/css", stylesheetPath, "bootstrap.min.css", true)
 	fs.CopyWebFile("web/css", stylesheetPath, "pico.min.css", true)
 	fs.CopyWebFile("web/css", stylesheetPath, "pico.colors.min.css", true)
-	fs.CopyWebFile("web/css", stylesheetPath, "simple.min.css", true)
+	fs.CopyWebFile("web/css", stylesheetPath, "elements.min.css", true)
 
 	// files in images directory
 	fs.CopyWebFile("web/images", imagesPath, "favicon.ico", false)
@@ -224,7 +225,8 @@ func generateOpenAPIDoc(conf GeneratorConfig) {
 	}
 
 	// create static html files
-	createFileFromTemplate(filepath.Join(path, "index.html"), "templates/openapidoc/index.html.tmpl", template)
+	createFileFromTemplate(filepath.Join(path, "rapidoc.html"), "templates/rapidoc/index.html.tmpl", template)
+	createFileFromTemplate(filepath.Join(path, "elements.html"), "templates/elements/index.html.tmpl", template)
 
 	// copy OpenAPI Specification in this directory
 	fs.CopyFile(conf.OpenAPIPath, path, template.OpenAPIFile)

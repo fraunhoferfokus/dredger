@@ -62,8 +62,13 @@ func main() {
 	{{- if .AddFrontend }}
 
 	// serve doc
-	e.FileFS("/doc", "web/doc/index.html", embeddedFS)
+	if core.AppConfig.ElementsDoc {
+	   e.FileFS("/doc", "web/doc/elements.html", embeddedFS)
+	} else if core.AppConfig.RapidocDoc {
+	   e.FileFS("/doc", "web/doc/rapidoc.html", embeddedFS)
+	}
 	e.FileFS("/{{.OpenAPIName}}.yaml", "web/doc/{{.OpenAPIName}}.yaml", embeddedFS)
+
 	// serve default stylesheets and javascript files
 	e.StaticFS("/css/", echo.MustSubFS(web.Css, "css"))
 	e.StaticFS("/js/", echo.MustSubFS(web.Js, "js"))
