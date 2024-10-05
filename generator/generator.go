@@ -32,7 +32,6 @@ const (
 	DatabasePkg       = "db"
 	EntitiesPkg       = "entities"
 	UsecasesPkg       = "usecases"
-	AuthzPkg          = "rest/middleware"
 	MiddlewarePackage = "rest/middleware"
 	DefaultPort       = 8080
 )
@@ -90,10 +89,6 @@ func GenerateServer(conf GeneratorConfig) error {
 		generateDatabaseFiles(conf)
 	}
 
-	if conf.AddAuth {
-		generateAuthzFile(conf)
-	}
-
 	generateValidation(conf)
 	generatePolicy(conf)
 
@@ -115,9 +110,6 @@ func createProjectPathDirectory(conf GeneratorConfig) {
 	fs.GenerateFolder(filepath.Join(config.Path, UsecasesPkg))
 	if conf.AddDatabase {
 		fs.GenerateFolder(filepath.Join(config.Path, DatabasePkg))
-	}
-	if conf.AddAuth {
-		fs.GenerateFolder(filepath.Join(config.Path, AuthzPkg))
 	}
 	fs.GenerateFolder(filepath.Join(config.Path, MiddlewarePackage))
 

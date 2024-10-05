@@ -37,13 +37,13 @@ func init() {
 	}
 
 	// precompile policy
-	// log.Debug().Str("policy", core.AppConfig.Policy).Msg("got policy")
+	log.Debug().Msg("Precompile rego policy")
 	var err error
 	policyCompiler, err = ast.CompileModules(map[string]string{
 		"authz.rego": core.AppConfig.Policy,
 	})
 	if err != nil {
-		log.Printf("wrong rego policy (%s)\n", err)
+		log.Error().Err(err).Msg("wrong rego policy")
 	}
 
 }
@@ -61,10 +61,11 @@ const (
 type Input map[string]interface{}
 
 func checkAuthorization(authorizationHeader string) (string, bool) {
-
+    log.Debug().Msg("Check authorization")
 	parts := strings.Split(authorizationHeader, " ")
 	if len(parts) < 2 {
-		return "", false
+	   log.Debug().Msg("No authorizationHeader")
+	   return "", false
 	}
 	if strings.ToLower(parts[0]) == "bearer" {
 		if len(core.AppConfig.ApiKeys) > 0 {
@@ -102,6 +103,7 @@ func checkAuthorization(authorizationHeader string) (string, bool) {
 	}
 	user := tokenParts[0]
 	password := tokenParts[1]
+	log.Debug().Str("user",user).Str("password",password).Msg("Basic authentication found")
 	// Check staff user
 	if core.AppConfig.StaffUser != "" && user == core.AppConfig.StaffUser {
 		if password == core.AppConfig.StaffPassword {
@@ -186,9 +188,9 @@ func checkPolicy(c echo.Context) Action {
 	}
 
 	// extract input from request
-	authorization := req.Header.Get(core.AppConfig.AuthorizationHeader)
+	authorization := req.Header.Get("Authorization")
 	role, authorized := checkAuthorization(authorization)
-	if !authorized && core.AppConfig.OpaSvc == "" && core.AppConfig.Policy == "" && (core.AppConfig.ParticipantUser != "" || core.AppConfig.StaffUser != "") {
+	if !authorized && (core.AppConfig.OpaSvc != "" || core.AppConfig.Policy != "") && (core.AppConfig.ParticipantUser != "" || core.AppConfig.StaffUser != "") {
 		log.Debug().Str("authorization", authorization).Msg("Authorization failed")
 		return Authorize
 	}

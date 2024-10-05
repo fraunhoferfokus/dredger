@@ -1,7 +1,8 @@
 package generator
 
 import (
-	fs "dredger/fileUtils"
+	"errors"
+	"os"
 	"path/filepath"
 
 	"github.com/rs/zerolog/log"
@@ -13,18 +14,12 @@ func generatePolicy(conf GeneratorConfig) {
 	fileName := "policy.go"
 	filePath := filepath.Join(config.Path, MiddlewarePackage, fileName)
 	templateFile := "templates/middleware/policy.go.tmpl"
-	fs.GenerateFile(filePath)
-	createFileFromTemplate(filePath, templateFile, conf)
-
-	fileName = "authz.go"
-	filePath = filepath.Join(config.Path, MiddlewarePackage, fileName)
-	templateFile = "templates/middleware/authz.go.tmpl"
-	fs.GenerateFile(filePath)
 	createFileFromTemplate(filePath, templateFile, conf)
 
 	fileName = "authz.rego"
 	filePath = filepath.Join(config.Path, MiddlewarePackage, fileName)
 	templateFile = "templates/middleware/authz.rego.tmpl"
-	fs.GenerateFile(filePath)
-	createFileFromTemplate(filePath, templateFile, conf)
+	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+		createFileFromTemplate(filePath, templateFile, conf)
+	}
 }
