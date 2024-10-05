@@ -21,7 +21,6 @@ type Config struct {
 	Title               string
 	PortNb              string   `default:"8080"` // Port is a reserved name in k8s
 	ApiKeys             []string `default:"" split_words:"true"`
-	AuthorizationHeader string   `default:"" split_words:"true"`
 	SessionKey          string   `default:"" split_words:"true"`
 	Host                string   `ignored:"true"`
 	User                string
