@@ -103,6 +103,26 @@ allowAccess {
 }
 
 allowEntrypoint {
+    getMethod
+    input.path == "/infoz"
+}
+
+allowAccess {
+	getMethod
+    input.path == "/infoz"
+}
+
+allowEntrypoint {
+    getMethod
+    input.path == "/robots.txt"
+}
+
+allowAccess {
+	getMethod
+    input.path == "/robots.txt"
+}
+
+allowEntrypoint {
     user
 #	getMethod
 #   input.path == "/func"

@@ -1,1 +1,23 @@
+{{ upper ( snakecase .ModuleName ) }}_DEBUG   enable debug level for logging
+{{ upper ( snakecase .ModuleName ) }}_TRACING   enable tracing level for logging
+{{ upper ( snakecase .ModuleName ) }}_NAME   set the name of the instance of the service
+{{ upper ( snakecase .ModuleName ) }}_TITLE   set the title in the web page
 {{ upper ( snakecase .ModuleName ) }}_PORT_NB   the local port of the web service (default=8080)
+{{ upper ( snakecase .ModuleName ) }}_APIKEYS   space separated list of valid API keys
+{{ upper ( snakecase .ModuleName ) }}_SESSIONKEY
+{{ upper ( snakecase .ModuleName ) }}_POLICY   OPA policy for access control
+{{ upper ( snakecase .ModuleName ) }}_OPASVC   OPA service port to get the OPA policy for access control
+{{ upper ( snakecase .ModuleName ) }}_REALM   Basic authentication realm
+{{ upper ( snakecase .ModuleName ) }}_STAFFUSER   username of the administrator
+{{ upper ( snakecase .ModuleName ) }}_STAFFPASSWORD   password of the administrator
+{{ upper ( snakecase .ModuleName ) }}_PARTICIPANTUSER   username of the user
+{{ upper ( snakecase .ModuleName ) }}_PARTICIPANTPASSWORD   password of the user
+{{ upper ( snakecase .ModuleName ) }}_CERTPEM   certificate for TLS (HTTPS) communication
+{{ upper ( snakecase .ModuleName ) }}_KEYPEM   key for TLS (HTTPS) communication
+{{ upper ( snakecase .ModuleName ) }}_LOGFILE   filename of the logging file
+{{ upper ( snakecase .ModuleName ) }}_LANGUAGE
+{{ upper ( snakecase .ModuleName ) }}_LANGUAGES
+{{ upper ( snakecase .ModuleName ) }}_USESSE   enable support for _server side event_ communication (default=false)
+{{ upper ( snakecase .ModuleName ) }}_PROGRESSDURATION   default duration of the progress bar (default=100ms)
+{{ upper ( snakecase .ModuleName ) }}_RAPIDOCDOC   enable Rapidoc for the OpenAPI viewer (default=false)
+{{ upper ( snakecase .ModuleName ) }}_ELEMENTSDOC   enable Elements for the OpenAPI viewer (default=false)
