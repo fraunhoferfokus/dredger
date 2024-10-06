@@ -14,8 +14,8 @@ import (
 
 type Config struct {
 	Debug               bool     `default:"false"`
-	Version             bool     `default:"false"`
-	Service             string   `default:"{{.ModuleName}}"`
+	Version             bool     `default:"false" ignored:"true"`
+	Service             string   `default:"{{.ModuleName}}" ignored:"true"`
 	Sid                 string   `ignored:"true"`
 	Name                string   `default:"{{.ModuleName}}"`
 	Title               string
