@@ -190,15 +190,15 @@ func checkPolicy(c echo.Context) Action {
 	// extract input from request
 	authorization := req.Header.Get("Authorization")
 	role, authorized := checkAuthorization(authorization)
-	if !authorized && (core.AppConfig.OpaSvc != "" || core.AppConfig.Policy != "") && (core.AppConfig.ParticipantUser != "" || core.AppConfig.StaffUser != "") {
+	if !authorized && core.AppConfig.OpaSvc == "" && core.AppConfig.Policy == "" && (core.AppConfig.ParticipantUser != "" || core.AppConfig.StaffUser != "") {
 		log.Debug().Str("authorization", authorization).Msg("Authorization failed")
 		return Authorize
 	}
 
-	return checkAccess(req, role)
+	return checkAccess(req, role, authorized)
 }
 
-func checkAccess(req *http.Request, role string) Action {
+func checkAccess(req *http.Request, role string, authorized bool) Action {
 	input := Input{
 		"url":      req.URL.String(),
 		"method":   req.Method,
@@ -220,7 +220,7 @@ func checkAccess(req *http.Request, role string) Action {
 	}
 	if !ok {
 		log.Warn().Str("role", role).Any("url", input["url"]).Any("method", input["method"]).Any("path", input["path"]).Any("trace", input["trace"]).Any("session", input["session"]).Any("host", input["host"]).Any("who", input["who"]).Msg("Access denied")
-		if checkEntryPoint(req) == Deny {
+		if checkEntryPoint(req) == Deny && authorized {
 			return NotFound
 		}
 		return Authorize

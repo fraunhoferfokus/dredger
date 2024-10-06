@@ -94,6 +94,8 @@ func GenerateServer(conf GeneratorConfig) error {
 
 	generateJustfile(conf, serverConf)
 
+	generateReadme(conf, serverConf)
+
 	generateDockerfile(conf, serverConf)
 
 	log.Info().Msg("Created all files successfully.")

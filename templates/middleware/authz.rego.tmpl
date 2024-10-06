@@ -83,25 +83,45 @@ default allowAccess = false
 #
 
 allowEntrypoint {
+    getMethod
+    input.path == "/livez"
+}
+
+allowAccess {
+	getMethod
+    input.path == "/livez"
+}
+
+allowEntrypoint {
+    getMethod
+    input.path == "/readyz"
+}
+
+allowAccess {
+	getMethod
+    input.path == "/readyz"
+}
+
+allowEntrypoint {
     user
 #	getMethod
-#   input.path == "/livez"
+#   input.path == "/func"
 }
 
 allowAccess {
 	user
 #	getMethod
-#   input.path == "/livez"
+#   input.path == "/func"
 }
 
 #allowEntrypoint {
-#   staffuser
+#   staff
 #	postMethod
 #   input.path == "/admin"
 #}
 
 #allowAccess {
-#   staffuser
+#   staff
 #	postMethod
 #   input.path == "/admin"
 #}

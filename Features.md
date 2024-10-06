@@ -48,7 +48,7 @@ To restrict the web crawlers a handler for _robots.txt_ is generated and adaptab
 
 ### Doc
 
-The comprehensive documentation of a service should be contained in the OpenAPI specification. Therefor, the OpenAPI documentation will also be embedded with the service and online available at runtime (_/doc_).
+The comprehensive documentation of a service should be contained in the OpenAPI specification. Therefor, the OpenAPI documentation will also be embedded with the service and online available at runtime (_/doc_). Two viewers (_rapidoc_ and _Stoplight elements_) are available and configurable.
 
 ### Testing
 
