@@ -62,6 +62,13 @@ type Input map[string]interface{}
 
 func checkAuthorization(authorizationHeader string) (string, bool) {
     log.Debug().Msg("Check authorization")
+
+	// If no user and no staff is configured, the role user is authorized by default
+	if core.AppConfig.ParticipantUser == "" && core.AppConfig.StaffUser == "" {
+		log.Debug().Msg("assign user")
+		return "user", true
+	}
+
 	parts := strings.Split(authorizationHeader, " ")
 	if len(parts) < 2 {
 	   log.Debug().Msg("No authorizationHeader")
