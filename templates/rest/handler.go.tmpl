@@ -69,4 +69,7 @@ func NewHandler(e *echo.Echo){
         {{- end }}
 
     {{- end }}
+
+    // Call handler extensions
+    newHandlerExt(e)
 }
