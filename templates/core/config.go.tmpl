@@ -13,6 +13,7 @@ import (
 )
 
 type Config struct {
+    Args                []string `ignored:"true"`
 	Debug               bool     `default:"false"`
 	Version             bool     `default:"false" ignored:"true"`
 	Service             string   `default:"{{.ModuleName}}" ignored:"true"`
@@ -52,17 +53,21 @@ func init() {
 	AppConfig.Service = service
 	AppConfig.Host, _ = os.Hostname()
 	AppConfig.User = os.Getenv("USER")
-	sid, _ := uuid.NewUUID()
-	AppConfig.Sid = sid.String()
+	AppConfig.Sid = uuid.NewString()
 
 	// parse command line arguments
-	flag.StringVar(&AppConfig.PortNb, "port", AppConfig.PortNb, "AppConfig.PortNb to listen by the server")
-	flag.StringVar(&AppConfig.PortNb, "p", AppConfig.PortNb, "AppConfig.PortNb to listen by the server")
+	flag.StringVar(&AppConfig.PortNb, "port", AppConfig.PortNb, "Port number to listen by the server")
+	flag.StringVar(&AppConfig.PortNb, "p", AppConfig.PortNb, "Port number to listen by the server")
 	flag.StringVar(&AppConfig.Name, "name", AppConfig.Name, "Name of the service")
 	flag.StringVar(&AppConfig.Name, "n", AppConfig.Name, "Name of the service")
 	flag.BoolVar(&AppConfig.Debug, "d", AppConfig.Debug, "enable debugging level for logging")
 	flag.BoolVar(&AppConfig.Version, "V", AppConfig.Version, "print version")
+
+    // extend custom flags
+	initFlags()
+
     flag.Parse()
+    AppConfig.Args = flag.Args()
 
 	log.Debug().Str("name", AppConfig.Name).Any("environment", os.Environ()).Msg("Got environment")
 
@@ -85,10 +90,7 @@ func init() {
 		log.Fatal().Err(err).Str("name", stringy.New(AppConfig.Name).SnakeCase("?", "").ToUpper()).Msg("Couldn't read environment settings")
 	}
 
-    // extend custom flags
-	initExt()
-
-	flag.Parse()
+    flag.Parse()
 
     //  print app version
 	if AppConfig.Version {
@@ -103,4 +105,7 @@ func init() {
 
 	log.Debug().Str("name", AppConfig.Name).Any("config", AppConfig).Msg("Got configuration")
 	AppInfo.Name = AppConfig.Name
+
+	// extend initialisation
+	initExt()
 }

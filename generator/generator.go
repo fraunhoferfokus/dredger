@@ -3,6 +3,7 @@ package generator
 import (
 	"bufio"
 	"embed"
+	"errors"
 	"net/http"
 	"os"
 	"regexp"
@@ -158,6 +159,13 @@ func generateServerTemplate(spec *openapi3.T, generatorConf GeneratorConfig) (se
 
 	log.Debug().Msg("Creating server at port " + strconv.Itoa(int(conf.Port)) + "...")
 	createFileFromTemplate(filePath, templateFile, conf)
+
+	fileName = "mainSvc.go"
+	filePath = filepath.Join(config.Path, fileName)
+	templateFile = "templates/mainSvc.go.tmpl"
+	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+		createFileFromTemplate(filePath, templateFile, conf)
+	}
 
 	return conf
 }

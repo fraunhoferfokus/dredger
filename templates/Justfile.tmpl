@@ -3,31 +3,40 @@ set dotenv-load
 program := `basename $PWD`
 port := env_var_or_default("{{ upper ( snakecase .ModuleName ) }}_PORT_NB", "9090")
 
+# Show this help page
 help:
     just -l
 
+# Update code of templ files
 templ:
     templ generate web/pages/*.templ
 
+# Build service
 build: templ
 	go mod tidy
 	go build
 
+# Install service locally
 install: build
 	go install
 
+# Run service locally
 run: build
     go run . -p {{"{{port}}"}}
 
+# Run service locally in debug mode
 debug: build
     go run . -d -p {{"{{port}}"}}
 
+# Generate code from OpenAPI.yaml
 generate:
 	dredger generate OpenAPI.yaml -o . -f -n {{ .ModuleName }}
 
+# Build SBOM files
 sbom-build:
 	GOARCH=amd64 GOOS=linux cyclonedx-gomod mod -licenses -json -output sbom.json
 
+# Upload SBOM files
 sbom: sbom-build
 	curl -X "POST" "http://dependency-track-api.${DEPENDENCY_TRACK_SERVER}/api/v1/bom" \
 		-H "Content-Type:multipart/form-data" \
@@ -43,9 +52,11 @@ docker-build:
 docker-run:
 	docker run --rm -p {{ .Port }}:{{ .Port }} --env-file=.env {{ .ModuleName }}
 
+# Install required tools
 required:
     go install github.com/a-h/templ/cmd/templ@latest
 
+# Update all required libraries
 update: required
     go get -u
     go mod tidy
@@ -54,12 +65,12 @@ update: required
 todo:
     rg -ip "to.?do:"
 
-# push to git
+# Push to git
 push:
     git add .
     git commit -a
     git push
 
-# changes for git
+# Show changes for git
 status:
     git status -s

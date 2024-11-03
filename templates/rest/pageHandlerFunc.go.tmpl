@@ -27,7 +27,9 @@ func {{ .OperationID }}(c echo.Context) error {
 	ctx, span := tracing.Tracer.Start(ctx, "logMessage")
 	defer span.End()
 
-	log.Info().Str("traceId", span.SpanContext().TraceID().String()).Str("spanId", span.SpanContext().SpanID().String()).Str("path", "/").Msg("{{ .OperationID }}")
+	traceId := span.SpanContext().TraceID().String()
+	spanId := span.SpanContext().SpanID().String()
+	log.Info().Str("traceId", traceId).Str("spanId", spanId).Str("path", "/").Msg("{{ .OperationID }}")
 
 	session, err := getSession(c)
 	if err != nil {
@@ -41,7 +43,7 @@ func {{ .OperationID }}(c echo.Context) error {
         contentType := c.Request().Header.Get("Content-Type")
         body, err := io.ReadAll(c.Request().Body)
         if err != nil {
-            log.Error().Err(err).Str("traceId", span.SpanContext().TraceID().String()).Str("spanId", span.SpanContext().SpanID().String()).Msg("Can't read body")
+            log.Error().Err(err).Str("traceId", traceId).Str("spanId", spanId).Msg("Can't read body")
             return c.String(http.StatusBadRequest, "Can't read body")
         }
 
@@ -53,23 +55,23 @@ func {{ .OperationID }}(c echo.Context) error {
         if contentType == "application/json" {
             err := json.Unmarshal(body, &content)
             if err != nil {
-                log.Error().Err(err).Str("traceId", span.SpanContext().TraceID().String()).Str("spanId", span.SpanContext().SpanID().String()).Msg("Could not unmarshall JSON input")
+                log.Error().Err(err).Str("traceId", traceId).Str("spanId", spanId).Msg("Could not unmarshall JSON input")
                 return c.String(http.StatusBadRequest, "Could not unmarshall JSON input")
             }
         } else if contentType == "application/yaml" {
             err := yaml.Unmarshal(body, &content)
             if err != nil {
-                log.Error().Err(err).Str("traceId", span.SpanContext().TraceID().String()).Str("spanId", span.SpanContext().SpanID().String()).Msg("Could not unmarshall YAML input")
+                log.Error().Err(err).Str("traceId", traceId).Str("spanId", spanId).Msg("Could not unmarshall YAML input")
                 return c.String(http.StatusBadRequest, "Could not unmarshall YAML input")
             }
         } else if contentType == "application/xml" {
             err := xml.Unmarshal(body, &content)
             if err != nil {
-                log.Error().Err(err).Str("traceId", span.SpanContext().TraceID().String()).Str("spanId", span.SpanContext().SpanID().String()).Msg("Could not unmarshall XML input")
+                log.Error().Err(err).Str("traceId", traceId).Str("spanId", spanId).Msg("Could not unmarshall XML input")
                 return c.String(http.StatusBadRequest, "Could not unmarshall XML input")
             }
         } else {
-            log.Error().Str("content type", contentType).Str("traceId", span.SpanContext().TraceID().String()).Str("spanId", span.SpanContext().SpanID().String()).Msg("Wrong content type")
+            log.Error().Str("content type", contentType).Str("traceId", traceId).Str("spanId", spanId).Msg("Wrong content type")
             return c.String(http.StatusUnsupportedMediaType, "Wrong content type")
         }
 
