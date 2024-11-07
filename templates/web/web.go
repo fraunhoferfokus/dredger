@@ -15,3 +15,6 @@ var Images embed.FS
 
 //go:embed public
 var Public embed.FS
+
+//go:embed doc
+var Doc embed.FS

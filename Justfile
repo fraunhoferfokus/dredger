@@ -53,10 +53,9 @@ download-bootstrap:
     curl -o templates/web/css/bootstrap-icons-1.11.3.zip -L https://github.com/twbs/icons/releases/download/v1.11.3/bootstrap-icons-1.11.3.zip
     curl -o templates/web/js/bootstrap.bundle.min.js -L https://cdn.jsdelivr.net/npm/bootstrap@latest/dist/js/bootstrap.bundle.min.js
 download-style: download-bootstrap
-    curl -o templates/web/js/htmx.min.js -L https://unpkg.com/htmx.org@latest
-    curl -o templates/web/js/htmx-sse.js -L https://unpkg.com/htmx.org/dist/ext/sse.js
+    curl -o templates/web/js/htmx.min.js -L https://unpkg.com/htmx.org@2/dist/htmx.min.js
     curl -o templates/web/js/hyperscript.js -L https://unpkg.com/hyperscript.org@latest
-    curl -o templates/web/js/sse.js -L https://unpkg.com/htmx.org/dist/ext/sse.js
+    curl -o templates/web/js/sse.js -L https://unpkg.com/htmx-ext-sse@2/sse.js
     curl -o templates/web/js/rapidoc-min.js -L https://unpkg.com/rapidoc/dist/rapidoc-min.js
     curl -o templates/web/css/simple.min.css -L https://unpkg.com/simpledotcss/simple.min.css
     curl -o templates/web/css/pico.min.css -L https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css

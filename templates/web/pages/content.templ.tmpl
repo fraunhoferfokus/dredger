@@ -7,7 +7,7 @@ import (
 // the main content of the index page
 templ Content(lzr *i18n.Localizer) {
     // enable the lines, if you want to use events for notices and a progress bar
-    // <div hx-ext="sse" sse-connect="events?stream=notice" sse-swap="Notice"></div>
-    // <div hx-ext="sse" sse-connect="events?stream=progress" sse-swap="Progress"></div>
+    // <div hx-ext="sse" sse-connect="/events?stream=progress" sse-swap="Notice"></div>
+    // <div hx-ext="sse" sse-connect="/events?stream=progress" sse-swap="Progress"></div>
     Hello dredger
 }
