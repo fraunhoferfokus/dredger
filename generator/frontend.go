@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"reflect"
 	"slices"
@@ -35,6 +36,7 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	pagesPath := filepath.Join(frontendPath, "pages")
 	localesPath := filepath.Join(corePath, "locales")
 	publicPath := filepath.Join(frontendPath, "public")
+	docPath := filepath.Join(frontendPath, "doc")
 
 	fs.GenerateFolder(frontendPath)
 	fs.GenerateFolder(javascriptPath)
@@ -44,13 +46,13 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	fs.GenerateFolder(pagesPath)
 	fs.GenerateFolder(localesPath)
 	fs.GenerateFolder(publicPath)
+	fs.GenerateFolder(docPath)
 
 	// files in root directory
 	createFileFromTemplate(filepath.Join(frontendPath, "README.md"), "templates/web/README.md.tmpl", conf)
 
 	// files in javascript directory
 	fs.CopyWebFile("web/js", javascriptPath, "bootstrap.bundle.min.js", true)
-	fs.CopyWebFile("web/js", javascriptPath, "htmx-sse.js", true)
 	fs.CopyWebFile("web/js", javascriptPath, "htmx.min.js", true)
 	fs.CopyWebFile("web/js", javascriptPath, "hyperscript.js", true)
 	fs.CopyWebFile("web/js", javascriptPath, "sse.js", true)
@@ -110,7 +112,10 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	}
 
 	// files in public directory
-	fs.CopyWebFile("web", publicPath, "README-public.md", false)
+	fs.CopyWebFile(path.Join("web", "public"), publicPath, "README.md", false)
+
+	// files in doc directory
+	fs.CopyWebFile(path.Join("web", "doc"), docPath, "README.md", false)
 
 	// support for events
 	if spec.Paths.Find("/events") != nil && spec.Paths.Find("/events").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/events").Operations()[http.MethodGet].Tags, "builtin") {

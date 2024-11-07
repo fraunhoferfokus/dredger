@@ -19,7 +19,9 @@ func GetContent(c echo.Context) error {
 	ctx, span := tracing.Tracer.Start(ctx, "logMessage")
 	defer span.End()
 
-	log.Info().Str("traceId", span.SpanContext().TraceID().String()).Str("spanId", span.SpanContext().SpanID().String()).Str("path", "/content.html").Msg("GetContent")
+    traceId := span.SpanContext().TraceID().String()
+    spanId := span.SpanContext().SpanID().String()
+	log.Info().Str("traceId", traceId).Str("spanId", spanId).Str("path", "/content.html").Msg("GetContent")
 
 	// session, err := getSession(c)
 	// if err != nil {
