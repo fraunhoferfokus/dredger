@@ -53,7 +53,7 @@ func init() {
 	AppConfig.Service = service
 	AppConfig.Host, _ = os.Hostname()
 	AppConfig.User = os.Getenv("USER")
-	AppConfig.Sid = uuid.NewString()
+	AppConfig.Sid = uuid.Must(uuid.NewV7).String()
 
 	// parse command line arguments
 	flag.StringVar(&AppConfig.PortNb, "port", AppConfig.PortNb, "Port number to listen by the server")
