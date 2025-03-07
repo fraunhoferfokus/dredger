@@ -14,7 +14,7 @@
 {{ upper ( snakecase .ModuleName ) }}_PARTICIPANT_PASSWORD   password of the user
 {{ upper ( snakecase .ModuleName ) }}_CERT_PEM   certificate for TLS (HTTPS) communication
 {{ upper ( snakecase .ModuleName ) }}_KEY_PEM   key for TLS (HTTPS) communication
-{{ upper ( snakecase .ModuleName ) }}_LOGFILE   filename of the logging file
+{{ upper ( snakecase .ModuleName ) }}_LOG_FILE   filename of the logging file or if it is "-" log all messages to the console
 {{ upper ( snakecase .ModuleName ) }}_LOKI_SERVER   URL of the Loki Server, e.g. the Grafana Cloud
 {{ upper ( snakecase .ModuleName ) }}_LOKI_USER   user name as defined for the data source as basic authentication
 {{ upper ( snakecase .ModuleName ) }}_LOKI_PASSWORD   password as defined for the data source as basic authentication

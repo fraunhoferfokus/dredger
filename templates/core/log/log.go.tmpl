@@ -38,19 +38,21 @@ func Setup(name string, service string, logFilename string, lokiServer string, l
 		Str("name", name).
 		Logger()
 	if logFilename != "" || lokiServer != "" {
-		log.AddLoggerWarn(&console)
-	} else {
-		if debug {
-			log.AddLoggerDebug(&console)
+	    if debug {
+	       log.AddLoggerDebug(&console)
+	    } else if logFilename == "-" {
+	       log.AddLoggerInfo(&console)
 		} else {
-			log.AddLoggerInfo(&console)
-		}
+		   log.AddLoggerWarn(&console)
+	    }
+	} else {
+	   log.AddLoggerInfo(&console)
 	}
 
 	// Add rotating file logger optionally
 	//
-	if logFilename != "" {
-		println("Add file logger")
+    if logFilename != "-" && logFilename != "" {
+	   println("Add file logger")
 		logFile, err := rotatelogs.New(
 			logFilename+".%Y%m%d%H%M",
 			rotatelogs.WithLinkName(logFilename),
