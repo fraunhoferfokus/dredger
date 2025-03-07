@@ -19,7 +19,7 @@ func init() {
 func getSession(c echo.Context) (*sessions.Session, error) {
 	session, err := sessionStore.Get(c.Request(), "session")
 	if err != nil || session.IsNew {
-		id := uuid.Must(uuid.NewV7).String()
+		id := uuid.Must(uuid.NewV7()).String()
 		log.Info().Str("id",id).Msg("New session")
 		session.Values["id"] = id
 		//

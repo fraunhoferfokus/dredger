@@ -22,6 +22,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/echo-contrib/echoprometheus"
 	// "go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 )
 
@@ -29,6 +30,8 @@ import (
 var embeddedFS embed.FS
 
 func main() {
+	log.Setup(core.AppConfig.Name, core.Service, core.AppConfig.LogFile, core.AppConfig.LokiServer, core.AppConfig.LokiKey, core.AppConfig.LokiLabels, core.AppConfig.LokiBuffersize, core.AppConfig.LokiMaxDelay, core.AppConfig.Debug)
+
 	// init Opentelemetry
     if core.AppConfig.Tracing {
     	tp, err := tracing.InitTracer()
@@ -53,11 +56,14 @@ func main() {
 
 	// start echo server
 	e := echo.New()
+	e.Use(echoprometheus.NewMiddleware("myapp")) // adds middleware to gather metrics
+
 	e.Use(echoMiddleware.CORS())
-	e.Use(echoMiddleware.Logger())
+	e.Use(middleware.LoggerHandler)
 	// e.Use(otelecho.Middleware(core.AppConfig.Sid))
 	e.Use(middleware.PolicyHandler) // Policy Enforcement Point to check access
 
+	e.GET("/metrics", echoprometheus.NewHandler()) // adds route to serve gathered metrics
 	rest.NewHandler(e)
 
 	{{- if .AddFrontend }}
