@@ -59,8 +59,8 @@ func NewHandler(e *echo.Echo){
 
     {{- range .Paths }}
         {{$path := .Path}}
-        // Operations for: "{{ $path }}"
         {{- range .Operations }}
+            // Operations for: "{{ $path }}"
             {{- if .AddAuth }}
                 g.{{ .Method }}("{{ $path }}", {{ .OperationID }}, middleware.Authz)
             {{- else }}
