@@ -72,7 +72,7 @@ When a distributed system doesn't work corrrectly, you have to find the origin o
 
 ### Logging
 
-The generated code supports logging and tracing. The logging is based on the zerolog interface. The log messages supports the [12 factor app](https://12factor.net/) principles to log messages for the _system administration_ and also direct logging to the _application support_ using log forwarders. Optionally, debug logging can be enabled also on the command line.
+The generated code supports logging and tracing. The logging is based on the zerolog interface. The log messages supports the [12 factor app](https://12factor.net/) principles to log messages for the _system administration_ and also direct logging to the _application support_ using log files and log forwarders. Also, logs could be directly send to Grafana Loki using the Loki API. Optionally, debug logging can be enabled also on the command line.
 
 ### Tracing and metrics
 

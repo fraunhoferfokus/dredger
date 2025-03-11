@@ -89,6 +89,7 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	if spec.Paths.Find("/index.html") != nil && spec.Paths.Find("/index.html").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/index.html").Operations()[http.MethodGet].Tags, "builtin") {
 		if _, err := os.Stat(filepath.Join(pagesPath, "index.templ")); errors.Is(err, os.ErrNotExist) {
 			createFileFromTemplate(filepath.Join(pagesPath, "index.templ"), "templates/web/pages/index.templ.tmpl", conf)
+			createFileFromTemplate(filepath.Join(pagesPath, "content.templ"), "templates/web/pages/content.templ.tmpl", conf)
 		}
 		op := openapi3.NewOperation()
 		op.AddResponse(http.StatusOK, createOAPIResponse("The service delivers index page"))

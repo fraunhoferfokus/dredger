@@ -27,6 +27,7 @@ const (
 	CorePkg           = "core"
 	LogPkg            = "core/log"
 	LoggerPkg         = "core/log/logger"
+	LokiPkg           = "core/log/loki"
 	TracingPkg        = "core/tracing"
 	PagesPkg          = "web/pages"
 	RestPkg           = "rest"

@@ -14,10 +14,17 @@
 {{ upper ( snakecase .ModuleName ) }}_PARTICIPANT_PASSWORD   password of the user
 {{ upper ( snakecase .ModuleName ) }}_CERT_PEM   certificate for TLS (HTTPS) communication
 {{ upper ( snakecase .ModuleName ) }}_KEY_PEM   key for TLS (HTTPS) communication
-{{ upper ( snakecase .ModuleName ) }}_LOGFILE   filename of the logging file
+{{ upper ( snakecase .ModuleName ) }}_LOG_FILE   filename of the logging file or if it is "-" log all messages to the console
+{{ upper ( snakecase .ModuleName ) }}_LOKI_SERVER   URL of the Loki Server, e.g. the Grafana Cloud
+{{ upper ( snakecase .ModuleName ) }}_LOKI_USER   user name as defined for the data source as basic authentication
+{{ upper ( snakecase .ModuleName ) }}_LOKI_PASSWORD   password as defined for the data source as basic authentication
+{{ upper ( snakecase .ModuleName ) }}_LOKI_KEY   key/token as defined for the data source
+{{ upper ( snakecase .ModuleName ) }}_LABELS   set of labels for Grafana Loki, like "app:myapp,tenant:mycustomer"
+{{ upper ( snakecase .ModuleName ) }}_BUFFERSIZE   number of log lines cached before sending to Grafana Loki
+{{ upper ( snakecase .ModuleName ) }}_MAX_DELAY   max time in seconds after which logs are flushed from buffer
 {{ upper ( snakecase .ModuleName ) }}_LANGUAGE
 {{ upper ( snakecase .ModuleName ) }}_LANGUAGES
-{{ upper ( snakecase .ModuleName ) }}_USESSE   enable support for _server side event_ communication (default=false)
+{{ upper ( snakecase .ModuleName ) }}_USE_SSE   enable support for _server side event_ communication (default=false)
 {{ upper ( snakecase .ModuleName ) }}_PROGRESS_DURATION   default duration of the progress bar (default=100ms)
 {{ upper ( snakecase .ModuleName ) }}_RAPIDOC_DOC   enable Rapidoc for the OpenAPI viewer (default=false)
 {{ upper ( snakecase .ModuleName ) }}_ELEMENTS_DOC   enable Elements for the OpenAPI viewer (default=false)
