@@ -67,8 +67,12 @@ certificate:
 todo:
     rg -ip "to.?do:"
 
+# Check for passwords
+gitleaks:
+    gitleaks --no-banner -l warn -v dir .
+
 # push to git
-push:
+push: gitleaks
     git add .
     git commit -a
     git push

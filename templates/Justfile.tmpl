@@ -65,8 +65,12 @@ update: required
 todo:
     rg -ip "to.?do:"
 
+# Check for passwords
+gitleaks:
+    gitleaks --no-banner -l warn -v dir .
+
 # Push to git
-push:
+push: gitleaks
     git add .
     git commit -a
     git push

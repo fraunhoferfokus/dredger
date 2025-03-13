@@ -22,6 +22,10 @@ Godog (Only for BDD testing. You can find an installation guide here [godog](htt
 
 Prerequisite for HTTP/2 is a TLS connection, to generate a quick localhost certificate use either openssl or `go run $GOROOT/src/crypto/tls/generate_cert.go --host localhost`.
 
+[gitleaks](https://github.com/gitleaks/gitleaks)
+
+[just](https://github.com/casey/just)
+
 # Usage
 
 _dredger_ is a command line tool:
