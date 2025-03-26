@@ -139,7 +139,7 @@ func generateServerTemplate(spec *openapi3.T, generatorConf GeneratorConfig) (se
 				portStr = portSpec.Enum[0]
 			}
 
-			port, err := strconv.Atoi(portStr)
+			port, err := strconv.ParseInt(portStr, 10, 16)
 			if err != nil {
 				log.Warn().Msg("Failed to convert port, using" + strDefaultPort + "instead.")
 			} else {
