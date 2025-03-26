@@ -144,7 +144,7 @@ func getServerPort(spec *openapi3.T) (port int16) {
 				portStr = portSpec.Enum[0]
 			}
 
-			port, err := strconv.Atoi(portStr)
+			port, err := strconv.ParseInt(portStr, 10, 16)
 			if err != nil {
 				log.Warn().Msg("Failed to convert port, using 8080 instead.")
 				return 8080
