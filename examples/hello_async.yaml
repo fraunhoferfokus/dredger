@@ -1,0 +1,15 @@
+asyncapi: 2.6.0
+
+info:
+  title: HelloEvent
+  version: "1.0.0"
+
+channels:
+  hello:
+    subscribe:
+      message:
+        payload:
+          type: object
+          properties:
+            greeting:
+              type: string
