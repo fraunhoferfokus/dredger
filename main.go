@@ -2,7 +2,7 @@ package main
 
 import (
 	cli "dredger/cli"
-	generator "dredger/generator"
+	generator "dredger/generator/openapi"
 
 	"embed"
 	"os"

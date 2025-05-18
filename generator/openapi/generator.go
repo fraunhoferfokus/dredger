@@ -15,8 +15,8 @@ import (
 	"strconv"
 
 	fs "dredger/fileUtils"
-	oasparser  "dredger/parser" //NEU Alias für internes Paket
-
+	//asyncSpec "dredger/generator/asyncapi"
+	oasparser "dredger/parser" //NEU Alias für internes Paket
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/rs/zerolog/log"
 )
@@ -50,24 +50,9 @@ func GenerateServer(conf GeneratorConfig) error {
 		return err
 	}
 
-	    // --- AsyncAPI (optional) ---------------------------------
-    // Wir lesen nur ein – die spätere Code-Generierung folgt in generateAsyncServer()
-    var asyncDoc *oasparser.AsyncAPIDoc
-    if conf.AsyncAPIPath != "" {
-        asyncDoc, err = oasparser.ParseAsyncAPISpecFile(conf.AsyncAPIPath)
-        if err != nil {
-            log.Error().Err(err).Msg("Failed to load AsyncAPI spec file")
-            return err
-        }
-        _ = asyncDoc   // verhindert "declared and not used"
-    }
-    // ----------------------------------------------------------
-
-
-    // Init project config
-    config.Name = conf.ModuleName
-    config.Path = conf.OutputPath
-
+	// Init project config
+	config.Name = conf.ModuleName
+	config.Path = conf.OutputPath
 
 	// Init project config
 	config.Name = conf.ModuleName

@@ -3,7 +3,7 @@ package cli
 import (
 	extCmd "dredger/cmd"
 	"dredger/core"
-	gen "dredger/generator"
+	gen "dredger/generator/openapi"
 	"errors"
 	"os"
 	"path/filepath"
@@ -20,7 +20,7 @@ var (
 	databaseFlag bool
 	frontendFlag bool
 
-	asyncPath    string // NEU
+	asyncPath string // NEU
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -69,9 +69,9 @@ var generateCmd = &cobra.Command{
 
 		projectDestination := filepath.Join(projectPath)
 		config := gen.GeneratorConfig{
-			OpenAPIPath:  openAPIPath,
+			OpenAPIPath: openAPIPath,
 
-			AsyncAPIPath: asyncPath,// NEU
+			AsyncAPIPath: asyncPath, // NEU
 
 			OutputPath:   projectDestination,
 			ModuleName:   projectName,
@@ -131,12 +131,12 @@ func init() {
 	generateCmd.Flags().BoolVarP(&frontendFlag, "frontend", "f", false, "add frontend code")
 
 	generateCmd.Flags().StringVarP(
-		&asyncPath,        // Zeiger auf unsere neue Variable
-		"async",           // Langform: --async
-		"a",               // Kurzform : -a
-		"",                // Default  : leer = kein AsyncAPI-File
+		&asyncPath, // Zeiger auf unsere neue Variable
+		"async",    // Langform: --async
+		"a",        // Kurzform : -a
+		"",         // Default  : leer = kein AsyncAPI-File
 		"path to AsyncAPI spec file",
-    )
+	)
 
 	// add generate command
 	rootCmd.AddCommand(generateCmd)
