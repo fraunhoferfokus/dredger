@@ -14,6 +14,7 @@ import (
 	"os"
 
 	"github.com/ghodss/yaml"
+
 	//"github.com/rs/zerolog/internal/json"
 	"github.com/rs/zerolog/log"
 	"github.com/santhosh-tekuri/jsonschema/v6"

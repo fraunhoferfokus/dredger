@@ -7,6 +7,7 @@ import (
 	"embed"
 	"os"
 
+	async "github.com/lerenn/asyncapi-codegen/pkg/asyncapi/parser"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -24,4 +25,16 @@ func main() {
 	generator.TmplFS = tmplFS
 
 	cli.Execute()
+
+	fileParams := async.FromFileParams{
+		Path:         "./examples/simple/asyncapiv3.json",
+		MajorVersion: 3,
+	}
+	spec, err := async.FromFile(fileParams)
+	if err != nil {
+		log.Err(err).Msg("Could not get spec from file")
+	}
+
+	spec.Process() //processes full spec
+
 }
