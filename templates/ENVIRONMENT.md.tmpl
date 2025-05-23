@@ -1,0 +1,30 @@
+{{ upper ( snakecase .ModuleName ) }}_DEBUG   enable debug level for logging
+{{ upper ( snakecase .ModuleName ) }}_TRACING   enable tracing level for logging
+{{ upper ( snakecase .ModuleName ) }}_NAME   set the name of the instance of the service
+{{ upper ( snakecase .ModuleName ) }}_TITLE   set the title in the web page
+{{ upper ( snakecase .ModuleName ) }}_PORT_NB   the local port of the web service (default=8080)
+{{ upper ( snakecase .ModuleName ) }}_API_KEYS   space separated list of valid API keys
+{{ upper ( snakecase .ModuleName ) }}_SESSION_KEY
+{{ upper ( snakecase .ModuleName ) }}_POLICY   OPA policy for access control
+{{ upper ( snakecase .ModuleName ) }}_OPASVC   OPA service port to get the OPA policy for access control
+{{ upper ( snakecase .ModuleName ) }}_REALM   Basic authentication realm
+{{ upper ( snakecase .ModuleName ) }}_STAFF_USER   username of the administrator
+{{ upper ( snakecase .ModuleName ) }}_STAFF_PASSWORD   password of the administrator
+{{ upper ( snakecase .ModuleName ) }}_PARTICIPANT_USER   username of the user
+{{ upper ( snakecase .ModuleName ) }}_PARTICIPANT_PASSWORD   password of the user
+{{ upper ( snakecase .ModuleName ) }}_CERT_PEM   certificate for TLS (HTTPS) communication
+{{ upper ( snakecase .ModuleName ) }}_KEY_PEM   key for TLS (HTTPS) communication
+{{ upper ( snakecase .ModuleName ) }}_LOG_FILE   filename of the logging file or if it is "-" log all messages to the console
+{{ upper ( snakecase .ModuleName ) }}_LOKI_SERVER   URL of the Loki Server, e.g. the Grafana Cloud
+{{ upper ( snakecase .ModuleName ) }}_LOKI_USER   user name as defined for the data source as basic authentication
+{{ upper ( snakecase .ModuleName ) }}_LOKI_PASSWORD   password as defined for the data source as basic authentication
+{{ upper ( snakecase .ModuleName ) }}_LOKI_KEY   key/token as defined for the data source
+{{ upper ( snakecase .ModuleName ) }}_LABELS   set of labels for Grafana Loki, like "app:myapp,tenant:mycustomer"
+{{ upper ( snakecase .ModuleName ) }}_BUFFERSIZE   number of log lines cached before sending to Grafana Loki
+{{ upper ( snakecase .ModuleName ) }}_MAX_DELAY   max time in seconds after which logs are flushed from buffer
+{{ upper ( snakecase .ModuleName ) }}_LANGUAGE
+{{ upper ( snakecase .ModuleName ) }}_LANGUAGES
+{{ upper ( snakecase .ModuleName ) }}_USE_SSE   enable support for _server side event_ communication (default=false)
+{{ upper ( snakecase .ModuleName ) }}_PROGRESS_DURATION   default duration of the progress bar (default=100ms)
+{{ upper ( snakecase .ModuleName ) }}_RAPIDOC_DOC   enable Rapidoc for the OpenAPI viewer (default=false)
+{{ upper ( snakecase .ModuleName ) }}_ELEMENTS_DOC   enable Elements for the OpenAPI viewer (default=false)
