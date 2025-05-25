@@ -49,10 +49,10 @@ func main() {
 	}
 	specV3.Process() //processes full spec
 
-	fmt.Println("AsyncAPI Version:", specV3.Version)
-	fmt.Println("Channels:", specV3.Channels)
-	fmt.Println("Operations:", specV3.Operations)
-	fmt.Println("Message payloads in components: \n")
+	fmt.Println("AsyncAPI Version:		", specV3.Version)
+	fmt.Println("Channels:			", specV3.Channels)
+	fmt.Println("Operations:			", specV3.Operations)
+	fmt.Println("\nMessage payloads in components:")
 	msg, ok := specV3.Components.Messages["UserSignedUp"]
 
 	if !ok {
@@ -63,13 +63,13 @@ func main() {
 
 	if schema.Type == "object" {
 		for propName, prop := range schema.Properties {
-			fmt.Println("Property:", propName)
-			fmt.Println("  Type:", prop.Type)
-			fmt.Println("  Description:", prop.Description)
+			fmt.Println("Property:			", propName)
+			fmt.Println("  Type:				", prop.Type)
+			fmt.Println("  Description:			", prop.Description)
 		}
 	}
 
-	fmt.Println("Operations:", specV3.Operations)
+	fmt.Println("Operations:			", specV3.Operations)
 	ops, ok := specV3.Operations["onUserSignUp"]
 	if !ok {
 		log.Fatal().Msg("Message 'UserSignedUp' not found.")
@@ -91,7 +91,7 @@ func main() {
 			if !ok {
 				log.Fatal().Msg("Channel not found: " + channelName)
 			}
-			fmt.Println("Channel name:", channel.Name)
+			fmt.Println("Channel name:			", channel.Name)
 		}
 	}
 	//ops.Channel.Follow()
