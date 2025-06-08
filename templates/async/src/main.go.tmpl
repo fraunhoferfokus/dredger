@@ -1,0 +1,93 @@
+// {{ .ModuleName }} – Asynchrone Microservice-Stub generiert von dredger
+package main
+
+import (
+    "os"
+    "os/signal"
+    "syscall"
+    "context"
+
+    "github.com/rs/zerolog/log"
+    "github.com/rs/zerolog"
+    "github.com/yourorg/yourmodule/async/cli"
+    "github.com/yourorg/yourmodule/async/config"
+    "github.com/yourorg/yourmodule/async/handler"
+    "github.com/yourorg/yourmodule/async/utils"
+    "github.com/yourorg/yourmodule/async/tracing"
+    "github.com/yourorg/yourmodule/async/logger"
+    "github.com/nats-io/nats.go"
+    "github.com/nats-io/jetstream.go"
+)
+
+func main() {
+    // 1) ENV einlesen
+    cfg := config.LoadEnv()
+
+    // 2) Logger initialisieren
+    lvl := zerolog.InfoLevel
+    if l, err := zerolog.ParseLevel(cfg.LogLevel); err == nil {
+        lvl = l
+    }
+    logger.InitLogger(lvl)
+
+    // 3) Tracing (optional)
+    if cfg.TracingEnabled {
+        tracer := tracing.InitJaegerTracer("{{ .Title }}")
+        defer tracing.ShutdownTracer(tracer)
+    }
+
+    // 4) NATS-Verbindung
+    opts := []nats.Option{nats.Name("{{ .ModuleName }}")}
+    if cfg.NatsUsername != "" && cfg.NatsPassword != "" {
+        opts = append(opts,
+            nats.UserInfo(cfg.NatsUsername, cfg.NatsPassword),
+        )
+    }
+    nc, err := nats.Connect(cfg.NatsURL, opts...)
+    if err != nil {
+        log.Fatal().Err(err).Msg("Failed to connect to NATS")
+    }
+    defer nc.Drain()
+
+    // JetStream-Context für Stream-Bindings
+    js, _ := jetstream.New(nc)
+
+    // 5) Subscriber einrichten
+    {{- range .SubscribeChannels }}
+    {{- if .IsJetStream }}
+    {{ printf "jetSub%v" .UniqueID }}, err := js.Subscribe(
+        "{{ .Subject }}",
+        handler.Handle{{ .UniqueID }},
+        jetstream.Durable("{{ .UniqueID }}"),
+    )
+    if err != nil {
+        log.Fatal().Err(err).Msgf("JetStream subscribe %s failed", "{{ .Subject }}")
+    }
+    defer {{ printf "jetSub%v" .UniqueID }}.Unsubscribe()
+    {{- else }}
+    sub{{ .UniqueID }}, err := nc.Subscribe(
+        "{{ .Subject }}",
+        handler.Handle{{ .UniqueID }},
+    )
+    if err != nil {
+        log.Fatal().Err(err).Msgf("Subscribe %s failed", "{{ .Subject }}")
+    }
+    defer sub{{ .UniqueID }}.Unsubscribe()
+    {{- end }}
+    {{- end }}
+
+    // 6) CLI-Modus für Tests / Publish
+    go func() {
+        if err := cli.Run(nc); err != nil {
+            log.Error().Err(err).Msg("CLI error")
+        }
+    }()
+
+    // 7) Graceful Shutdown
+    sig := make(chan os.Signal, 1)
+    signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
+    <-sig
+
+    log.Info().Msg("Shutting down service")
+    nc.Close()
+}
