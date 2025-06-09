@@ -1,7 +1,6 @@
 package generator
 
 import (
-	"fmt"
 	"math"
 	"path/filepath"
 	"strings"
@@ -13,7 +12,7 @@ import (
 var IMPORT_UUID bool
 var IMPORT_TIME bool
 
-type ModelCOnfig struct {
+type ModelConfig struct {
 	Imports     ImportsConfig
 	SchemaDefs  map[string][]TypeDefinition
 	ProjectName string
@@ -28,7 +27,6 @@ type TypeDefinition struct {
 	Minimum     float64
 	Maximum     float64
 	MarshalName string
-	// only if Type is struct
 	NestedTypes []TypeDefinition
 }
 
@@ -45,15 +43,20 @@ func GenerateTypes(spec *openapi3.T, pConf ProjectConfig) {
 	if spec != nil && spec.Components != nil {
 		schemaDefs := generateTypeDefs(&spec.Components.Schemas)
 		imports := generateImports()
-		var conf ModelCOnfig
+		var conf ModelConfig
 		conf.Imports = imports
 		conf.ProjectName = pConf.Name
 
-		for schema, t := range schemaDefs {
-			conf.SchemaDefs = map[string][]TypeDefinition{schema: t}
+		for schema, defs := range schemaDefs {
+			conf.SchemaDefs = map[string][]TypeDefinition{schema: defs}
 			fileName := strings.ToLower(schema) + ".go"
 			filePath := filepath.Join(pConf.Path, EntitiesPkg, fileName)
-			templateFiles := []string{"templates/entities/entities.go.tmpl", "templates/entities/imports.tmpl", "templates/entities/structs.tmpl", "templates/entities/validate.tmpl"}
+			templateFiles := []string{
+				"templates/openapi/entities/entities.go.tmpl",
+				"templates/openapi/entities/imports.tmpl",
+				"templates/openapi/entities/structs.tmpl",
+				"templates/openapi/entities/validate.tmpl",
+			}
 			createFileFromTemplates(filePath, templateFiles, conf)
 		}
 	}
@@ -61,11 +64,10 @@ func GenerateTypes(spec *openapi3.T, pConf ProjectConfig) {
 
 func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 	schemaDefs := make(map[string][]TypeDefinition, len(*schemas))
-
-	for schemaName, ref := range *schemas {
-		fmt.Printf("%s: %#v\n\n", schemaName, ref.Value.Type)
+	for name, ref := range *schemas {
 		var goType string
-		if ref.Value.Type.Includes("number") {
+		switch {
+		case ref.Value.Type.Includes("number"):
 			switch ref.Value.Format {
 			case "float":
 				goType = "float32"
@@ -74,47 +76,14 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 			default:
 				goType = "float"
 			}
-			schemaDefs[schemaName] = []TypeDefinition{{
-				schemaName,
-				goType,
-				ref.Value.MinLength,
-				uintOrMax(ref.Value.MaxLength),
-				ref.Value.Pattern,
-				floatOrMin(ref.Value.Min),
-				floatOrMax(ref.Value.Max),
-				stringy.New(schemaName).LcFirst(),
-				[]TypeDefinition{},
-			}}
-		} else if ref.Value.Type.Includes("integer") {
+		case ref.Value.Type.Includes("integer"):
 			goType = "int"
 			if ref.Value.Format != "" {
 				goType = ref.Value.Format
 			}
-			schemaDefs[schemaName] = []TypeDefinition{{
-				schemaName,
-				goType,
-				ref.Value.MinLength,
-				uintOrMax(ref.Value.MaxLength),
-				ref.Value.Pattern,
-				floatOrMin(ref.Value.Min),
-				floatOrMax(ref.Value.Max),
-				stringy.New(schemaName).LcFirst(),
-				[]TypeDefinition{},
-			}}
-		} else if ref.Value.Type.Includes("boolean") {
+		case ref.Value.Type.Includes("boolean"):
 			goType = "bool"
-			schemaDefs[schemaName] = []TypeDefinition{{
-				schemaName,
-				goType,
-				ref.Value.MinLength,
-				uintOrMax(ref.Value.MaxLength),
-				ref.Value.Pattern,
-				floatOrMin(ref.Value.Min),
-				floatOrMax(ref.Value.Max),
-				stringy.New(schemaName).LcFirst(),
-				[]TypeDefinition{},
-			}}
-		} else if ref.Value.Type.Includes("string") {
+		case ref.Value.Type.Includes("string"):
 			switch ref.Value.Format {
 			case "binary":
 				goType = "[]byte"
@@ -127,34 +96,29 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 			default:
 				goType = "string"
 			}
-			schemaDefs[schemaName] = []TypeDefinition{{
-				schemaName,
-				goType,
-				ref.Value.MinLength,
-				uintOrMax(ref.Value.MaxLength),
-				ref.Value.Pattern,
-				floatOrMin(ref.Value.Min),
-				floatOrMax(ref.Value.Max),
-				stringy.New(schemaName).LcFirst(),
-				[]TypeDefinition{},
-			}}
-		} else if ref.Value.Type.Includes("array") {
+		case ref.Value.Type.Includes("array"):
 			items, _ := toGoType(ref.Value.Items)
 			goType = "[]" + items
-			schemaDefs[schemaName] = []TypeDefinition{{
-				schemaName,
-				goType,
-				ref.Value.MinLength,
-				uintOrMax(ref.Value.MaxLength),
-				ref.Value.Pattern,
-				floatOrMin(ref.Value.Min),
-				floatOrMax(ref.Value.Max),
-				stringy.New(schemaName).LcFirst(),
-				[]TypeDefinition{},
-			}}
-		} else if ref.Value.Type.Includes("object") {
-			schemaDefs[schemaName] = generatePropertyDefs(&ref.Value.Properties)
+		case ref.Value.Type.Includes("object"):
+			goType, _ = toGoType(ref.Value.AdditionalProperties.Schema)
+		default:
+			types := ref.Value.Type.Slice()
+			if len(types) > 0 {
+				goType = types[0]
+			}
 		}
+
+		schemaDefs[name] = []TypeDefinition{{
+			Name:        name,
+			Type:        goType,
+			MinLength:   ref.Value.MinLength,
+			MaxLength:   uintOrMax(ref.Value.MaxLength),
+			Pattern:     ref.Value.Pattern,
+			Minimum:     floatOrMin(ref.Value.Min),
+			Maximum:     floatOrMax(ref.Value.Max),
+			MarshalName: stringy.New(name).LcFirst(),
+			NestedTypes: nil,
+		}}
 	}
 	return schemaDefs
 }
@@ -163,14 +127,14 @@ func uintOrMax(x *uint64) uint64 {
 	if x != nil {
 		return *x
 	}
-	return math.MaxInt64
+	return math.MaxUint64
 }
 
 func floatOrMin(x *float64) float64 {
 	if x != nil {
 		return *x
 	}
-	return math.MaxFloat64 * -1
+	return -math.MaxFloat64
 }
 
 func floatOrMax(x *float64) float64 {
@@ -180,105 +144,69 @@ func floatOrMax(x *float64) float64 {
 	return math.MaxFloat64
 }
 
-func generatePropertyDefs(properties *openapi3.Schemas) []TypeDefinition {
-	typeDefs := make([]TypeDefinition, len(*properties))
-	i := 0
-	for name, property := range *properties {
-		goType, nested := toGoType(property)
-		var nestedGoTypes []TypeDefinition
-		if nested {
-			nestedGoTypes = generatePropertyDefs(&property.Value.Properties)
-		}
-
-		propertyDef := TypeDefinition{
-			name,
-			goType,
-			property.Value.MinLength,
-			uintOrMax(property.Value.MaxLength),
-			property.Value.Pattern,
-			floatOrMin(property.Value.Min),
-			floatOrMax(property.Value.Max),
-			stringy.New(name).LcFirst(),
-			nestedGoTypes,
-		}
-		typeDefs[i], i = propertyDef, i+1
+func toGoType(sRef *openapi3.SchemaRef) (string, bool) {
+	if sRef == nil || sRef.Value == nil {
+		return "interface{}", false
 	}
-
-	return typeDefs
-}
-
-// schema type to generated go type
-func toGoType(sRef *openapi3.SchemaRef) (goType string, nested bool) {
-
-	if sRef.Value.Type.Includes("number") {
+	switch {
+	case sRef.Value.Type.Includes("number"):
 		switch sRef.Value.Format {
 		case "float":
-			goType = "float32"
+			return "float32", false
 		case "double":
-			goType = "float64"
+			return "float64", false
 		default:
-			goType = "float"
+			return "float64", false
 		}
-	} else if sRef.Value.Type.Includes("integer") {
-		goType = "int"
+	case sRef.Value.Type.Includes("integer"):
 		if sRef.Value.Format != "" {
-			goType = sRef.Value.Format
+			return sRef.Value.Format, false
 		}
-	} else if sRef.Value.Type.Includes("boolean") {
-		goType = "bool"
-	} else if sRef.Value.Type.Includes("string") {
+		return "int", false
+	case sRef.Value.Type.Includes("boolean"):
+		return "bool", false
+	case sRef.Value.Type.Includes("string"):
 		switch sRef.Value.Format {
 		case "binary":
-			goType = "[]byte"
+			return "[]byte", false
 		case "date":
 			IMPORT_TIME = true
-			goType = "time.Time"
+			return "time.Time", false
 		case "uuid":
 			IMPORT_UUID = true
-			goType = "uuid.UUID"
+			return "uuid.UUID", false
 		default:
-			goType = "string"
+			return "string", false
 		}
-	} else if sRef.Value.Type.Includes("array") {
+	case sRef.Value.Type.Includes("array"):
 		items, _ := toGoType(sRef.Value.Items)
-		goType = "[]" + items
-	} else if sRef.Value.Type.Includes("object") {
+		return "[]" + items, false
+	case sRef.Value.Type.Includes("object"):
 		if sRef.Value.AdditionalProperties.Schema != nil {
-			if sRef.Value.AdditionalProperties.Schema.Ref != "" {
-				splitRef := strings.Split(sRef.Value.AdditionalProperties.Schema.Ref, "/")
-				goType = "map[string]" + splitRef[len(splitRef)-1]
-			} else {
-				goType = "map[string]??"
-			}
-		} else if sRef.Ref != "" {
-			// checks if object type is defined by reference elsewhere in the schema
-			splitRef := strings.Split(sRef.Ref, "/")
-			goType = splitRef[len(splitRef)-1]
-		} else {
-			goType = "struct"
-			nested = true
+			t, _ := toGoType(sRef.Value.AdditionalProperties.Schema)
+			return "map[string]" + t, false
 		}
-	} else {
+		if sRef.Ref != "" {
+			parts := strings.Split(sRef.Ref, "/")
+			return parts[len(parts)-1], false
+		}
+		return "map[string]interface{}", false
+	default:
 		types := sRef.Value.Type.Slice()
 		if len(types) > 0 {
-			goType = types[0]
+			return types[0], false
 		}
+		return "interface{}", false
 	}
-	return goType, nested
 }
 
 func generateImports() ImportsConfig {
-	var importDefs []ImportDefinition
+	var defs []ImportDefinition
 	if IMPORT_UUID {
-		importDefs = append(importDefs, ImportDefinition{"", "\"github.com/google/uuid\""})
+		defs = append(defs, ImportDefinition{"uuid", "\"github.com/google/uuid\""})
 	}
 	if IMPORT_TIME {
-		importDefs = append(importDefs, ImportDefinition{"time", ""})
+		defs = append(defs, ImportDefinition{"time", ""})
 	}
-
-	conf := ImportsConfig{
-		importDefs,
-	}
-
-	return conf
+	return ImportsConfig{ImportDefs: defs}
 }

@@ -8,26 +8,27 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// path is the path of the feature file
+// GenerateBdd erzeugt ein Godog-Testfile aus einer Feature-Datei.
 func GenerateBdd(path string) {
-	var step Listing
-	step.Steps = parseSteps(path)
-	step.UniqueEndpoints = getAllEndpoints(step)
-
-	_, e := os.Create("server_godog_test.go")
-	if e != nil {
-		log.Fatal()
+	stepListing := parseSteps(path)
+	_, err := os.Create("server_godog_test.go")
+	if err != nil {
+		log.Fatal().Err(err).Msg("Could not create BDD test file")
 	}
 
 	f, err := os.OpenFile("server_godog_test.go", os.O_WRONLY, os.ModeAppend)
 	if err != nil {
-		panic(err)
+		log.Fatal().Err(err).Msg("Could not open BDD test file")
 	}
+	defer f.Close()
 
-	content, _ := os.ReadFile("templates/bdd.go.tmpl")
-	t := template.Must(template.New("bdd-tmpl").Funcs(sprig.FuncMap()).Parse(string(content)))
-	err1 := t.Execute(f, step)
-	if err1 != nil {
-		panic(err1)
+	// hol die Vorlage aus common
+	content, _ := os.ReadFile("templates/common/bdd.go.tmpl")
+	t := template.Must(template.New("bdd-tmpl").
+		Funcs(sprig.FuncMap()).
+		Parse(string(content)))
+
+	if err := t.Execute(f, stepListing); err != nil {
+		log.Fatal().Err(err).Msg("Failed to render BDD template")
 	}
 }

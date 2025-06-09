@@ -5,40 +5,47 @@ import (
 	"os"
 	"path/filepath"
 
+	fs "dredger/fileUtils"
+
 	"github.com/rs/zerolog/log"
 )
 
+// generateConfigFiles legt .env, config.go, configSvc.go und version an.
 func generateConfigFiles(serverConf ServerConfig) {
-	// create app.env file if not exist
+	// 1) .env
 	fileName := ".env"
 	filePath := filepath.Join(config.Path, fileName)
-	templateFile := "templates/core/app.env.tmpl"
+	templateFile := "templates/common/ENVIRONMENT.md.tmpl" // falls du eine andere Vorlage willst, passe hier an
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filePath, templateFile, serverConf)
 	}
 
-	// create config.go file
+	// 2) config.go
 	fileName = "config.go"
 	filePath = filepath.Join(config.Path, CorePkg, fileName)
-	templateFile = "templates/core/config.go.tmpl"
+	templateFile = "templates/openapi/core/config.go.tmpl"
 	createFileFromTemplate(filePath, templateFile, serverConf)
 
-	// create configSvc.go extension file if not exist
+	// 3) configSvc.go
 	fileName = "configSvc.go"
 	filePath = filepath.Join(config.Path, CorePkg, fileName)
-	templateFile = "templates/core/configSvc.go.tmpl"
+	templateFile = "templates/openapi/core/configSvc.go.tmpl"
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filePath, templateFile, serverConf)
 	}
 
-	// create version file if not exist
+	// 4) version (und Symlink)
 	fileName = "version"
 	filePath = filepath.Join(config.Path, CorePkg, fileName)
-	templateFile = "templates/core/version"
-	if _, err := os.Stat(fileName); errors.Is(err, os.ErrNotExist) {
+	templateFile = "templates/openapi/core/version"
+	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filePath, templateFile, serverConf)
-		if err = os.Symlink(filePath, fileName); err != nil {
-			log.Warn().Err(err).Str("source", filePath).Str("target", fileName).Msg("Could not create symbolic Link, please create it manually")
+		if err := os.Symlink(filePath, fileName); err != nil {
+			log.Warn().
+				Err(err).
+				Str("source", filePath).
+				Str("target", fileName).
+				Msg("Could not create symbolic link, bitte manuell anlegen")
 		}
 	}
 }

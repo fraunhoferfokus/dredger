@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"dredger/core"
-
+	genAsyncAPI "dredger/generator/asyncapi"
 	genOpenAPI "dredger/generator/openapi"
 
 	"github.com/rs/zerolog/log"
@@ -21,16 +21,14 @@ var (
 	projectName  string
 	databaseFlag bool
 	frontendFlag bool
-
-	// (Optional) Flag, falls man explizit einen anderen AsyncAPI-Pfad angeben will.
-	asyncPath string
+	asyncPath    string
 )
 
 // rootCmd repräsentiert den Basis-Befehl
 var rootCmd = &cobra.Command{
 	Use:   "dredger",
 	Short: "Create server and client code from OpenAPI/AsyncAPI Spec",
-	Long:  "Generate Go‐Server-Code (für OpenAPI) oder (demnächst) AsyncAPI-Code, je nachdem welche Spec man übergibt.",
+	Long:  "Generate Go‐Server‐Code (für OpenAPI) oder AsyncAPI‐Code, je nachdem welche Spec man übergibt.",
 }
 
 var showVersion = &cobra.Command{
@@ -42,15 +40,6 @@ var showVersion = &cobra.Command{
 	},
 }
 
-var generateBdd = &cobra.Command{
-	Use:   "generate-bdd <path to feature file>",
-	Short: "Create BDD test file from the feature file (OpenAPI)",
-	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		genOpenAPI.GenerateBdd(args[0])
-	},
-}
-
 var generateCmd = &cobra.Command{
 	Use:     "generate <path to Spec>",
 	Short:   "Create server code from OpenAPI or AsyncAPI Spec",
@@ -59,8 +48,6 @@ var generateCmd = &cobra.Command{
 	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		specPath := args[0]
-
-		// 1. Standardwerte für Output / Modul
 		if projectPath == "" {
 			projectPath = "src"
 		}
@@ -69,26 +56,29 @@ var generateCmd = &cobra.Command{
 		}
 		projectDestination := filepath.Join(projectPath)
 
-		// 2. Wenn der Benutzer explizit --async gesetzt hat, ignorieren wir alles andere und zeigen nur eine Info.
+		// Falls --async gesetzt, erzwinge AsyncAPI
 		if asyncPath != "" {
-			log.Info().Msg("AsyncAPI-Spec wurde via --async übergeben. AsyncAPI-Generator ist noch nicht implementiert.")
+			log.Info().Msg("AsyncAPI via --async übergeben.")
+			if err := genAsyncAPI.GenerateService(asyncPath, projectDestination, projectName); err != nil {
+				log.Error().Err(err).Msg("AsyncAPI: Fehler beim Generieren")
+			}
 			return
 		}
 
-		// 3. Sonst ermitteln wir automatisch, ob specPath eine AsyncAPI oder OpenAPI ist:
-		isAsync, isOpenAPI, err := detectSpecType(specPath)
+		// Spectype automatisch erkennen
+		isAsync, isOpen, err := detectSpecType(specPath)
 		if err != nil {
 			log.Error().Err(err).Msg("Konnte Spec-Datei nicht öffnen oder lesen")
 			return
 		}
-
-		// 4. Je nach Ergebnis rufen wir den richtigen Zweig auf
 		switch {
 		case isAsync:
-			log.Info().Msg("Erkannt: AsyncAPI-Spec – noch nicht implementiert")
-			return
+			log.Info().Msg("Erkannt: AsyncAPI-Spec – wir parsen & generieren mit dem AsyncAPI-Generator")
+			if err := genAsyncAPI.GenerateService(specPath, projectDestination, projectName); err != nil {
+				log.Error().Err(err).Msg("AsyncAPI: Fehler beim Generieren")
+			}
 
-		case isOpenAPI:
+		case isOpen:
 			log.Info().Msg("Erkannt: OpenAPI-Spec – wir parsen & generieren mit dem OpenAPI-Generator")
 			config := genOpenAPI.GeneratorConfig{
 				OpenAPIPath:  specPath,
@@ -110,34 +100,26 @@ var generateCmd = &cobra.Command{
 	},
 }
 
-// Execute hängt alle Unterbefehle an rootCmd und führt aus
 func Execute() {
+	rootCmd.AddCommand(generateCmd, showVersion)
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }
 
 func init() {
-	// Flags für „generate“
 	generateCmd.Flags().StringVarP(&projectPath, "output", "o", "src", "Pfad, in dem der Code erzeugt wird")
 	generateCmd.Flags().StringVarP(&projectName, "name", "n", "default", "Modulname des erzeugten Codes")
 	generateCmd.Flags().BoolVarP(&databaseFlag, "database", "D", false, "füge SQLite3-Datenbank in den generierten Code ein")
 	generateCmd.Flags().BoolVarP(&frontendFlag, "frontend", "f", false, "füge Frontend-Code hinzu")
 
-	// Optional: falls man wirklich eine AsyncAPI übergeben möchte
 	generateCmd.Flags().StringVarP(
-		&asyncPath,
-		"async", "a", "",
-		"Pfad zur AsyncAPI-Spec (falls man gezielt AsyncAPI generieren will)",
+		&asyncPath, "async", "a", "",
+		"Pfad zur AsyncAPI-Spec (für AsyncAPI-Generator)",
 	)
-
-	rootCmd.AddCommand(generateCmd)
-	rootCmd.AddCommand(generateBdd)
-	rootCmd.AddCommand(showVersion)
 }
 
-// detectSpecType liest maximal ~1 MB der Datei ein und sucht nach den Schlüsselwörtern
-// „asyncapi“, „openapi“ oder „swagger“, um zu entscheiden, um welchen Spec-Typ es sich handelt.
+// detectSpecType liest bis 1 MiB und sucht nach asyncapi/openapi/swagger
 func detectSpecType(specPath string) (isAsync bool, isOpenAPI bool, err error) {
 	f, err := os.Open(specPath)
 	if err != nil {
@@ -145,29 +127,21 @@ func detectSpecType(specPath string) (isAsync bool, isOpenAPI bool, err error) {
 	}
 	defer f.Close()
 
-	// Lies bis zu 1 MiB (falls Datei groß)
 	buf := make([]byte, 1024*1024)
 	n, err := io.ReadFull(f, buf)
 	if err != nil && !errors.Is(err, io.ErrUnexpectedEOF) {
 		return false, false, err
 	}
-	buf = buf[:n]
+	text := strings.ToLower(string(buf[:n]))
 
-	text := string(buf)
-	lower := strings.ToLower(text)
-
-	// AsyncAPI: prüfe auf „\"asyncapi\"“ (JSON) oder „asyncapi:“ (YAML)
-	if strings.Contains(lower, "\"asyncapi\"") || strings.HasPrefix(lower, "asyncapi:") {
+	if strings.Contains(text, "\"asyncapi\"") || strings.HasPrefix(text, "asyncapi:") {
 		return true, false, nil
 	}
-	// OpenAPI v3: prüfe auf „\"openapi\"“ (JSON) oder „openapi:“ (YAML)
-	if strings.Contains(lower, "\"openapi\"") || strings.HasPrefix(lower, "openapi:") {
+	if strings.Contains(text, "\"openapi\"") || strings.HasPrefix(text, "openapi:") {
 		return false, true, nil
 	}
-	// Swagger v2: prüfe auf „\"swagger\"“ (JSON) oder „swagger:“ (YAML)
-	if strings.Contains(lower, "\"swagger\"") || strings.HasPrefix(lower, "swagger:") {
+	if strings.Contains(text, "\"swagger\"") || strings.HasPrefix(text, "swagger:") {
 		return false, true, nil
 	}
-
 	return false, false, nil
 }

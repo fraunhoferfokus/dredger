@@ -12,23 +12,25 @@ import (
 )
 
 func generateInfoFiles(spec *openapi3.T, serverConf ServerConfig) {
-	// create info.go file
+	// info.go
 	fileName := "info.go"
 	filePath := filepath.Join(config.Path, CorePkg, fileName)
-	templateFile := "templates/core/info.go.tmpl"
+	templateFile := "templates/openapi/core/info.go.tmpl"
 	createFileFromTemplate(filePath, templateFile, serverConf)
 
-	// create infoSvc.go extension file if not exist
+	// infoSvc.go
 	fileName = "infoSvc.go"
 	filePath = filepath.Join(config.Path, CorePkg, fileName)
-	templateFile = "templates/core/infoSvc.go.tmpl"
+	templateFile = "templates/openapi/core/infoSvc.go.tmpl"
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filePath, templateFile, serverConf)
 	}
 
-	if spec.Paths.Find("/infoz") != nil && (spec.Paths.Find("/infoz").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/infoz").Operations()[http.MethodGet].Tags, "builtin")) {
+	// Zusatz‐Endpoints (/infoz etc.) wie bisher …
+	if spec.Paths.Find("/infoz") != nil &&
+		spec.Paths.Find("/infoz").Operations()[http.MethodGet] != nil &&
+		slices.Contains(spec.Paths.Find("/infoz").Operations()[http.MethodGet].Tags, "builtin") {
 		log.Debug().Msg("Generating default /infoz endpoint.")
-
 		op := openapi3.NewOperation()
 		op.AddResponse(http.StatusOK, createOAPIResponse("The service is ready"))
 		updateOAPIOperation(op, "GetInfo", "Returns infos about the service", "200")

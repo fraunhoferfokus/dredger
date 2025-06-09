@@ -1,0 +1,2190 @@
+===== generator/asyncapi/bindings.go =====
+    package generator
+    
+    type HTTPBinding any
+    
+    type NATSBinding any
+    
+    type KafkaBinding any
+===== generator/asyncapi/channel.go =====
+    package generator
+    
+    import (
+    	"encoding/json"
+    )
+    
+    type Channel struct {
+    	Address   string                       `json:"address"`
+    	Messages  map[string]MessageDefinition `json:"messages"`
+    	Publish   *Operation                   `json:"publish,omitempty"`
+    	Subscribe *Operation                   `json:"subscribe,omitempty"`
+    }
+    
+    type MessageDefinition struct {
+    	ContentType string          `json:"contentType"`
+    	Payload     json.RawMessage `json:"payload"` // flexible structure
+    }
+===== generator/asyncapi/channelBinding.go =====
+    package generator
+    
+    type ChannelBinding struct {
+    	HTTP  HTTPBinding
+    	NATS  NATSBinding
+    	Kafka KafkaBinding
+    }
+===== generator/asyncapi/components.go =====
+    package generator
+    
+    type Components struct {
+    	Schemas           map[string]*Schema           `json:"schemas"`
+    	Servers           map[string]*Server           `json:"servers"`
+    	Channels          map[string]*Channel          `json:"channels"`
+    	ServerVariables   map[string]*ServerVariable   `json:"serverVariables"`
+    	Operations        map[string]*Operation        `json:"operations"`
+    	Messages          map[string]*Message          `json:"messages"`
+    	SecuritySchemas   map[string]*SecuritySchema   `json:"securitySchemes"`
+    	Parameters        map[string]*Parameter        `json:"parameters"`
+    	CorrelationID     map[string]*CorrelationID    `json:"correlationIds"`
+    	OperationTraits   map[string]*OperationTrait   `json:"operationTraits"`
+    	MessageTraits     map[string]*MessageTrait     `json:"messageTraits"`
+    	Replies           map[string]*Reply            `json:"replies"`
+    	ReplyAddresses    map[string]*ReplyAddress     `json:"replyAddresses"`
+    	ServerBindings    map[string]*ServerBinding    `json:"serverBindings"`
+    	ChannelBindings   map[string]*ChannelBinding   `json:"channelBindings"`
+    	OperationBindings map[string]*OperationBinding `json:"operationBindings"`
+    	MessageBindings   map[string]*MessageBinding   `json:"messageBindings"`
+    	Tags              map[string]*Tag              `json:"tags"`
+    	ExternalDocs      map[string]*ExternalDoc      `json:"externalDocs"`
+    }
+===== generator/asyncapi/correlationID.go =====
+    package generator
+    
+    type CorrelationID struct {
+    	Description string `json:"description"`
+    	Location    string `json:"location"`
+    }
+===== generator/asyncapi/externalDoc.go =====
+    package generator
+    
+    type ExternalDoc struct {
+    	Description string `json:"description"`
+    	URL         string `json:"url"`
+    }
+===== generator/asyncapi/info.go =====
+    package generator
+    
+    type Info struct {
+    	Title          string `json:"title"`
+    	Version        string `json:"version"`
+    	Description    string `json:"description"`
+    	TermsOfService string `json:"termsOfService"`
+    	Contact        string `json:"contact"`
+    	Tags           []*Tag `json:"tags"`
+    	//TODO rest of the fields for
+    }
+===== generator/asyncapi/message.go =====
+    package generator
+    
+    type Message struct {
+    	ContentType   string        `json:"contentType"`
+    	Headers       *Schema       `json:"headers"`
+    	Payload       *Schema       `json:"payload"`
+    	Summary       string        `json:"summary"`
+    	Name          string        `json:"name"`
+    	Title         string        `json:"title"`
+    	Description   string        `json:"description"`
+    	CorrelationID CorrelationID `json:"correlationID"`
+    	Tags          []*Tag        `json:"tags"`
+    	ExternalDocs  *ExternalDoc  `json:"externalDocs"`
+    }
+===== generator/asyncapi/messageBinding.go =====
+    package generator
+    
+    type MessageBinding struct{}
+===== generator/asyncapi/messageTrait.go =====
+    package generator
+    
+    type MessageTrait struct{}
+===== generator/asyncapi/operation.go =====
+    package generator
+    
+    type Operation struct {
+    	Message MessageRef `json:"message"`
+    }
+    
+    type MessageRef struct {
+    	Ref string `json:"$ref"`
+    }
+===== generator/asyncapi/operationBinding.go =====
+    package generator
+    
+    type OperationBinding struct{}
+===== generator/asyncapi/operationTrait.go =====
+    package generator
+    
+    type OperationTrait struct{}
+===== generator/asyncapi/parameter.go =====
+    package generator
+    
+    type Parameter struct{}
+===== generator/asyncapi/reply.go =====
+    package generator
+    
+    type Reply struct{}
+===== generator/asyncapi/replyAdrdess.go =====
+    package generator
+    
+    type ReplyAddress struct{}
+===== generator/asyncapi/schema.go =====
+    package generator
+    
+    type Schema struct{}
+===== generator/asyncapi/securitySchema.go =====
+    package generator
+    
+    type SecuritySchema struct{}
+===== generator/asyncapi/server.go =====
+    package generator
+    
+    type Server struct {
+    	Host        string `json:"host"`
+    	Description string `json:"description"`
+    	Title       string `json:"title"`
+    	Summary     string `json:"summary"`
+    	Bindings    *ServerBinding
+    	Protocol    string `json:"protocol"`
+    	//TODO Rest der gesamten Felder
+    }
+===== generator/asyncapi/serverBinding.go =====
+    package generator
+    
+    type ServerBinding struct {
+    	Binding string
+    }
+===== generator/asyncapi/serverVariable.go =====
+    package generator
+    
+    type ServerVariable struct{}
+===== generator/asyncapi/specification.go =====
+    package generator
+    
+    type Specification struct {
+    	Version            string                `json:"asyncapi"`
+    	Info               Info                  `json:"info"`
+    	Servers            map[string]*Server    `json:"servers,omitempty"`
+    	Channels           map[string]*Channel   `json:"channels,omitempty"`
+    	DefaultContentType string                `json:"defaultContentType,omitempty"`
+    	Operations         map[string]*Operation `json:"operations,omitempty"`
+    	Components         Components            `json:"components"`
+    }
+===== generator/asyncapi/tag.go =====
+    package generator
+    
+    type Tag struct {
+    	Name        string `json:"name"`
+    	Description string `json:"description"`
+    }
+===== generator/features/stores.feature =====
+    Feature: Server Tests
+      Scenario: Test GET Request for url /store
+        When I send GET request to "/store"
+        Then The response for url "/store" with request method "GET" should be 404
+    
+      Scenario: Test POST Request for url /store
+        When I send POST request to "/store" with payload "id: 10"
+        Then The response for url "/store" with request method "POST" should be 404
+    
+      Scenario: Test POST Request for url /store with incorrect properties
+        When I send POST request to "/store" with payload ""
+        Then The response for url "/store" with request method "POST" should be 404
+    
+      Scenario: Test GET request for url /store/{id} with false id
+        When I send GET request to "/store/100"
+        Then The response for url "/store/100" with request method "GET" should be 501
+    
+      Scenario: Test PUT request for url /store/{id}
+        When I send PUT request to "/store/20" with payload "name: Pet shop"
+        Then The response for url "/store/20" with request method "PUT" should be 501
+    
+      Scenario: Test PUT request for url /store/{id} improper payload
+        When I send PUT request to "/store/45" with payload ""
+        Then The response for url "/store/45" with request method "PUT" should be 501
+    
+      Scenario: Test DELETE request for url /store/{id}
+        When I send DELETE request to "/store/40"
+        Then The response for url "/store/40" with request method "DELETE" should be 501===== generator/openapi/bdd.go =====
+    package generator
+    
+    import (
+    	"os"
+    	"text/template"
+    
+    	"github.com/Masterminds/sprig/v3"
+    	"github.com/rs/zerolog/log"
+    )
+    
+    // path is the path of the feature file
+    func GenerateBdd(path string) {
+    	var step Listing
+    	step.Steps = parseSteps(path)
+    	step.UniqueEndpoints = getAllEndpoints(step)
+    
+    	_, e := os.Create("server_godog_test.go")
+    	if e != nil {
+    		log.Fatal()
+    	}
+    
+    	f, err := os.OpenFile("server_godog_test.go", os.O_WRONLY, os.ModeAppend)
+    	if err != nil {
+    		panic(err)
+    	}
+    
+    	content, _ := os.ReadFile("templates/bdd.go.tmpl")
+    	t := template.Must(template.New("bdd-tmpl").Funcs(sprig.FuncMap()).Parse(string(content)))
+    	err1 := t.Execute(f, step)
+    	if err1 != nil {
+    		panic(err1)
+    	}
+    }
+===== generator/openapi/config.go =====
+    package generator
+    
+    import (
+    	"errors"
+    	"os"
+    	"path/filepath"
+    
+    	"github.com/rs/zerolog/log"
+    )
+    
+    func generateConfigFiles(serverConf ServerConfig) {
+    	// create app.env file if not exist
+    	fileName := ".env"
+    	filePath := filepath.Join(config.Path, fileName)
+    	templateFile := "templates/core/app.env.tmpl"
+    	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+    		createFileFromTemplate(filePath, templateFile, serverConf)
+    	}
+    
+    	// create config.go file
+    	fileName = "config.go"
+    	filePath = filepath.Join(config.Path, CorePkg, fileName)
+    	templateFile = "templates/core/config.go.tmpl"
+    	createFileFromTemplate(filePath, templateFile, serverConf)
+    
+    	// create configSvc.go extension file if not exist
+    	fileName = "configSvc.go"
+    	filePath = filepath.Join(config.Path, CorePkg, fileName)
+    	templateFile = "templates/core/configSvc.go.tmpl"
+    	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+    		createFileFromTemplate(filePath, templateFile, serverConf)
+    	}
+    
+    	// create version file if not exist
+    	fileName = "version"
+    	filePath = filepath.Join(config.Path, CorePkg, fileName)
+    	templateFile = "templates/core/version"
+    	if _, err := os.Stat(fileName); errors.Is(err, os.ErrNotExist) {
+    		createFileFromTemplate(filePath, templateFile, serverConf)
+    		if err = os.Symlink(filePath, fileName); err != nil {
+    			log.Warn().Err(err).Str("source", filePath).Str("target", fileName).Msg("Could not create symbolic Link, please create it manually")
+    		}
+    	}
+    }
+===== generator/openapi/database.go =====
+    package generator
+    
+    import (
+    	fs "dredger/fileUtils"
+    	"path/filepath"
+    
+    	"github.com/rs/zerolog/log"
+    )
+    
+    func generateDatabaseFiles(conf GeneratorConfig) {
+    	log.Info().Msg("Adding SQLite database.")
+    
+    	fileName := conf.DatabaseName
+    	filePath := filepath.Join(config.Path, DatabasePkg, fileName)
+    	templateFile := "templates/db/database.go.tmpl"
+    
+    	fs.GenerateFile(filePath + ".db")
+    	createFileFromTemplate(filePath+".go", templateFile, conf)
+    }
+===== generator/openapi/dockerfile.go =====
+    package generator
+    
+    import (
+    	fs "dredger/fileUtils"
+    	"errors"
+    	"os"
+    	"path/filepath"
+    
+    	"github.com/rs/zerolog/log"
+    )
+    
+    func generateDockerfile(conf GeneratorConfig, serverConf ServerConfig) {
+    	type dockerfileConfig struct {
+    		ModuleName string
+    		Port       int16
+    	}
+    
+    	var dockerfileConf dockerfileConfig
+    	dockerfileConf.ModuleName = conf.ModuleName
+    	dockerfileConf.Port = serverConf.Port
+    
+    	fileName := "Dockerfile"
+    	filePath := filepath.Join(config.Path, fileName)
+    	templateFile := "templates/Dockerfile.tmpl"
+    
+    	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+    		log.Debug().Msg("CREATE Dockerfile")
+    		fs.GenerateFile(filePath)
+    		createFileFromTemplate(filePath, templateFile, dockerfileConf)
+    	}
+    
+    	fileName = ".gitlab-ci.yml"
+    	filePath = filepath.Join(config.Path, fileName)
+    	templateFile = "templates/gitlab-ci.yml.tmpl"
+    
+    	fileName = ".gitignore"
+    	filePath = filepath.Join(config.Path, fileName)
+    	templateFile = "templates/gitignore.tmpl"
+    
+    	fileName = ".gitleaksignore"
+    	filePath = filepath.Join(config.Path, fileName)
+    	templateFile = "templates/gitleaksignore.tmpl"
+    
+    	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+    		log.Debug().Msg("CREATE .gitlab-ci")
+    		fs.GenerateFile(filePath)
+    		createFileFromTemplate(filePath, templateFile, dockerfileConf)
+    	}
+    
+    	fileName = "image-manifest.yml"
+    	filePath = filepath.Join(config.Path, fileName)
+    	templateFile = "templates/image-manifest.yml.tmpl"
+    
+    	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+    		log.Debug().Msg("CREATE image-manifest")
+    		fs.GenerateFile(filePath)
+    		createFileFromTemplate(filePath, templateFile, dockerfileConf)
+    	}
+    }
+===== generator/openapi/entities.go =====
+    package generator
+    
+    import (
+    	"fmt"
+    	"math"
+    	"path/filepath"
+    	"strings"
+    
+    	"github.com/getkin/kin-openapi/openapi3"
+    	"github.com/gobeam/stringy"
+    )
+    
+    var IMPORT_UUID bool
+    var IMPORT_TIME bool
+    
+    type ModelCOnfig struct {
+    	Imports     ImportsConfig
+    	SchemaDefs  map[string][]TypeDefinition
+    	ProjectName string
+    }
+    
+    type TypeDefinition struct {
+    	Name        string
+    	Type        string
+    	MinLength   uint64
+    	MaxLength   uint64
+    	Pattern     string
+    	Minimum     float64
+    	Maximum     float64
+    	MarshalName string
+    	// only if Type is struct
+    	NestedTypes []TypeDefinition
+    }
+    
+    type ImportDefinition struct {
+    	Name string
+    	URL  string
+    }
+    
+    type ImportsConfig struct {
+    	ImportDefs []ImportDefinition
+    }
+    
+    func GenerateTypes(spec *openapi3.T, pConf ProjectConfig) {
+    	if spec != nil && spec.Components != nil {
+    		schemaDefs := generateTypeDefs(&spec.Components.Schemas)
+    		imports := generateImports()
+    		var conf ModelCOnfig
+    		conf.Imports = imports
+    		conf.ProjectName = pConf.Name
+    
+    		for schema, t := range schemaDefs {
+    			conf.SchemaDefs = map[string][]TypeDefinition{schema: t}
+    			fileName := strings.ToLower(schema) + ".go"
+    			filePath := filepath.Join(pConf.Path, EntitiesPkg, fileName)
+    			templateFiles := []string{"templates/entities/entities.go.tmpl", "templates/entities/imports.tmpl", "templates/entities/structs.tmpl", "templates/entities/validate.tmpl"}
+    			createFileFromTemplates(filePath, templateFiles, conf)
+    		}
+    	}
+    }
+    
+    func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
+    	schemaDefs := make(map[string][]TypeDefinition, len(*schemas))
+    
+    	for schemaName, ref := range *schemas {
+    		fmt.Printf("%s: %#v\n\n", schemaName, ref.Value.Type)
+    		var goType string
+    		if ref.Value.Type.Includes("number") {
+    			switch ref.Value.Format {
+    			case "float":
+    				goType = "float32"
+    			case "double":
+    				goType = "float64"
+    			default:
+    				goType = "float"
+    			}
+    			schemaDefs[schemaName] = []TypeDefinition{{
+    				schemaName,
+    				goType,
+    				ref.Value.MinLength,
+    				uintOrMax(ref.Value.MaxLength),
+    				ref.Value.Pattern,
+    				floatOrMin(ref.Value.Min),
+    				floatOrMax(ref.Value.Max),
+    				stringy.New(schemaName).LcFirst(),
+    				[]TypeDefinition{},
+    			}}
+    		} else if ref.Value.Type.Includes("integer") {
+    			goType = "int"
+    			if ref.Value.Format != "" {
+    				goType = ref.Value.Format
+    			}
+    			schemaDefs[schemaName] = []TypeDefinition{{
+    				schemaName,
+    				goType,
+    				ref.Value.MinLength,
+    				uintOrMax(ref.Value.MaxLength),
+    				ref.Value.Pattern,
+    				floatOrMin(ref.Value.Min),
+    				floatOrMax(ref.Value.Max),
+    				stringy.New(schemaName).LcFirst(),
+    				[]TypeDefinition{},
+    			}}
+    		} else if ref.Value.Type.Includes("boolean") {
+    			goType = "bool"
+    			schemaDefs[schemaName] = []TypeDefinition{{
+    				schemaName,
+    				goType,
+    				ref.Value.MinLength,
+    				uintOrMax(ref.Value.MaxLength),
+    				ref.Value.Pattern,
+    				floatOrMin(ref.Value.Min),
+    				floatOrMax(ref.Value.Max),
+    				stringy.New(schemaName).LcFirst(),
+    				[]TypeDefinition{},
+    			}}
+    		} else if ref.Value.Type.Includes("string") {
+    			switch ref.Value.Format {
+    			case "binary":
+    				goType = "[]byte"
+    			case "date":
+    				IMPORT_TIME = true
+    				goType = "time.Time"
+    			case "uuid":
+    				IMPORT_UUID = true
+    				goType = "uuid.UUID"
+    			default:
+    				goType = "string"
+    			}
+    			schemaDefs[schemaName] = []TypeDefinition{{
+    				schemaName,
+    				goType,
+    				ref.Value.MinLength,
+    				uintOrMax(ref.Value.MaxLength),
+    				ref.Value.Pattern,
+    				floatOrMin(ref.Value.Min),
+    				floatOrMax(ref.Value.Max),
+    				stringy.New(schemaName).LcFirst(),
+    				[]TypeDefinition{},
+    			}}
+    		} else if ref.Value.Type.Includes("array") {
+    			items, _ := toGoType(ref.Value.Items)
+    			goType = "[]" + items
+    			schemaDefs[schemaName] = []TypeDefinition{{
+    				schemaName,
+    				goType,
+    				ref.Value.MinLength,
+    				uintOrMax(ref.Value.MaxLength),
+    				ref.Value.Pattern,
+    				floatOrMin(ref.Value.Min),
+    				floatOrMax(ref.Value.Max),
+    				stringy.New(schemaName).LcFirst(),
+    				[]TypeDefinition{},
+    			}}
+    		} else if ref.Value.Type.Includes("object") {
+    			schemaDefs[schemaName] = generatePropertyDefs(&ref.Value.Properties)
+    		}
+    	}
+    	return schemaDefs
+    }
+    
+    func uintOrMax(x *uint64) uint64 {
+    	if x != nil {
+    		return *x
+    	}
+    	return math.MaxInt64
+    }
+    
+    func floatOrMin(x *float64) float64 {
+    	if x != nil {
+    		return *x
+    	}
+    	return math.MaxFloat64 * -1
+    }
+    
+    func floatOrMax(x *float64) float64 {
+    	if x != nil {
+    		return *x
+    	}
+    	return math.MaxFloat64
+    }
+    
+    func generatePropertyDefs(properties *openapi3.Schemas) []TypeDefinition {
+    	typeDefs := make([]TypeDefinition, len(*properties))
+    	i := 0
+    	for name, property := range *properties {
+    		goType, nested := toGoType(property)
+    		var nestedGoTypes []TypeDefinition
+    		if nested {
+    			nestedGoTypes = generatePropertyDefs(&property.Value.Properties)
+    		}
+    
+    		propertyDef := TypeDefinition{
+    			name,
+    			goType,
+    			property.Value.MinLength,
+    			uintOrMax(property.Value.MaxLength),
+    			property.Value.Pattern,
+    			floatOrMin(property.Value.Min),
+    			floatOrMax(property.Value.Max),
+    			stringy.New(name).LcFirst(),
+    			nestedGoTypes,
+    		}
+    		typeDefs[i], i = propertyDef, i+1
+    	}
+    
+    	return typeDefs
+    }
+    
+    // schema type to generated go type
+    func toGoType(sRef *openapi3.SchemaRef) (goType string, nested bool) {
+    
+    	if sRef.Value.Type.Includes("number") {
+    		switch sRef.Value.Format {
+    		case "float":
+    			goType = "float32"
+    		case "double":
+    			goType = "float64"
+    		default:
+    			goType = "float"
+    		}
+    	} else if sRef.Value.Type.Includes("integer") {
+    		goType = "int"
+    		if sRef.Value.Format != "" {
+    			goType = sRef.Value.Format
+    		}
+    	} else if sRef.Value.Type.Includes("boolean") {
+    		goType = "bool"
+    	} else if sRef.Value.Type.Includes("string") {
+    		switch sRef.Value.Format {
+    		case "binary":
+    			goType = "[]byte"
+    		case "date":
+    			IMPORT_TIME = true
+    			goType = "time.Time"
+    		case "uuid":
+    			IMPORT_UUID = true
+    			goType = "uuid.UUID"
+    		default:
+    			goType = "string"
+    		}
+    	} else if sRef.Value.Type.Includes("array") {
+    		items, _ := toGoType(sRef.Value.Items)
+    		goType = "[]" + items
+    	} else if sRef.Value.Type.Includes("object") {
+    		if sRef.Value.AdditionalProperties.Schema != nil {
+    			if sRef.Value.AdditionalProperties.Schema.Ref != "" {
+    				splitRef := strings.Split(sRef.Value.AdditionalProperties.Schema.Ref, "/")
+    				goType = "map[string]" + splitRef[len(splitRef)-1]
+    			} else {
+    				goType = "map[string]??"
+    			}
+    		} else if sRef.Ref != "" {
+    			// checks if object type is defined by reference elsewhere in the schema
+    			splitRef := strings.Split(sRef.Ref, "/")
+    			goType = splitRef[len(splitRef)-1]
+    		} else {
+    			goType = "struct"
+    			nested = true
+    		}
+    	} else {
+    		types := sRef.Value.Type.Slice()
+    		if len(types) > 0 {
+    			goType = types[0]
+    		}
+    	}
+    	return goType, nested
+    }
+    
+    func generateImports() ImportsConfig {
+    	var importDefs []ImportDefinition
+    	if IMPORT_UUID {
+    		importDefs = append(importDefs, ImportDefinition{"", "\"github.com/google/uuid\""})
+    	}
+    	if IMPORT_TIME {
+    		importDefs = append(importDefs, ImportDefinition{"time", ""})
+    	}
+    
+    	conf := ImportsConfig{
+    		importDefs,
+    	}
+    
+    	return conf
+    }
+===== generator/openapi/frontend.go =====
+    package generator
+    
+    import (
+    	fs "dredger/fileUtils"
+    	"errors"
+    	"net/http"
+    	"os"
+    	"path"
+    	"path/filepath"
+    	"reflect"
+    	"slices"
+    	"strconv"
+    	"strings"
+    
+    	"github.com/getkin/kin-openapi/openapi3"
+    	"github.com/rs/zerolog/log"
+    )
+    
+    func generateEmptyFrontend(_ *openapi3.T, conf GeneratorConfig) {
+    	frontendPath := filepath.Join(conf.OutputPath, "web")
+    	fs.GenerateFolder(frontendPath)
+    	createFileFromTemplate(filepath.Join(frontendPath, "README.md"), "templates/web/README.md.tmpl", conf)
+    }
+    
+    func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
+    	generateOpenAPIDoc(conf)
+    
+    	// create folders
+    	corePath := filepath.Join(conf.OutputPath, "core")
+    	restPath := filepath.Join(conf.OutputPath, "rest")
+    	frontendPath := filepath.Join(conf.OutputPath, "web")
+    	javascriptPath := filepath.Join(frontendPath, "js")
+    	stylesheetPath := filepath.Join(frontendPath, "css")
+    	imagesPath := filepath.Join(frontendPath, "images")
+    	fontsPath := filepath.Join(stylesheetPath, "fonts")
+    	pagesPath := filepath.Join(frontendPath, "pages")
+    	localesPath := filepath.Join(corePath, "locales")
+    	publicPath := filepath.Join(frontendPath, "public")
+    	docPath := filepath.Join(frontendPath, "doc")
+    
+    	fs.GenerateFolder(frontendPath)
+    	fs.GenerateFolder(javascriptPath)
+    	fs.GenerateFolder(stylesheetPath)
+    	fs.GenerateFolder(imagesPath)
+    	fs.GenerateFolder(fontsPath)
+    	fs.GenerateFolder(pagesPath)
+    	fs.GenerateFolder(localesPath)
+    	fs.GenerateFolder(publicPath)
+    	fs.GenerateFolder(docPath)
+    
+    	// files in root directory
+    	createFileFromTemplate(filepath.Join(frontendPath, "README.md"), "templates/web/README.md.tmpl", conf)
+    
+    	// files in javascript directory
+    	fs.CopyWebFile("web/js", javascriptPath, "bootstrap.bundle.min.js", true)
+    	fs.CopyWebFile("web/js", javascriptPath, "htmx.min.js", true)
+    	fs.CopyWebFile("web/js", javascriptPath, "hyperscript.js", true)
+    	fs.CopyWebFile("web/js", javascriptPath, "sse.js", true)
+    	fs.CopyWebFile("web/js", javascriptPath, "rapidoc-min.js", true)
+    	fs.CopyWebFile("web/js", javascriptPath, "elements.min.js", true)
+    
+    	// files in stylesheet directory
+    	fs.CopyWebFile("web/css", stylesheetPath, "bootstrap-icons.min.css", true)
+    	fs.CopyWebFile("web/css/fonts", fontsPath, "bootstrap-icons.woff", true)
+    	fs.CopyWebFile("web/css/fonts", fontsPath, "bootstrap-icons.woff2", true)
+    	fs.CopyWebFile("web/css", stylesheetPath, "bootstrap.min.css", true)
+    	fs.CopyWebFile("web/css", stylesheetPath, "pico.min.css", true)
+    	fs.CopyWebFile("web/css", stylesheetPath, "pico.colors.min.css", true)
+    	fs.CopyWebFile("web/css", stylesheetPath, "elements.min.css", true)
+    
+    	// files in images directory
+    	fs.CopyWebFile("web/images", imagesPath, "favicon.ico", false)
+    
+    	// files in web directory
+    	fs.CopyWebFile("web", frontendPath, "web.go", true)
+    
+    	// files in core directory
+    	createFileFromTemplate(filepath.Join(corePath, "localize.go"), "templates/core/localize.go.tmpl", conf)
+    	if _, err := os.Stat(filepath.Join(localesPath, "locale.de.toml")); errors.Is(err, os.ErrNotExist) {
+    		createFileFromTemplate(filepath.Join(localesPath, "locale.de.toml"), "templates/core/locales/locale.de.toml", conf)
+    		createFileFromTemplate(filepath.Join(localesPath, "locale.en.toml"), "templates/core/locales/locale.en.toml", conf)
+    	}
+    
+    	// files in pages directory
+    	fs.CopyWebFile("web/pages", restPath, "render.go", true)
+    	if _, err := os.Stat(filepath.Join(pagesPath, "languages.templ")); errors.Is(err, os.ErrNotExist) {
+    		createFileFromTemplate(filepath.Join(pagesPath, "languages.templ"), "templates/web/pages/languages.templ.tmpl", conf)
+    	}
+    	if spec.Paths.Find("/index.html") != nil && spec.Paths.Find("/index.html").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/index.html").Operations()[http.MethodGet].Tags, "builtin") {
+    		if _, err := os.Stat(filepath.Join(pagesPath, "index.templ")); errors.Is(err, os.ErrNotExist) {
+    			createFileFromTemplate(filepath.Join(pagesPath, "index.templ"), "templates/web/pages/index.templ.tmpl", conf)
+    			createFileFromTemplate(filepath.Join(pagesPath, "content.templ"), "templates/web/pages/content.templ.tmpl", conf)
+    		}
+    		op := openapi3.NewOperation()
+    		op.AddResponse(http.StatusOK, createOAPIResponse("The service delivers index page"))
+    		updateOAPIOperation(op, "GetIndex", "successfully deliver index page", "200")
+    		spec.AddOperation("/index.html", http.MethodGet, op)
+    	}
+    	if spec.Paths.Find("/") != nil && spec.Paths.Find("/").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/").Operations()[http.MethodGet].Tags, "builtin") {
+    		op := openapi3.NewOperation()
+    		op.AddResponse(http.StatusOK, createOAPIResponse("The service delivers index page"))
+    		updateOAPIOperation(op, "GetRoot", "successfully deliver index page", "200")
+    		spec.AddOperation("/", http.MethodGet, op)
+    	}
+    	if spec.Paths.Find("/content.html") != nil && spec.Paths.Find("/content.html").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/content.html").Operations()[http.MethodGet].Tags, "builtin") {
+    		if _, err := os.Stat(filepath.Join(pagesPath, "content.templ")); errors.Is(err, os.ErrNotExist) {
+    			createFileFromTemplate(filepath.Join(pagesPath, "content.templ"), "templates/web/pages/content.templ.tmpl", conf)
+    		}
+    		op := openapi3.NewOperation()
+    		op.AddResponse(http.StatusOK, createOAPIResponse("The service delivers content page"))
+    		updateOAPIOperation(op, "GetContent", "successfully deliver content page", "200")
+    		spec.AddOperation("/content.html", http.MethodGet, op)
+    	}
+    
+    	// files in public directory
+    	fs.CopyWebFile(path.Join("web", "public"), publicPath, "README.md", false)
+    
+    	// files in doc directory
+    	fs.CopyWebFile(path.Join("web", "doc"), docPath, "README.md", false)
+    
+    	// support for events
+    	if spec.Paths.Find("/events") != nil && spec.Paths.Find("/events").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/events").Operations()[http.MethodGet].Tags, "builtin") {
+    		log.Debug().Msg("Generating default /events endpoint.")
+    		createFileFromTemplate(filepath.Join(restPath, "progress.go"), "templates/web/pages/progress.go.tmpl", conf)
+    		createFileFromTemplate(filepath.Join(restPath, "notice.go"), "templates/web/pages/notice.go.tmpl", conf)
+    
+    		op := openapi3.NewOperation()
+    		op.AddResponse(http.StatusOK, createOAPIResponse("The service support sse"))
+    		updateOAPIOperation(op, "HandleEvents", "support for sse", "200")
+    		spec.AddOperation("/events", http.MethodGet, op)
+    		spec.AddOperation("/events", http.MethodPost, op)
+    	}
+    
+    	log.Info().Msg("Created Frontend successfully.")
+    }
+    
+    // function to get the port specified in the OpenAPI Spec
+    func getServerPort(spec *openapi3.T) (port int16) {
+    	if spec.Servers != nil {
+    		serverSpec := spec.Servers[0]
+    		if portSpec := serverSpec.Variables["port"]; portSpec != nil {
+    			portStr := portSpec.Default
+    			if portSpec.Enum != nil {
+    				portStr = portSpec.Enum[0]
+    			}
+    
+    			port, err := strconv.ParseInt(portStr, 10, 16)
+    			if err != nil {
+    				log.Warn().Msg("Failed to convert port, using 8080 instead.")
+    				return 8080
+    			} else {
+    				return int16(port)
+    			}
+    		} else {
+    			log.Warn().Msg("Failed to convert port, using 8080 instead.")
+    			return 8080
+    		}
+    	} else {
+    		log.Warn().Msg("Failed to convert port, using 8080 instead.")
+    		return 8080
+    	}
+    }
+    
+    func createSchemas(spec *openapi3.T) (schemas Schemas) {
+    	schemas.List = make([]SchemaConf, 0)
+    	schemas.IsNotEmpty = false
+    
+    	if spec != nil && spec.Components != nil && spec.Components.Schemas != nil {
+    		schemaStrings := toString(reflect.ValueOf(spec.Components.Schemas).MapKeys())
+    
+    		for i := range schemaStrings {
+    			tmpSchemaName := schemaStrings[i]
+    
+    			// check if schema has x-label == "form" -> if yes add schema to list
+    			schemaInformation, _ := spec.Components.Schemas[tmpSchemaName].Value.MarshalJSON()
+    			if strings.Contains(string(schemaInformation[:]), "\"x-label\":\"form\"") {
+    				var schema SchemaConf
+    
+    				// add names
+    				schema.Name = strings.ReplaceAll(strings.ToLower(tmpSchemaName), " ", "")
+    				schema.H1Name = strings.Title(tmpSchemaName)
+    				schema.ComponentName = strings.ReplaceAll(schema.H1Name, " ", "")
+    
+    				// add properties
+    				schema.Properties = make([]PropertyConf, 0)
+    				tmpSchemaPropertyNames := reflect.ValueOf(spec.Components.Schemas[tmpSchemaName].Value.Properties).MapKeys()
+    				for j := range tmpSchemaPropertyNames {
+    					tmpSchemaPropertyName := tmpSchemaPropertyNames[j].Interface().(string)
+    					var tmpPropertyConf PropertyConf
+    					tmpPropertyConf.Name = tmpSchemaPropertyName
+    					tmpPropertyConf.LabelName = strings.Title(tmpSchemaPropertyName)
+    					types := spec.Components.Schemas[tmpSchemaName].Value.Properties[tmpSchemaPropertyName].Value.Type.Slice()
+    					if len(types) > 0 {
+    						tmpPropertyConf.Type = types[0]
+    					}
+    					schema.Properties = append(schema.Properties, tmpPropertyConf)
+    				}
+    
+    				schemas.List = append(schemas.List, schema)
+    				schemas.IsNotEmpty = true
+    			}
+    
+    		}
+    	}
+    
+    	return schemas
+    
+    }
+    
+    // function to convert an []reflect.Value to []string
+    func toString(inputArray []reflect.Value) (resultArray []string) {
+    	for i := range inputArray {
+    		resultArray = append(resultArray, inputArray[i].Interface().(string))
+    	}
+    
+    	return resultArray
+    }
+    
+    func generateOpenAPIDoc(conf GeneratorConfig) {
+    	// create folder
+    	type templateConfig struct {
+    		GeneratorConfig
+    		OpenAPIFile string
+    	}
+    	path := filepath.Join(conf.OutputPath, "web", "doc")
+    	fs.GenerateFolder(path)
+    
+    	template := templateConfig{
+    		GeneratorConfig: conf,
+    		OpenAPIFile:     fs.GetFileNameWithEnding(conf.OpenAPIPath),
+    	}
+    
+    	// create static html files
+    	createFileFromTemplate(filepath.Join(path, "rapidoc.html"), "templates/rapidoc/index.html.tmpl", template)
+    	createFileFromTemplate(filepath.Join(path, "elements.html"), "templates/elements/index.html.tmpl", template)
+    
+    	// copy OpenAPI Specification in this directory
+    	fs.CopyFile(conf.OpenAPIPath, path, template.OpenAPIFile)
+    
+    	log.Info().Msg("Created OpenAPI Documentation successfully.")
+    }
+===== generator/openapi/generator.go =====
+    package generator
+    
+    import (
+    	"bufio"
+    	"embed"
+    	"errors"
+    	"net/http"
+    	"os"
+    	"regexp"
+    	"strings"
+    	"unicode"
+    
+    	//"dredger/generator"
+    	"path/filepath"
+    	"strconv"
+    
+    	fs "dredger/fileUtils"
+    	//asyncSpec "dredger/generator/asyncapi"
+    	oasparser "dredger/parser" //NEU Alias für internes Paket
+    	"github.com/getkin/kin-openapi/openapi3"
+    	"github.com/rs/zerolog/log"
+    )
+    
+    const (
+    	Cmd               = "cmd"
+    	Public            = "public"
+    	CorePkg           = "core"
+    	LogPkg            = "core/log"
+    	LoggerPkg         = "core/log/logger"
+    	LokiPkg           = "core/log/loki"
+    	TracingPkg        = "core/tracing"
+    	PagesPkg          = "web/pages"
+    	RestPkg           = "rest"
+    	DatabasePkg       = "db"
+    	EntitiesPkg       = "entities"
+    	UsecasesPkg       = "usecases"
+    	MiddlewarePackage = "rest/middleware"
+    	DefaultPort       = 8080
+    )
+    
+    var (
+    	config ProjectConfig
+    	TmplFS embed.FS
+    )
+    
+    func GenerateServer(conf GeneratorConfig) error {
+    	spec, err := oasparser.ParseOpenAPISpecFile(conf.OpenAPIPath) //NEU Alias
+    	if err != nil || spec == nil {
+    		log.Error().Err(err).Msg("Failed to load OpenAPI spec file")
+    		return err
+    	}
+    
+    	// Init project config
+    	config.Name = conf.ModuleName
+    	config.Path = conf.OutputPath
+    
+    	// Init project config
+    	config.Name = conf.ModuleName
+    	config.Path = conf.OutputPath
+    
+    	// config apikey
+    	if spec.Components != nil {
+    		for key, scheme := range spec.Components.SecuritySchemes {
+    			if scheme != nil && scheme.Value != nil && scheme.Value.Type == "apiKey" {
+    				conf.AddAuth = true
+    				conf.ApiKeyHeaderName = scheme.Value.Name
+    				conf.ApiKeySecurityName = key
+    				break
+    			}
+    		}
+    	}
+    
+    	createProjectPathDirectory(conf)
+    
+    	if conf.AddFrontend {
+    		generateFrontend(spec, conf)
+    	} else {
+    		generateEmptyFrontend(spec, conf)
+    	}
+    
+    	serverConf := generateServerTemplate(spec, conf)
+    
+    	generateConfigFiles(serverConf)
+    	generateInfoFiles(spec, serverConf)
+    	generateLogger(conf)
+    	generateTracing(conf)
+    
+    	generateLifecycleFiles(spec, conf)
+    
+    	generateHandlerFuncs(spec, conf)
+    
+    	GenerateTypes(spec, config)
+    
+    	if conf.AddDatabase {
+    		generateDatabaseFiles(conf)
+    	}
+    
+    	generateValidation(conf)
+    	generatePolicy(conf)
+    
+    	generateJustfile(conf, serverConf)
+    
+    	generateReadme(conf, serverConf)
+    
+    	generateDockerfile(conf, serverConf)
+    
+    	log.Info().Msg("Created all files successfully.")
+    
+    	return nil
+    }
+    
+    func createProjectPathDirectory(conf GeneratorConfig) {
+    	// Generates basic folder structure
+    	fs.GenerateFolder(config.Path)
+    	fs.GenerateFolder(filepath.Join(config.Path, CorePkg))
+    	fs.GenerateFolder(filepath.Join(config.Path, RestPkg))
+    	fs.GenerateFolder(filepath.Join(config.Path, EntitiesPkg))
+    	fs.GenerateFolder(filepath.Join(config.Path, UsecasesPkg))
+    	if conf.AddDatabase {
+    		fs.GenerateFolder(filepath.Join(config.Path, DatabasePkg))
+    	}
+    	fs.GenerateFolder(filepath.Join(config.Path, MiddlewarePackage))
+    
+    	log.Info().Msg("Created project directory.")
+    }
+    
+    func generateServerTemplate(spec *openapi3.T, generatorConf GeneratorConfig) (serverConf ServerConfig) {
+    	openAPIName := fs.GetFileName(generatorConf.OpenAPIPath)
+    	conf := ServerConfig{
+    		Port:        DefaultPort,
+    		ModuleName:  generatorConf.ModuleName,
+    		Flags:       generatorConf.Flags,
+    		OpenAPIName: openAPIName,
+    	}
+    
+    	strDefaultPort := strconv.Itoa(DefaultPort)
+    
+    	if spec.Servers != nil {
+    		serverSpec := spec.Servers[0]
+    		if portSpec := serverSpec.Variables["port"]; portSpec != nil {
+    			portStr := portSpec.Default
+    			if portSpec.Enum != nil {
+    				portStr = portSpec.Enum[0]
+    			}
+    
+    			port, err := strconv.ParseInt(portStr, 10, 16)
+    			if err != nil {
+    				log.Warn().Msg("Failed to convert port, using" + strDefaultPort + "instead.")
+    			} else {
+    				conf.Port = int16(port)
+    			}
+    		} else {
+    			log.Warn().Msg("No port field was found, using" + strDefaultPort + "instead.")
+    		}
+    	} else {
+    		log.Warn().Msg("No servers field was found, using port " + strDefaultPort + " instead.")
+    	}
+    
+    	log.Info().Msg("Adding logging middleware.")
+    
+    	fileName := "main.go"
+    	filePath := filepath.Join(config.Path, fileName)
+    	templateFile := "templates/main.go.tmpl"
+    
+    	log.Debug().Msg("Creating server at port " + strconv.Itoa(int(conf.Port)) + "...")
+    	createFileFromTemplate(filePath, templateFile, conf)
+    
+    	fileName = "mainSvc.go"
+    	filePath = filepath.Join(config.Path, fileName)
+    	templateFile = "templates/mainSvc.go.tmpl"
+    	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+    		createFileFromTemplate(filePath, templateFile, conf)
+    	}
+    
+    	return conf
+    }
+    
+    // ----------------------------
+    func ignore(input string) bool {
+    	return input == "When" || input == "And" || input == "Given" || input == "Then"
+    }
+    
+    func retrieveRegex(input string) string {
+    	regex := ""
+    	for _, j := range input {
+    		if string(j) == "{" {
+    			regex = regex + "\\\\" + string(j)
+    		} else {
+    			regex = regex + string(j)
+    		}
+    	}
+    	return regex
+    }
+    
+    func parseSteps(path string) []Step {
+    	//We use this map to connect each Step struct which represents a step in godog, to the answer that it requires
+    	m := make(map[string]int)
+    	var listOfSteps []Step
+    	file, err := os.Open(path)
+    	if err != nil {
+    		log.Fatal()
+    	}
+    	defer file.Close()
+    
+    	scanner := bufio.NewScanner(file)
+    
+    	var prevStepConf Step
+    	regexedPath := ""
+    
+    	for scanner.Scan() {
+    		var stepConf Step
+    		stepConf.Mapping = make(map[string]int)
+    		stepConf.RegexAndCode = make(map[string]int)
+    		line := scanner.Text()
+    		words := strings.Fields(line)
+    		stringRegex := "\"([^\"]*)\""
+    		for i, word := range words {
+    			//We skip this since we don't need to create any method for them
+    			if word == "Scenario:" && i == 0 {
+    				for _, j := range words[i:] {
+    					if ok, _ := regexp.MatchString(stringRegex, j); ok {
+    						regexedPath = retrieveRegex(j)
+    					}
+    				}
+    				break
+    			}
+    			if word == "Feature:" && i == 0 {
+    				break
+    			} else {
+    				//Retrieve the Method being used
+    				if word == http.MethodPut || word == http.MethodGet || word == http.MethodPost || word == http.MethodDelete {
+    					stepConf.Name = stepConf.Name + word
+    					word = strings.ToLower(word)
+    					r := []rune(word)
+    					stepConf.Method = string(append([]rune{unicode.ToUpper(r[0])}, r[1:]...))
+    				} else if i >= 1 && (words[i-1] == "to") {
+    					//After "to" in the predefined structure we always receive the endpoint
+    					for _, word := range words[i:] {
+    						if value, _ := regexp.MatchString(stringRegex, word); value {
+    							stepConf.Endpoint = stepConf.Endpoint + word
+    							break
+    						}
+    					}
+    				} else if n, err := strconv.Atoi(word); err == nil && 200 <= n && n <= 600 {
+    					//Retrieve the status code
+    					stepConf.StatusCode = word
+    				} else if i >= 1 && (words[i-1] == "payload" || words[i-1] == "Payload" || words[i-1] == "PAYLOAD") {
+    					//After the word "payload" in the predefined structure comes the payload of the request
+    					for _, j := range words[i:] {
+    						stepConf.Payload = stepConf.Payload + j
+    					}
+    					//If we are in a "Then" part of the scenario, the next word is "the", there receive the status code
+    					//We also change the values in the previous step. We do this because the previous step, the actual
+    					//method is where we send the requests to the server whereas the "Then" part of the scenario
+    					//is just used to check whether the response was correct based on the request's method, url and payload
+    					if i == len(words)-1 && len(stepConf.StatusCode) == 0 {
+    						prevStepConf = stepConf
+    					}
+    					break
+    				} else {
+    					//Fill the name of the step. ignore() is used to ignore keywords such as When, Then, Given, And, since
+    					//they are not part of the name
+    					ignore := ignore(word)
+    					if len(stepConf.Name) == 0 && !ignore {
+    						//if the name is empty we add the word in it but firstly it has to be lower cased since the name uses
+    						//camel case convention
+    						stepConf.Name = stepConf.Name + strings.ToLower(word)
+    					} else if len(stepConf.Name) != 0 && !ignore {
+    						//if the name is not empty we capitalize the first letter of the word and add the word to the name
+    						//we also want to make sure that the name does not contain any substrings in quotes
+    						value, _ := regexp.MatchString(stringRegex, word)
+    						if !value {
+    							r := []rune(word)
+    							stepConf.Name = stepConf.Name + string(append([]rune{unicode.ToUpper(r[0])}, r[1:]...))
+    						}
+    					}
+    				}
+    				//we receive the status code of the step in the "Then" part of the scenario. That's why we use prevStepConf.
+    				if strings.HasPrefix(stepConf.Name, "the") {
+    					code, _ := strconv.Atoi(stepConf.StatusCode)
+    					if code != 0 && len(regexedPath) != 0 {
+    						m[prevStepConf.Endpoint] = code
+    						prevStepConf.RegexPaths = append(prevStepConf.RegexPaths, regexedPath)
+    						prevStepConf.StatusCode = strconv.Itoa(code)
+    						value, _ := strconv.Atoi(prevStepConf.StatusCode)
+    						prevStepConf.Mapping[prevStepConf.Endpoint] = value
+    						prevStepConf.RegexAndCode[regexedPath] = value
+    					}
+    				}
+    				//Finally if we have arrived at the end of the string we are looking to add prevStepConf in our list of steps
+    				if i == len(words)-1 {
+    					flag := false
+    					code, _ := strconv.Atoi(stepConf.StatusCode)
+    					//Because the function handlers are not implemented, the payloads do not play an important role. Endpoints do.
+    					m[stepConf.Endpoint] = code
+    					if strings.HasPrefix(stepConf.Name, "the") && len(prevStepConf.Name) != 0 {
+    						//if the list of steps is empty then we just add the step
+    						if len(listOfSteps) == 0 {
+    							listOfSteps = append(listOfSteps, prevStepConf)
+    						} else {
+    							//otherwise we check whether there is a step with the same name or not
+    							for _, j := range listOfSteps {
+    								//if there is, then we want to add this step to the mapping of the step with the same name
+    								//thus we don't add redundant steps in the list, and also
+    								//it is exactly like the schema that godog requires in order to work
+    								if prevStepConf.Name == j.Name {
+    									flag = true
+    									value, _ := strconv.Atoi(prevStepConf.StatusCode)
+    									j.Mapping[prevStepConf.Endpoint] = value
+    									j.RegexAndCode[regexedPath] = value
+    									j.RegexPaths = append(j.RegexPaths, prevStepConf.RegexPaths[0])
+    								}
+    							}
+    							//in the case where the name is not there and also the list is not empty we use the flag to check
+    							//and we just append the step to the list
+    							if !flag {
+    								listOfSteps = append(listOfSteps, prevStepConf)
+    							}
+    						}
+    					}
+    				}
+    			}
+    			//after we're done with the initialization of the stepConf, we initialize prevStepConf and move on
+    			if i == len(words)-1 && len(stepConf.StatusCode) == 0 {
+    				prevStepConf = stepConf
+    			}
+    		}
+    	}
+    	//add the string that we want to use in the godog file
+    	for i, v := range listOfSteps {
+    		v.RealName = v.RealName + createName(v.Name)
+    		localhost := "http://localhost:8080"
+    		for _, k := range v.RegexPaths {
+    			in := strings.ReplaceAll(localhost+k, "\"", "")
+    			v.PathsWithHost = append(v.PathsWithHost, in)
+    		}
+    		listOfSteps[i] = v
+    	}
+    	return listOfSteps
+    }
+    
+    // add space between words in camelcase
+    var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
+    var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
+    
+    func AddedSpace(str string) string {
+    	snake := matchFirstCap.ReplaceAllString(str, "${1} ${2}")
+    	snake = matchAllCap.ReplaceAllString(snake, "${1} ${2}")
+    	return strings.ToLower(snake)
+    }
+    
+    // we use this to create the string for the function which will be used in InitializeScenario() function
+    func createName(str string) string {
+    	nameToReturn := ""
+    	transformed := AddedSpace(str)
+    	for i, word := range strings.Fields(transformed) {
+    		if word == "i" && i == 0 {
+    			nameToReturn = nameToReturn + "^" + strings.ToUpper(word) + " "
+    		} else if word == "to" {
+    			nameToReturn = nameToReturn + "to \"([^\"]*)\" "
+    		} else if word == "payload" {
+    			nameToReturn = nameToReturn + "payload \"([^\"]*)\""
+    		} else if i == len(transformed)-1 {
+    			nameToReturn = nameToReturn + "$"
+    		} else if word == "put" || word == "get" || word == "post" || word == "delete" {
+    			nameToReturn = nameToReturn + strings.ToUpper(word) + " "
+    		} else {
+    			nameToReturn = nameToReturn + word + " "
+    		}
+    	}
+    	return nameToReturn
+    }
+    
+    func contains(element string, arr []string) bool {
+    	for _, j := range arr {
+    		if element == j {
+    			return true
+    		}
+    	}
+    	return false
+    }
+    
+    func getAllEndpoints(listing Listing) []string {
+    	var slice []string
+    	for _, k := range listing.Steps {
+    		for _, j := range k.RegexPaths {
+    			if !contains(j, slice) {
+    				slice = append(slice, j)
+    			}
+    		}
+    	}
+    	return slice
+    }
+===== generator/openapi/godog_test.go =====
+    package generator
+    
+    import (
+    	"fmt"
+    	"net/http"
+    	"regexp"
+    	"strings"
+    
+    	"github.com/cucumber/godog"
+    )
+    
+    //nolint:unused
+    func iSendGETRequestTo(endpoint string) error {
+    
+    	matcher, err := regexp.MatchString("/store/\\{id}", endpoint)
+    	if err != nil {
+    		panic(err)
+    	}
+    	url := "http://localhost:8000/" + endpoint
+    	data := strings.NewReader("")
+    
+    	client := &http.Client{}
+    	req, err := http.NewRequest(http.MethodGet, url, data)
+    	if err != nil {
+    		panic(err)
+    	}
+    
+    	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+    	resp, err := client.Do(req)
+    	if err != nil {
+    		panic(err)
+    	}
+    	if endpoint == "/store" && resp.StatusCode != 404 {
+    		return fmt.Errorf("expected 404 received %d", resp.StatusCode)
+    	} else if matcher && resp.StatusCode != 501 {
+    		return fmt.Errorf("expected 501 received %d", resp.StatusCode)
+    	}
+    
+    	return nil
+    }
+    
+    //nolint:unused
+    func iSendPOSTRequestToWithPayload(endpoint, payload string) error {
+    	url := "http://localhost:8000/" + endpoint
+    	data := strings.NewReader(payload)
+    
+    	client := &http.Client{}
+    	req, err := http.NewRequest(http.MethodPost, url, data)
+    	if err != nil {
+    		panic(err)
+    	}
+    
+    	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+    	resp, err := client.Do(req)
+    	if err != nil {
+    		panic(err)
+    	}
+    
+    	if resp.StatusCode != 404 {
+    		return fmt.Errorf("expected 404 received %d", resp.StatusCode)
+    	}
+    	return nil
+    }
+    
+    //nolint:unused
+    func iSendPUTRequestToWithPayload(endpoint, payload string) error {
+    	matcher, err := regexp.MatchString("/store/\\{id}", endpoint)
+    	if err != nil {
+    		panic(err)
+    	}
+    
+    	url := "http://localhost:8000/" + endpoint
+    	data := strings.NewReader(payload)
+    
+    	client := &http.Client{}
+    	req, err := http.NewRequest(http.MethodGet, url, data)
+    	if err != nil {
+    		panic(err)
+    	}
+    
+    	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+    	resp, err := client.Do(req)
+    	if err != nil {
+    		panic(err)
+    	}
+    	if endpoint == "/store" && resp.StatusCode != 404 {
+    		return fmt.Errorf("expected 404 received %d", resp.StatusCode)
+    	} else if matcher && resp.StatusCode != 501 {
+    		return fmt.Errorf("expected 501 received %d", resp.StatusCode)
+    	}
+    	return nil
+    }
+    
+    //nolint:unused
+    func theResponseForUrlWithRequestMethodShouldBe(method, url string, statusCode int) error {
+    	matcher, err := regexp.MatchString("http://localhost:8000/store/\\{id}", url)
+    	if err != nil {
+    		panic(err)
+    	}
+    	if method == "GET" && url == "http://localhost:8000/store" {
+    		if statusCode != 404 {
+    			return fmt.Errorf("Expected 404 but received other status code")
+    		}
+    	} else if method == "GET" && matcher {
+    		if statusCode != 501 {
+    			return fmt.Errorf("Expected 501 but received other status code")
+    		}
+    	} else if method == "POST" {
+    		if statusCode != 404 {
+    			return fmt.Errorf("Expected 404 but received other status code")
+    		}
+    	} else if method == "PUT" {
+    		if statusCode != 501 {
+    			return fmt.Errorf("Expected 501 but received other status code")
+    		}
+    	}
+    	return nil
+    }
+    
+    //nolint:unused
+    func iSendDELETERequestTo(endpoint string) error {
+    	matcher, err := regexp.MatchString("/store/\\{id}", endpoint)
+    	if err != nil {
+    		panic(err)
+    	}
+    	url := "http://localhost:8000/" + endpoint
+    	data := strings.NewReader("")
+    
+    	client := &http.Client{}
+    	req, err := http.NewRequest(http.MethodDelete, url, data)
+    	if err != nil {
+    		panic(err)
+    	}
+    
+    	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+    	resp, err := client.Do(req)
+    	if err != nil {
+    		panic(err)
+    	}
+    	if endpoint == "/store" && resp.StatusCode != 404 {
+    		return fmt.Errorf("expected 404 received %d", resp.StatusCode)
+    	} else if matcher && resp.StatusCode != 501 {
+    		return fmt.Errorf("expected 501 received %d", resp.StatusCode)
+    	}
+    
+    	return nil
+    }
+    
+    //nolint:unused
+    func InitializeScenario(ctx *godog.ScenarioContext) {
+    	ctx.Step(`^I send GET request to "([^"]*)"$`, iSendGETRequestTo)
+    	ctx.Step(`^I send POST request to "([^"]*)" with payload "([^"]*)"$`, iSendPOSTRequestToWithPayload)
+    	ctx.Step(`^I send PUT request to "([^"]*)" with payload "([^"]*)"$`, iSendPUTRequestToWithPayload)
+    	ctx.Step(`^The response for url "([^"]*)" with request method "([^"]*)" should be (\d+)$`, theResponseForUrlWithRequestMethodShouldBe)
+    	ctx.Step(`^I send DELETE request to "([^"]*)"$`, iSendDELETERequestTo)
+    }
+===== generator/openapi/handler.go =====
+    package generator
+    
+    import (
+    	extCmd "dredger/cmd"
+    	fs "dredger/fileUtils"
+    	"errors"
+    	"os"
+    	"path/filepath"
+    	"slices"
+    	"strings"
+    
+    	"github.com/getkin/kin-openapi/openapi3"
+    	"github.com/huandu/xstrings"
+    	"github.com/rs/zerolog/log"
+    )
+    
+    func generateHandlerFuncStub(op *openapi3.Operation, method string, path string, genConf GeneratorConfig) (OperationConfig, error) {
+    	var conf OperationConfig
+    
+    	var methodPath = method + " " + path
+    
+    	if op.Security != nil {
+    		for _, item := range *op.Security {
+    			for key := range item {
+    				if key == genConf.ApiKeySecurityName {
+    					conf.AddAuth = true
+    					break
+    				}
+    			}
+    		}
+    	}
+    
+    	conf.ModuleName = genConf.ModuleName
+    
+    	conf.Method = method
+    
+    	conf.Summary = op.Summary
+    	if op.Summary == "" {
+    		log.Warn().Msg("No summary found for endpoint: " + methodPath)
+    	}
+    
+    	conf.OperationID = xstrings.FirstRuneToUpper(xstrings.ToCamelCase(op.OperationID))
+    	if op.OperationID == "" {
+    		log.Error().Msg("No operation ID found for endpoint: " + methodPath)
+    		return conf, errors.New("no operation id, can't create function")
+    	}
+    	conf.Schema = ""
+    	if op.RequestBody != nil {
+    		if mt := op.RequestBody.Value.Content.Get("application/json"); mt != nil {
+    			x := strings.Split(mt.Schema.Ref, "/")
+    			if len(x) > 0 {
+    				conf.Schema = x[len(x)-1]
+    			}
+    		} else if mt := op.RequestBody.Value.Content.Get("application/yaml"); mt != nil {
+    			x := strings.Split(mt.Schema.Ref, "/")
+    			if len(x) > 0 {
+    				conf.Schema = x[len(x)-1]
+    			}
+    		} else if mt := op.RequestBody.Value.Content.Get("application/xml"); mt != nil {
+    			x := strings.Split(mt.Schema.Ref, "/")
+    			if len(x) > 0 {
+    				conf.Schema = x[len(x)-1]
+    			}
+    		}
+    	} else if t, exists := op.Extensions["x-requestType"]; exists {
+    		if s, ok := t.(string); ok {
+    			conf.Schema = s
+    		}
+    	}
+    
+    	hasHtmlResponse := false
+    	if op.Responses != nil {
+    		for _, resRef := range op.Responses.Map() {
+    			for cKey := range resRef.Value.Content {
+    				if cKey == "text/html" {
+    					hasHtmlResponse = true
+    				}
+    			}
+    		}
+    	}
+    	if genConf.AddFrontend && hasHtmlResponse && slices.Contains(op.Tags, "page") {
+    		fileName := xstrings.FirstRuneToLower(xstrings.ToCamelCase(conf.OperationID)) + ".templ"
+    		filePath := filepath.Join(config.Path, PagesPkg, fileName)
+    		templateFile := "templates/web/pages.templ.tmpl"
+    		if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+    			createFileFromTemplate(filePath, templateFile, conf)
+    		}
+    	}
+    
+    	for resKey, resRef := range op.Responses.Map() {
+    		if !validateStatusCode(resKey) && resKey != "default" {
+    			log.Warn().Msg("Status code " + resKey + " for endpoint " + methodPath + " is not a valid status code.")
+    		}
+    
+    		conf.Responses = append(conf.Responses, ResponseConfig{resKey, *resRef.Value.Description})
+    	}
+    
+    	conf.PathParams = map[string]string{}
+    	for _, p := range op.Parameters {
+    		if p != nil && p.Value.In == "path" {
+    			conf.PathParams[p.Value.Name] = p.Value.Schema.Value.Format
+    			if p.Value.Schema.Value.Format == "" {
+    				types := p.Value.Schema.Value.Type.Slice()
+    				if len(types) > 0 {
+    					conf.PathParams[p.Value.Name] = types[0]
+    				}
+    			}
+    		}
+    	}
+    
+    	conf.QueryParams = map[string]string{}
+    	for _, p := range op.Parameters {
+    		if p != nil && p.Value.In == "query" {
+    			conf.QueryParams[p.Value.Name] = p.Value.Schema.Value.Format
+    			if p.Value.Schema.Value.Format == "" {
+    				types := p.Value.Schema.Value.Type.Slice()
+    				if len(types) > 0 {
+    					conf.QueryParams[p.Value.Name] = types[0]
+    				}
+    			}
+    		}
+    	}
+    
+    	canBeEdited := true
+    	fileName := xstrings.FirstRuneToLower(xstrings.ToCamelCase(conf.OperationID)) + ".go"
+    	filePath := filepath.Join(config.Path, RestPkg, fileName)
+    	templateFile := "templates/rest/handlerFunc.go.tmpl"
+    	if hasHtmlResponse && slices.Contains(op.Tags, "page") {
+    		templateFile = "templates/rest/pageHandlerFunc.go.tmpl"
+    	}
+    	if conf.OperationID == "GetLive" {
+    		canBeEdited = false
+    		templateFile = "templates/rest/getLive.go.tmpl"
+    	}
+    	if conf.OperationID == "GetInfo" {
+    		canBeEdited = false
+    		templateFile = "templates/rest/getInfo.go.tmpl"
+    	}
+    	if conf.OperationID == "GetRobots" {
+    		canBeEdited = false
+    		templateFile = "templates/rest/getRobots.go.tmpl"
+    	}
+    	if conf.OperationID == "GetIndex" {
+    		templateFile = "templates/rest/getIndex.go.tmpl"
+    	}
+    	if conf.OperationID == "GetRoot" {
+    		templateFile = "templates/rest/getRoot.go.tmpl"
+    	}
+    	if conf.OperationID == "GetContent" {
+    		templateFile = "templates/rest/getContent.go.tmpl"
+    	}
+    	if conf.OperationID == "HandleEvents" {
+    		canBeEdited = false
+    		templateFile = "templates/rest/handleEvents.go.tmpl"
+    	}
+    
+    	log.Debug().Str("operation", conf.OperationID).Str("template", templateFile).Msg("Generate handler")
+    	if _, err := os.Stat(filePath); !canBeEdited || errors.Is(err, os.ErrNotExist) {
+    		createFileFromTemplate(filePath, templateFile, conf)
+    	}
+    	// remove unused imports
+    	extCmd.RunCommand("goimports -w "+fileName, filepath.Join(config.Path, RestPkg))
+    	return conf, nil
+    }
+    
+    func generateHandlerFuncs(spec *openapi3.T, genConf GeneratorConfig) {
+    	conf := HandlerConfig{
+    		ModuleName:  genConf.ModuleName,
+    		OpenAPIPath: fs.GetFileNameWithEnding(genConf.OpenAPIPath),
+    		AddAuth:     genConf.AddAuth,
+    		Flags:       genConf.Flags,
+    	}
+    	conf.ModuleName = genConf.ModuleName
+    	conf.Flags = genConf.Flags
+    
+    	for _, item := range spec.Security {
+    		for key := range item {
+    			if key == genConf.ApiKeySecurityName {
+    				conf.AddGlobalAuth = true
+    				break
+    			}
+    		}
+    	}
+    
+    	for path, pathObj := range spec.Paths.Map() {
+    		var newPath PathConfig
+    		newPath.Path = convertPathParams(path)
+    
+    		for method, op := range pathObj.Operations() {
+    			if !slices.Contains(op.Tags, "builtin") {
+    				opConfig, err := generateHandlerFuncStub(op, method, newPath.Path, genConf)
+    
+    				if err != nil {
+    					log.Err(err).Msg("Skipping generation of handler function for endpoint " + method + " " + path)
+    				}
+    
+    				newPath.Operations = append(newPath.Operations, opConfig)
+    			}
+    		}
+    
+    		conf.Paths = append(conf.Paths, newPath)
+    	}
+    
+    	fileName := "rest.go"
+    	filePath := filepath.Join(config.Path, RestPkg, fileName)
+    	templateFile := "templates/rest/handler.go.tmpl"
+    	createFileFromTemplate(filePath, templateFile, conf)
+    
+    	fileName = "restSvc.go"
+    	filePath = filepath.Join(config.Path, RestPkg, fileName)
+    	templateFile = "templates/rest/restSvc.go.tmpl"
+    	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+    		createFileFromTemplate(filePath, templateFile, conf)
+    	}
+    
+    }
+===== generator/openapi/info.go =====
+    package generator
+    
+    import (
+    	"errors"
+    	"net/http"
+    	"os"
+    	"path/filepath"
+    	"slices"
+    
+    	"github.com/getkin/kin-openapi/openapi3"
+    	"github.com/rs/zerolog/log"
+    )
+    
+    func generateInfoFiles(spec *openapi3.T, serverConf ServerConfig) {
+    	// create info.go file
+    	fileName := "info.go"
+    	filePath := filepath.Join(config.Path, CorePkg, fileName)
+    	templateFile := "templates/core/info.go.tmpl"
+    	createFileFromTemplate(filePath, templateFile, serverConf)
+    
+    	// create infoSvc.go extension file if not exist
+    	fileName = "infoSvc.go"
+    	filePath = filepath.Join(config.Path, CorePkg, fileName)
+    	templateFile = "templates/core/infoSvc.go.tmpl"
+    	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+    		createFileFromTemplate(filePath, templateFile, serverConf)
+    	}
+    
+    	if spec.Paths.Find("/infoz") != nil && (spec.Paths.Find("/infoz").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/infoz").Operations()[http.MethodGet].Tags, "builtin")) {
+    		log.Debug().Msg("Generating default /infoz endpoint.")
+    
+    		op := openapi3.NewOperation()
+    		op.AddResponse(http.StatusOK, createOAPIResponse("The service is ready"))
+    		updateOAPIOperation(op, "GetInfo", "Returns infos about the service", "200")
+    		spec.AddOperation("/infoz", http.MethodGet, op)
+    	}
+    }
+===== generator/openapi/justfile.go =====
+    package generator
+    
+    import (
+    	fs "dredger/fileUtils"
+    	"errors"
+    	"os"
+    	"path/filepath"
+    
+    	"github.com/rs/zerolog/log"
+    )
+    
+    func generateJustfile(conf GeneratorConfig, serverConf ServerConfig) {
+    	type justfileConfig struct {
+    		ModuleName string
+    		Port       int16
+    	}
+    
+    	var justfileConf justfileConfig
+    	justfileConf.ModuleName = conf.ModuleName
+    	justfileConf.Port = serverConf.Port
+    
+    	fileName := "Justfile"
+    	filePath := filepath.Join(config.Path, fileName)
+    	templateFile := "templates/Justfile.tmpl"
+    
+    	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+    		log.Info().Msg("CREATE Justfile")
+    		fs.GenerateFile(filePath)
+    		createFileFromTemplate(filePath, templateFile, justfileConf)
+    	}
+    }
+===== generator/openapi/lifecycle.go =====
+    package generator
+    
+    import (
+    	fs "dredger/fileUtils"
+    	"net/http"
+    	"path/filepath"
+    	"slices"
+    
+    	"github.com/getkin/kin-openapi/openapi3"
+    	"github.com/rs/zerolog/log"
+    )
+    
+    func generateLifecycleFiles(spec *openapi3.T, conf GeneratorConfig) {
+    	if spec.Paths.Find("/livez") != nil && (spec.Paths.Find("/livez").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/livez").Operations()[http.MethodGet].Tags, "builtin")) {
+    		log.Debug().Msg("Generating default /livez endpoint.")
+    
+    		op := openapi3.NewOperation()
+    		op.AddResponse(http.StatusOK, createOAPIResponse("The service is alive"))
+    		updateOAPIOperation(op, "GetLive", "Returns live-state of the service", "200")
+    		spec.AddOperation("/livez", http.MethodGet, op)
+    	}
+    
+    	if spec.Paths.Find("/readyz") != nil && (spec.Paths.Find("/readyz").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/readyz").Operations()[http.MethodGet].Tags, "builtin")) {
+    		log.Debug().Msg("Generating default /readyz endpoint.")
+    
+    		op := openapi3.NewOperation()
+    		op.AddResponse(200, createOAPIResponse("The service is ready"))
+    		op.AddResponse(http.StatusOK, createOAPIResponse("The service is not ready"))
+    		updateOAPIOperation(op, "GetReady", "Returns ready-state of the service", "200")
+    		spec.AddOperation("/readyz", http.MethodGet, op)
+    	}
+    
+    	if spec.Paths.Find("/robots.txt") != nil && (spec.Paths.Find("/robots.txt").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/robots.txt").Operations()[http.MethodGet].Tags, "builtin")) {
+    		log.Debug().Msg("Generating default /robots.txt endpoint.")
+    
+    		op := openapi3.NewOperation()
+    		op.AddResponse(http.StatusOK, createOAPIResponse("The robots.txt"))
+    		updateOAPIOperation(op, "GetRobots", "Returns robots.txt", "200")
+    		spec.AddOperation("/robots.txt", http.MethodGet, op)
+    	}
+    
+    	restPath := filepath.Join(conf.OutputPath, "rest")
+    	fs.CopyWebFile("web", restPath, "robots.txt", false)
+    }
+===== generator/openapi/logger.go =====
+    package generator
+    
+    import (
+    	fs "dredger/fileUtils"
+    	"path/filepath"
+    
+    	"github.com/rs/zerolog/log"
+    )
+    
+    func generateLogger(conf GeneratorConfig) {
+    	fs.GenerateFolder(filepath.Join(conf.OutputPath, LogPkg))
+    	fs.GenerateFolder(filepath.Join(conf.OutputPath, LoggerPkg))
+    	fs.GenerateFolder(filepath.Join(conf.OutputPath, LokiPkg))
+    
+    	// create log.go.tmpl file
+    	filePath := filepath.Join(conf.OutputPath, LogPkg, "log.go")
+    	templateFile := "templates/core/log/log.go.tmpl"
+    	createFileFromTemplate(filePath, templateFile, conf)
+    
+    	createFileFromTemplate(filepath.Join(conf.OutputPath, LoggerPkg, "event.go"), "templates/core/log/logger/event.go", conf)
+    	createFileFromTemplate(filepath.Join(conf.OutputPath, LoggerPkg, "zerolog.go"), "templates/core/log/logger/zerolog.go", conf)
+    	createFileFromTemplate(filepath.Join(conf.OutputPath, LokiPkg, "loki.go"), "templates/core/log/loki/loki.go", conf)
+    
+    	log.Info().Msg("Adding policy middleware.")
+    
+    	fileName := "logger.go"
+    	filePath = filepath.Join(config.Path, MiddlewarePackage, fileName)
+    	templateFile = "templates/middleware/logger.go.tmpl"
+    	createFileFromTemplate(filePath, templateFile, conf)
+    
+    	log.Info().Msg("Created logger successfully.")
+    }
+===== generator/openapi/oapi.go =====
+    package generator
+    
+    import (
+    	"github.com/getkin/kin-openapi/openapi3"
+    )
+    
+    func updateOAPIOperation(op *openapi3.Operation, opID string, opSummary string, opDefault string) {
+    	op.OperationID = opID
+    	op.Summary = opSummary
+    	op.Responses.Default().Value = op.Responses.Map()[opDefault].Value
+    }
+    
+    func createOAPIResponse(rDesc string) *openapi3.Response {
+    	r := openapi3.NewResponse()
+    	r.Description = &rDesc
+    	return r
+    }
+===== generator/openapi/policy.go =====
+    package generator
+    
+    import (
+    	"errors"
+    	"os"
+    	"path/filepath"
+    
+    	"github.com/rs/zerolog/log"
+    )
+    
+    func generatePolicy(conf GeneratorConfig) {
+    	log.Info().Msg("Adding policy middleware.")
+    
+    	fileName := "policy.go"
+    	filePath := filepath.Join(config.Path, MiddlewarePackage, fileName)
+    	templateFile := "templates/middleware/policy.go.tmpl"
+    	createFileFromTemplate(filePath, templateFile, conf)
+    
+    	fileName = "authz.rego"
+    	filePath = filepath.Join(config.Path, MiddlewarePackage, fileName)
+    	templateFile = "templates/middleware/authz.rego.tmpl"
+    	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+    		createFileFromTemplate(filePath, templateFile, conf)
+    	}
+    }
+===== generator/openapi/readme.go =====
+    package generator
+    
+    import (
+    	fs "dredger/fileUtils"
+    	"errors"
+    	"os"
+    	"path/filepath"
+    
+    	"github.com/rs/zerolog/log"
+    )
+    
+    func generateReadme(conf GeneratorConfig, serverConf ServerConfig) {
+    	type readmeConfig struct {
+    		ModuleName string
+    		Port       int16
+    	}
+    
+    	var readmeConf readmeConfig
+    	readmeConf.ModuleName = conf.ModuleName
+    	readmeConf.Port = serverConf.Port
+    
+    	fileName := "ENVIRONMENT.md"
+    	filePath := filepath.Join(config.Path, fileName)
+    	templateFile := "templates/ENVIRONMENT.md.tmpl"
+    
+    	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+    		log.Info().Msg("CREATE ENVIRONMENT.md")
+    		fs.GenerateFile(filePath)
+    		createFileFromTemplate(filePath, templateFile, readmeConf)
+    	}
+    }
+===== generator/openapi/templates.go =====
+    package generator
+    
+    import (
+    	"os"
+    	"path"
+    	"text/template"
+    
+    	fs "dredger/fileUtils"
+    
+    	"github.com/Masterminds/sprig/v3"
+    	"github.com/gobeam/stringy"
+    	"github.com/rs/zerolog/log"
+    )
+    
+    func snakecase(s string) string {
+    	return stringy.New(s).SnakeCase("?", "").Get()
+    }
+    
+    func camelcase(s string) string {
+    	return stringy.New(s).CamelCase("?", "", "#", "").Get()
+    }
+    
+    func lcFirst(s string) string {
+    	return stringy.New(s).LcFirst()
+    }
+    
+    func createFileFromTemplate(filePath string, tmplPath string, config interface{}) {
+    	templateName := path.Base(tmplPath)
+    	funcmap := sprig.FuncMap()
+    	funcmap["camelcase"] = camelcase
+    	funcmap["snakecase"] = snakecase
+    	funcmap["lcfirst"] = lcFirst
+    
+    	// Create file and open it
+    	fs.GenerateFile(filePath)
+    	file, fErr := os.OpenFile(filePath, os.O_WRONLY, os.ModeAppend)
+    	if fErr != nil {
+    		log.Fatal().Err(fErr).Msg("Failed creating file.")
+    		panic(fErr)
+    	}
+    	defer file.Close()
+    
+    	// Parse the template and write into file
+    	tmpl := template.Must(template.New(templateName).Funcs(funcmap).ParseFS(TmplFS, tmplPath))
+    	tmplErr := tmpl.Execute(file, config)
+    	if tmplErr != nil {
+    		log.Fatal().Err(tmplErr).Msg("Failed executing template.")
+    		panic(tmplErr)
+    	}
+    
+    	log.Info().Str("template", templateName).Msg("CREATE " + filePath)
+    }
+    
+    func createFileFromTemplates(filePath string, tmplPaths []string, config interface{}) {
+    	templateName := path.Base(tmplPaths[0])
+    
+    	// Create file and open it
+    	fs.GenerateFile(filePath)
+    	file, fErr := os.OpenFile(filePath, os.O_WRONLY, os.ModeAppend)
+    	if fErr != nil {
+    		log.Fatal().Err(fErr).Msg("Failed creating file.")
+    		panic(fErr)
+    	}
+    	defer file.Close()
+    
+    	// Parse the template and write into file
+    	tmpl := template.Must(template.New(templateName).Funcs(sprig.FuncMap()).ParseFS(TmplFS, tmplPaths...))
+    	tmplErr := tmpl.Execute(file, config)
+    	if tmplErr != nil {
+    		log.Fatal().Err(tmplErr).Msg("Failed executing template.")
+    		panic(tmplErr)
+    	}
+    
+    	log.Info().Msg("CREATE " + filePath)
+    }
+===== generator/openapi/tracing.go =====
+    package generator
+    
+    import (
+    	fs "dredger/fileUtils"
+    	"path/filepath"
+    
+    	"github.com/rs/zerolog/log"
+    )
+    
+    func generateTracing(conf GeneratorConfig) {
+    	fs.GenerateFolder(filepath.Join(conf.OutputPath, TracingPkg))
+    
+    	// create tracing.go.tmpl file
+    	filePath := filepath.Join(conf.OutputPath, TracingPkg, "tracing.go")
+    	templateFile := "templates/core/tracing/tracing.go.tmpl"
+    	createFileFromTemplate(filePath, templateFile, conf)
+    
+    	log.Info().Msg("Created tracing successfully.")
+    }
+===== generator/openapi/types.go =====
+    package generator
+    
+    type Flags struct {
+    	AddDatabase bool
+    	AddFrontend bool
+    }
+    
+    type AuthConfig struct {
+    	AddAuth            bool
+    	ApiKeyHeaderName   string
+    	ApiKeySecurityName string
+    }
+    type GeneratorConfig struct {
+    	OpenAPIPath  string
+    	AsyncAPIPath string //Neu
+    
+    	OutputPath   string
+    	ModuleName   string
+    	DatabaseName string
+    	AuthConfig
+    	Flags
+    }
+    
+    type ProjectConfig struct {
+    	Name string
+    	Path string
+    }
+    
+    type ServerConfig struct {
+    	Port        int16
+    	ModuleName  string
+    	OpenAPIName string
+    	Flags
+    	StaticFiles []string
+    }
+    
+    type ResponseConfig struct {
+    	StatusCode string
+    	Description string
+    }
+    
+    type Step struct {
+    	Method        string
+    	Endpoint      string
+    	Payload       string
+    	Name          string
+    	StatusCode    string
+    	RegexPaths    []string
+    	RealName      string //string that will be used in InitializeScenario
+    	RegexAndCode  map[string]int
+    	PathsWithHost []string
+    	Mapping       map[string]int //it may occur that we use the same function in order to reach different endpoints
+    }
+    
+    type Listing struct {
+    	Steps           []Step
+    	UniqueEndpoints []string
+    }
+    
+    type OperationConfig struct {
+    	ModuleName  string
+    	Method      string
+    	Summary     string
+    	OperationID string
+    	Schema      string
+    	AddAuth     bool
+    	PathParams  map[string]string
+    	QueryParams map[string]string
+    	Responses   []ResponseConfig
+    }
+    
+    type PathConfig struct {
+    	Path       string
+    	Operations []OperationConfig
+    }
+    
+    type HandlerConfig struct {
+    	Paths         []PathConfig
+    	OpenAPIPath   string
+    	AddAuth       bool
+    	AddGlobalAuth bool
+    	ModuleName    string
+    	Flags
+    }
+    
+    // struct for all schemas that have to be in the frontend
+    type Schemas struct {
+    	List       []SchemaConf
+    	IsNotEmpty bool
+    }
+    
+    // struct for the specific schema in Schemas
+    type SchemaConf struct {
+    	Name          string // all in lower case and without spaces
+    	H1Name        string // correct grammar, spaces allowed
+    	ComponentName string // first letter upper case, no spaces
+    	Properties    []PropertyConf
+    	Methods       []MethodConf
+    }
+    
+    // struct for each property of a schema
+    type PropertyConf struct {
+    	Name      string
+    	LabelName string
+    	Type      string
+    }
+    
+    // struct for each method a schema has
+    type MethodConf struct {
+    	Type               string
+    	Endpoint           string
+    	PathParams         map[string]string
+    	BodySchemaRequired bool
+    }
+===== generator/openapi/utils.go =====
+    package generator
+    
+    import (
+    	"regexp"
+    	"strings"
+    )
+    
+    func validateStatusCode(code string) bool {
+    	return regexp.MustCompile(`[1-5](\d\d|XX)`).MatchString(code)
+    }
+    
+    func convertPathParams(path string) string {
+    	return strings.ReplaceAll(strings.ReplaceAll(path, "{", ":"), "}", "")
+    }
+===== generator/openapi/validation.go =====
+    package generator
+    
+    import (
+    	fs "dredger/fileUtils"
+    	"path/filepath"
+    
+    	"github.com/rs/zerolog/log"
+    )
+    
+    func generateValidation(conf GeneratorConfig) {
+    	log.Info().Msg("Adding validation middleware.")
+    
+    	fileName := "validation.go"
+    	filePath := filepath.Join(config.Path, MiddlewarePackage, fileName)
+    	templateFile := "templates/middleware/validation.go.tmpl"
+    
+    	fs.GenerateFile(filePath)
+    	createFileFromTemplate(filePath, templateFile, conf)
+    }
+===== generator/tests/fileUtils_test.go =====
+    package tests
+    
+    import (
+    	generator "dredger/fileUtils"
+    	_ "dredger/tests"
+    	"log"
+    	"os"
+    	"testing"
+    )
+    
+    func TestFileCreation(t *testing.T) {
+    	generator.GenerateFile("test_file.txt")
+    	if _, err := os.Stat("test_file.txt"); err != nil {
+    		if os.IsNotExist(err) {
+    			t.Errorf("File does not exist")
+    		}
+    	}
+    	e := os.Remove("test_file.txt")
+    	if e != nil {
+    		log.Fatal(e)
+    	}
+    }
+    
+    func TestCheckIfFileExiscdts(t *testing.T) {
+    	if !generator.CheckIfFileExists("fileUtils/fileUtils.go") {
+    		t.Errorf("File exists but it could not be found")
+    	}
+    	if generator.CheckIfFileExists("fileUtils/fileUtils.txt") {
+    		t.Errorf("File does not exist but CheckIfFileExists returned true")
+    	}
+    }
+    
+    func TestGenerateFolder(t *testing.T) {
+    	generator.GenerateFolder("test_folder")
+    	if _, err := os.Stat("test_folder"); err != nil {
+    		if os.IsNotExist(err) {
+    			t.Errorf("Folder does not exist")
+    		}
+    	}
+    	generator.DeleteFolderRecursively("test_folder")
+    }
+    
+    func TestDeleteFolderRecursively(t *testing.T) {
+    	generator.GenerateFolder("test_folder")
+    	generator.DeleteFolderRecursively("test_folder")
+    	if _, err := os.Stat("test_folder"); err != nil {
+    		if !os.IsNotExist(err) {
+    			t.Errorf("Folder was not deleted")
+    		}
+    	}
+    }

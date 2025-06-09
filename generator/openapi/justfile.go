@@ -1,10 +1,10 @@
 package generator
 
 import (
-	fs "dredger/fileUtils"
-	"errors"
 	"os"
 	"path/filepath"
+
+	fs "dredger/fileUtils"
 
 	"github.com/rs/zerolog/log"
 )
@@ -14,16 +14,15 @@ func generateJustfile(conf GeneratorConfig, serverConf ServerConfig) {
 		ModuleName string
 		Port       int16
 	}
-
 	var justfileConf justfileConfig
 	justfileConf.ModuleName = conf.ModuleName
 	justfileConf.Port = serverConf.Port
 
 	fileName := "Justfile"
 	filePath := filepath.Join(config.Path, fileName)
-	templateFile := "templates/Justfile.tmpl"
+	templateFile := "templates/common/Justfile.tmpl"
 
-	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		log.Info().Msg("CREATE Justfile")
 		fs.GenerateFile(filePath)
 		createFileFromTemplate(filePath, templateFile, justfileConf)
