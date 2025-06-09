@@ -19,7 +19,7 @@ import (
 func generateEmptyFrontend(_ *openapi3.T, conf GeneratorConfig) {
 	frontendPath := filepath.Join(conf.OutputPath, "web")
 	fs.GenerateFolder(frontendPath)
-	createFileFromTemplate(filepath.Join(frontendPath, "README.md"), "templates/web/README.md.tmpl", conf)
+	createFileFromTemplate(filepath.Join(frontendPath, "README.md"), "templates/openapi/web/README.md.tmpl", conf)
 }
 
 func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
@@ -49,7 +49,7 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	fs.GenerateFolder(docPath)
 
 	// files in root directory
-	createFileFromTemplate(filepath.Join(frontendPath, "README.md"), "templates/web/README.md.tmpl", conf)
+	createFileFromTemplate(filepath.Join(frontendPath, "README.md"), "templates/openapi/web/README.md.tmpl", conf)
 
 	// files in javascript directory
 	fs.CopyWebFile("web/js", javascriptPath, "bootstrap.bundle.min.js", true)
@@ -75,21 +75,21 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	fs.CopyWebFile("web", frontendPath, "web.go", true)
 
 	// files in core directory
-	createFileFromTemplate(filepath.Join(corePath, "localize.go"), "templates/core/localize.go.tmpl", conf)
+	createFileFromTemplate(filepath.Join(corePath, "localize.go"), "templates/openapi/core/localize.go.tmpl", conf)
 	if _, err := os.Stat(filepath.Join(localesPath, "locale.de.toml")); errors.Is(err, os.ErrNotExist) {
-		createFileFromTemplate(filepath.Join(localesPath, "locale.de.toml"), "templates/core/locales/locale.de.toml", conf)
-		createFileFromTemplate(filepath.Join(localesPath, "locale.en.toml"), "templates/core/locales/locale.en.toml", conf)
+		createFileFromTemplate(filepath.Join(localesPath, "locale.de.toml"), "templates/openapi/core/locales/locale.de.toml", conf)
+		createFileFromTemplate(filepath.Join(localesPath, "locale.en.toml"), "templates/openapi/core/locales/locale.en.toml", conf)
 	}
 
 	// files in pages directory
 	fs.CopyWebFile("web/pages", restPath, "render.go", true)
 	if _, err := os.Stat(filepath.Join(pagesPath, "languages.templ")); errors.Is(err, os.ErrNotExist) {
-		createFileFromTemplate(filepath.Join(pagesPath, "languages.templ"), "templates/web/pages/languages.templ.tmpl", conf)
+		createFileFromTemplate(filepath.Join(pagesPath, "languages.templ"), "templates/openapi/web/pages/languages.templ.tmpl", conf)
 	}
 	if spec.Paths.Find("/index.html") != nil && spec.Paths.Find("/index.html").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/index.html").Operations()[http.MethodGet].Tags, "builtin") {
 		if _, err := os.Stat(filepath.Join(pagesPath, "index.templ")); errors.Is(err, os.ErrNotExist) {
-			createFileFromTemplate(filepath.Join(pagesPath, "index.templ"), "templates/web/pages/index.templ.tmpl", conf)
-			createFileFromTemplate(filepath.Join(pagesPath, "content.templ"), "templates/web/pages/content.templ.tmpl", conf)
+			createFileFromTemplate(filepath.Join(pagesPath, "index.templ"), "templates/openapi/web/pages/index.templ.tmpl", conf)
+			createFileFromTemplate(filepath.Join(pagesPath, "content.templ"), "templates/openapi/web/pages/content.templ.tmpl", conf)
 		}
 		op := openapi3.NewOperation()
 		op.AddResponse(http.StatusOK, createOAPIResponse("The service delivers index page"))
@@ -104,7 +104,7 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	}
 	if spec.Paths.Find("/content.html") != nil && spec.Paths.Find("/content.html").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/content.html").Operations()[http.MethodGet].Tags, "builtin") {
 		if _, err := os.Stat(filepath.Join(pagesPath, "content.templ")); errors.Is(err, os.ErrNotExist) {
-			createFileFromTemplate(filepath.Join(pagesPath, "content.templ"), "templates/web/pages/content.templ.tmpl", conf)
+			createFileFromTemplate(filepath.Join(pagesPath, "content.templ"), "templates/openapi/web/pages/content.templ.tmpl", conf)
 		}
 		op := openapi3.NewOperation()
 		op.AddResponse(http.StatusOK, createOAPIResponse("The service delivers content page"))
@@ -121,8 +121,8 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	// support for events
 	if spec.Paths.Find("/events") != nil && spec.Paths.Find("/events").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/events").Operations()[http.MethodGet].Tags, "builtin") {
 		log.Debug().Msg("Generating default /events endpoint.")
-		createFileFromTemplate(filepath.Join(restPath, "progress.go"), "templates/web/pages/progress.go.tmpl", conf)
-		createFileFromTemplate(filepath.Join(restPath, "notice.go"), "templates/web/pages/notice.go.tmpl", conf)
+		createFileFromTemplate(filepath.Join(restPath, "progress.go"), "templates/openapi/web/pages/progress.go.tmpl", conf)
+		createFileFromTemplate(filepath.Join(restPath, "notice.go"), "templates/openapi/web/pages/notice.go.tmpl", conf)
 
 		op := openapi3.NewOperation()
 		op.AddResponse(http.StatusOK, createOAPIResponse("The service support sse"))
@@ -231,8 +231,8 @@ func generateOpenAPIDoc(conf GeneratorConfig) {
 	}
 
 	// create static html files
-	createFileFromTemplate(filepath.Join(path, "rapidoc.html"), "templates/rapidoc/index.html.tmpl", template)
-	createFileFromTemplate(filepath.Join(path, "elements.html"), "templates/elements/index.html.tmpl", template)
+	createFileFromTemplate(filepath.Join(path, "rapidoc.html"), "templates/openapi/rapidoc/index.html.tmpl", template)
+	createFileFromTemplate(filepath.Join(path, "elements.html"), "templates/openapi/elements/index.html.tmpl", template)
 
 	// copy OpenAPI Specification in this directory
 	fs.CopyFile(conf.OpenAPIPath, path, template.OpenAPIFile)
