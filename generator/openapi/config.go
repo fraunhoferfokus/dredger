@@ -5,8 +5,6 @@ import (
 	"os"
 	"path/filepath"
 
-	fs "dredger/fileUtils"
-
 	"github.com/rs/zerolog/log"
 )
 
