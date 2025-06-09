@@ -9,12 +9,12 @@ import (
 
     "github.com/rs/zerolog/log"
     "github.com/rs/zerolog"
-    "github.com/yourorg/yourmodule/async/cli"
-    "github.com/yourorg/yourmodule/async/config"
-    "github.com/yourorg/yourmodule/async/handler"
-    "github.com/yourorg/yourmodule/async/utils"
-    "github.com/yourorg/yourmodule/async/tracing"
-    "github.com/yourorg/yourmodule/async/logger"
+    "{{ .ModuleName }}/async/cli"
+    "{{ .ModuleName }}/async/config"
+    "{{ .ModuleName }}/async/handler"
+    "{{ .ModuleName }}/async/utils"
+    "{{ .ModuleName }}/async/tracing"
+    "{{ .ModuleName }}/async/logger"
     "github.com/nats-io/nats.go"
     "github.com/nats-io/jetstream.go"
 )
