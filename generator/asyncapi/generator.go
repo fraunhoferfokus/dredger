@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 
 	fs "dredger/fileUtils"
-	"dredger/parser"
 
 	"github.com/rs/zerolog/log"
 )
@@ -20,11 +19,7 @@ type mainConfig struct {
 }
 
 // GenerateService creates a minimal async service based on the given spec.
-func GenerateService(specPath, outputPath, moduleName string) error {
-	spec, err := parser.ParseAsyncAPISpecFile(specPath)
-	if err != nil {
-		return err
-	}
+func GenerateService(spec Specification, outputPath, moduleName string) error {
 
 	conf := mainConfig{
 		ModuleName: moduleName,
