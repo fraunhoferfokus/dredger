@@ -228,7 +228,7 @@ func parseSteps(path string) []Step {
 					}
 				}
 
-			case n, err := strconv.Atoi(word); err == nil && 200 <= n && n <= 600:
+			case isStatusCode(word):
 				stepConf.StatusCode = word
 
 			case i >= 1 && (words[i-1] == "payload" || words[i-1] == "Payload" || words[i-1] == "PAYLOAD"):
@@ -304,7 +304,7 @@ func parseSteps(path string) []Step {
 }
 
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
-var matchAllCap  = regexp.MustCompile("([a-z0-9])([A-Z])")
+var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
 
 func AddedSpace(str string) string {
 	snake := matchFirstCap.ReplaceAllString(str, "${1} ${2}")
@@ -352,4 +352,14 @@ func getAllEndpoints(listing Listing) []string {
 		}
 	}
 	return eps
+}
+
+// isStatusCode checks if the provided string represents an HTTP status code
+// between 200 and 600.
+func isStatusCode(s string) bool {
+	n, err := strconv.Atoi(s)
+	if err != nil {
+		return false
+	}
+	return n >= http.StatusOK && n <= 600
 }

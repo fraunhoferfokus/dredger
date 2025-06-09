@@ -35,7 +35,7 @@ type ServerConfig struct {
 }
 
 type ResponseConfig struct {
-	StatusCode string
+	StatusCode  string
 	Description string
 }
 
