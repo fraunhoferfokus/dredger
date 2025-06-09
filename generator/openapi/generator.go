@@ -38,9 +38,8 @@ const (
 
 var (
 	// Einbettung der Template-Ordner common, openapi und asyncapi
-	//go:embed ../templates/common/**
-	//go:embed ../templates/openapi/**
-	//go:embed ../templates/asyncapi/**
+	// Template files are embedded via main.go and assigned to TmplFS
+	// This variable holds those embedded templates.
 	TmplFS embed.FS
 
 	config ProjectConfig
