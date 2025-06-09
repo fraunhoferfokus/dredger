@@ -144,14 +144,14 @@ func generateServerTemplate(spec *openapi3.T, generatorConf GeneratorConfig) (se
 
 	log.Info().Msg("Adding logging middleware.")
 
-	// main.go aus common/
+	// main.go aus openapi/
 	mainPath := filepath.Join(config.Path, "main.go")
-	createFileFromTemplate(mainPath, "templates/common/main.go.tmpl", conf)
+	createFileFromTemplate(mainPath, "templates/openapi/main.go.tmpl", conf)
 
-	// mainSvc.go aus common/
+	// mainSvc.go aus openapi/
 	svcPath := filepath.Join(config.Path, "mainSvc.go")
 	if _, err := os.Stat(svcPath); errors.Is(err, os.ErrNotExist) {
-		createFileFromTemplate(svcPath, "templates/common/mainSvc.go.tmpl", conf)
+		createFileFromTemplate(svcPath, "templates/openapi/mainSvc.go.tmpl", conf)
 	}
 
 	return conf
