@@ -77,6 +77,19 @@ For typical tasks you can use the [just](https://just.systems/man/en/) recipes:
 
 You can find a few OpenAPI 3 Specification file examples [here](./examples). There is also a minimal [OpenAPI.yaml](./examples/OpenAPI.yaml.min-example) file as starting point for your service.
 
+## AsyncAPI Usage
+
+AsyncAPI specifications are supported as well. The repository now includes a
+small schema file at `examples/schemas/asyncapiv3Schema.json` used for basic
+validation. To generate code from an AsyncAPI v3 file, run:
+
+```bash
+go run main.go generate ./examples/simple/asyncapiv3.json -o ./build-asyncapi -n async-service
+```
+
+If the schema file cannot be found, validation is skipped and the code is still
+generated.
+
 # Contributions
 
 The origin of this project was made by 6 students (A. Uluc, A. Munteau, O. Rosenblatt, J. Wilke, C. Szramek, F. Yzeiri) of the TU Berlin as part of the module "Moderne Verteilte Anwendungen Programmierpraktikum" when studying B.Sc Computer Science and could be found at https://github.com/MVA-OpenApi/go-open-api-generator.
