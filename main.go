@@ -5,8 +5,9 @@ import (
 
 	"dredger/cli"
 
-	// Wir brauchen hier das OpenAPI-Generator‐Package,
-	// damit wir ihm die eingebetteten Templates geben können:
+	// Wir brauchen hier die Generator-Pakete,
+	// damit wir ihnen die eingebetteten Templates geben können:
+	genAsyncAPI "dredger/generator/asyncapi"
 	genOpenAPI "dredger/generator/openapi"
 )
 
@@ -14,8 +15,9 @@ import (
 var tmplFS embed.FS
 
 func main() {
-	// Hier übergeben wir die eingebetteten Dateien an das OpenAPI‐Generator‐Package:
+	// Hier übergeben wir die eingebetteten Dateien an die Generator-Packages:
 	genOpenAPI.TmplFS = tmplFS
+	genAsyncAPI.TmplFS = tmplFS
 
 	// Jetzt startet die CLI wie gewohnt:
 	cli.Execute()
