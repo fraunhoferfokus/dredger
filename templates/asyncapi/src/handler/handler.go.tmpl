@@ -8,7 +8,7 @@ import (
 	"context"
 )
 
-// HandlerFunc erzeugt eine nats.Msg-Callback-Funktion für Channel {{.ChannelName}}
+// HandlerFunc erzeugt eine nats.Msg-Callback-Funktion für den angegebenen Channel
 func HandlerFunc(channel string, schemaDir string, fn func(context.Context, []byte) error) nats.MsgHandler {
 	return func(msg *nats.Msg) {
 		ctx := context.Background()
