@@ -81,7 +81,7 @@ func generateHandlerFuncStub(op *openapi3.Operation, method string, path string,
 	if genConf.AddFrontend && hasHtmlResponse && slices.Contains(op.Tags, "page") {
 		fileName := xstrings.FirstRuneToLower(xstrings.ToCamelCase(conf.OperationID)) + ".templ"
 		filePath := filepath.Join(config.Path, PagesPkg, fileName)
-		templateFile := "templates/web/pages.templ.tmpl"
+		templateFile := "templates/openapi/web/pages.templ.tmpl"
 		if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 			createFileFromTemplate(filePath, templateFile, conf)
 		}
@@ -124,34 +124,34 @@ func generateHandlerFuncStub(op *openapi3.Operation, method string, path string,
 	canBeEdited := true
 	fileName := xstrings.FirstRuneToLower(xstrings.ToCamelCase(conf.OperationID)) + ".go"
 	filePath := filepath.Join(config.Path, RestPkg, fileName)
-	templateFile := "templates/rest/handlerFunc.go.tmpl"
+	templateFile := "templates/openapi/rest/handlerFunc.go.tmpl"
 	if hasHtmlResponse && slices.Contains(op.Tags, "page") {
-		templateFile = "templates/rest/pageHandlerFunc.go.tmpl"
+		templateFile = "templates/openapi/rest/pageHandlerFunc.go.tmpl"
 	}
 	if conf.OperationID == "GetLive" {
 		canBeEdited = false
-		templateFile = "templates/rest/getLive.go.tmpl"
+		templateFile = "templates/openapi/rest/getLive.go.tmpl"
 	}
 	if conf.OperationID == "GetInfo" {
 		canBeEdited = false
-		templateFile = "templates/rest/getInfo.go.tmpl"
+		templateFile = "templates/openapi/rest/getInfo.go.tmpl"
 	}
 	if conf.OperationID == "GetRobots" {
 		canBeEdited = false
-		templateFile = "templates/rest/getRobots.go.tmpl"
+		templateFile = "templates/openapi/rest/getRobots.go.tmpl"
 	}
 	if conf.OperationID == "GetIndex" {
-		templateFile = "templates/rest/getIndex.go.tmpl"
+		templateFile = "templates/openapi/rest/getIndex.go.tmpl"
 	}
 	if conf.OperationID == "GetRoot" {
-		templateFile = "templates/rest/getRoot.go.tmpl"
+		templateFile = "templates/openapi/rest/getRoot.go.tmpl"
 	}
 	if conf.OperationID == "GetContent" {
-		templateFile = "templates/rest/getContent.go.tmpl"
+		templateFile = "templates/openapi/rest/getContent.go.tmpl"
 	}
 	if conf.OperationID == "HandleEvents" {
 		canBeEdited = false
-		templateFile = "templates/rest/handleEvents.go.tmpl"
+		templateFile = "templates/openapi/rest/handleEvents.go.tmpl"
 	}
 
 	log.Debug().Str("operation", conf.OperationID).Str("template", templateFile).Msg("Generate handler")
@@ -203,12 +203,12 @@ func generateHandlerFuncs(spec *openapi3.T, genConf GeneratorConfig) {
 
 	fileName := "rest.go"
 	filePath := filepath.Join(config.Path, RestPkg, fileName)
-	templateFile := "templates/rest/handler.go.tmpl"
+	templateFile := "templates/openapi/rest/handler.go.tmpl"
 	createFileFromTemplate(filePath, templateFile, conf)
 
 	fileName = "restSvc.go"
 	filePath = filepath.Join(config.Path, RestPkg, fileName)
-	templateFile = "templates/rest/restSvc.go.tmpl"
+	templateFile = "templates/openapi/rest/restSvc.go.tmpl"
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filePath, templateFile, conf)
 	}
