@@ -45,7 +45,12 @@ func ParseAsyncAPISpecFile(file string) (gen.Specification, error) {
 	c := jsonschema.NewCompiler()
 	sch, err := c.Compile(schemaFile)
 	if err != nil {
-		return gen.Specification{}, fmt.Errorf("Schema compile error: %w", err)
+		if os.IsNotExist(err) {
+			log.Warn().Msgf("schema file %s not found, skipping validation", schemaFile)
+			sch = nil
+		} else {
+			return gen.Specification{}, fmt.Errorf("Schema compile error: %w", err)
+		}
 	}
 
 	f, err := os.Open(file)
@@ -58,9 +63,11 @@ func ParseAsyncAPISpecFile(file string) (gen.Specification, error) {
 	var raw any
 	json.NewDecoder(f).Decode(&raw)
 
-	err = sch.Validate(raw)
-	if err != nil {
-		return gen.Specification{}, fmt.Errorf("Validation failed: %w", err)
+	if sch != nil {
+		err = sch.Validate(raw)
+		if err != nil {
+			return gen.Specification{}, fmt.Errorf("Validation failed: %w", err)
+		}
 	}
 
 	// Reset reader to start
