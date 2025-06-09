@@ -4,5 +4,5 @@ import (
 	"embed"
 )
 
-//go:embed web
+//go:embed openapi/web
 var WebFS embed.FS
