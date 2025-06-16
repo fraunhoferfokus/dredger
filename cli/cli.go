@@ -119,7 +119,7 @@ func init() {
 
 }
 
-// detectSpecType liest bis 1 MiB und sucht nach asyncapi/openapi/swagger
+// automatische spec erkennung 💃
 func detectSpecType(specPath string) (isAsync bool, isOpenAPI bool, err error) {
 	f, err := os.Open(specPath)
 	if err != nil {
@@ -140,6 +140,7 @@ func detectSpecType(specPath string) (isAsync bool, isOpenAPI bool, err error) {
 	if strings.Contains(text, "\"openapi\"") || strings.HasPrefix(text, "openapi:") {
 		return false, true, nil
 	}
+	//veraltete "schreibweise" jetzt openapi
 	if strings.Contains(text, "\"swagger\"") || strings.HasPrefix(text, "swagger:") {
 		return false, true, nil
 	}
