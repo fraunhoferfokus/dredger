@@ -10,7 +10,6 @@ import (
 	"dredger/core"
 	genAsyncAPI "dredger/generator/asyncapi"
 	genOpenAPI "dredger/generator/openapi"
-	"dredger/parser"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -60,12 +59,12 @@ var generateCmd = &cobra.Command{
 		// Falls --async gesetzt, erzwinge AsyncAPI
 		if asyncPath != "" {
 			log.Info().Msg("AsyncAPI via --async übergeben.")
-			spec, err := parser.ParseAsyncAPISpecFile(asyncPath)
-			if err != nil {
-				log.Error().Err(err).Msg("AsyncAPI: Fehler beim Parsen")
-				return
+			config := genAsyncAPI.AsyncAPIConfig{
+				AsyncAPIPath: specPath,
+				OutputPath:   projectDestination,
+				ModuleName:   projectName,
 			}
-			if err := genAsyncAPI.GenerateService(spec, projectDestination, projectName); err != nil {
+			if err := genAsyncAPI.GenerateAsyncService(config); err != nil {
 				log.Error().Err(err).Msg("AsyncAPI: Fehler beim Generieren")
 			}
 			return
@@ -80,12 +79,13 @@ var generateCmd = &cobra.Command{
 		switch {
 		case isAsync:
 			log.Info().Msg("Erkannt: AsyncAPI-Spec – wir parsen & generieren mit dem AsyncAPI-Generator")
-			spec, err := parser.ParseAsyncAPISpecFile(specPath)
-			if err != nil {
-				log.Error().Err(err).Msg("AsyncAPI: Fehler beim Parsen")
-				return
+
+			config := genAsyncAPI.AsyncAPIConfig{
+				AsyncAPIPath: specPath,
+				OutputPath:   projectDestination,
+				ModuleName:   projectName,
 			}
-			if err := genAsyncAPI.GenerateService(spec, projectDestination, projectName); err != nil {
+			if err := genAsyncAPI.GenerateAsyncService(config); err != nil {
 				log.Error().Err(err).Msg("AsyncAPI: Fehler beim Generieren")
 			}
 
