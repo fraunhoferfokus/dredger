@@ -95,6 +95,9 @@ whether a file is an OpenAPI or AsyncAPI specification:
 go run main.go generate ./examples/stores/stores.yaml \
   ./examples/simple/asyncapiv3.json -o ./build-both -n multi-service
 ```
+When copying the command ensure that the line break uses a `\` at the end of the
+first line **without any trailing spaces**, otherwise an extra argument may be
+passed to the CLI.
 
 You can also pass several specs at once, mixing OpenAPI and AsyncAPI files:
 
