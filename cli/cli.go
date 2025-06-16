@@ -58,6 +58,11 @@ var generateCmd = &cobra.Command{
 		specPaths := args
 
 		for _, specPath := range specPaths {
+			specPath = strings.TrimSpace(specPath)
+			if specPath == "" || specPath == "\\" {
+				// Ignore stray arguments from malformed line breaks
+				continue
+			}
 			isAsync, isOpen, err := detectSpecType(specPath)
 			if err != nil {
 				log.Error().Err(err).Msg("Konnte Spec-Datei nicht öffnen oder lesen")
