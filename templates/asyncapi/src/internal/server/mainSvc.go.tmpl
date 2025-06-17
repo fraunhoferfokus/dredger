@@ -1,0 +1,134 @@
+package main
+
+import (
+	"fmt"
+	"log"
+	"net/http"
+	"{{ .ModuleName }}/cmd/server/subscribers"
+
+	"github.com/gorilla/websocket"
+	"github.com/nats-io/nats.go"
+)
+
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		return true // allow any origin; adjust in production as needed
+	},
+}
+
+func main() {
+	// 1. Connect to NATS
+	nc, err := nats.Connect(nats.DefaultURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer nc.Drain()
+
+	// 2. Serve static files from "web/static"
+	http.Handle("/", http.FileServer(http.Dir("web/pages")))
+
+	// 3. WebSocket endpoint
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		// Upgrade HTTP to WebSocket
+		ws, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			log.Println("WebSocket upgrade failed:", err)
+			return
+		}
+		defer ws.Close()
+
+		var subs []*nats.Subscription
+
+		{{- range .Channels }}
+			sub := subscribers.Subscribe{{ .MessageName }}(nc, ws)
+			if sub == nil {
+				log.Println("Subscription to {{ .ChannelName }} failed, closing WebSocket")
+				return
+			}
+			subs = append(subs, sub)
+		{{- end }}
+		// Keep the WebSocket open until the client disconnects
+		for {
+			if _, _, err := ws.ReadMessage(); err != nil {
+
+				for _, s := range subs {
+					s.Unsubscribe()
+				}
+				// Client closed or read error
+				break
+			}
+		}
+	})
+
+	fmt.Println("Server running at http://localhost:8080")
+	if serveErr := http.ListenAndServe(":8080", nil); serveErr != nil {
+		log.Fatal(serveErr)
+	}
+}
+
+
+package server
+
+import (
+	"log"
+	"net/http"
+
+	"{{ .ModuleName }}/internal/server/subscribers"
+
+	"github.com/gorilla/websocket"
+	"github.com/nats-io/nats.go"
+)
+
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		return true // allow all origins — restrict in prod!
+	},
+}
+
+// RegisterHandlers sets up all HTTP routes
+func RegisterHandlers() {
+	// Static files
+	http.Handle("/", http.FileServer(http.Dir("web/pages")))
+
+	// WebSocket endpoint
+	http.HandleFunc("/ws", handleWebSocket)
+}
+
+func handleWebSocket(w http.ResponseWriter, r *http.Request) {
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println("WebSocket upgrade failed:", err)
+		return
+	}
+	defer ws.Close()
+
+	// Connect to NATS per connection (or use shared pool)
+	nc, err := nats.Connect(nats.DefaultURL)
+	if err != nil {
+		log.Println("Failed to connect to NATS:", err)
+		return
+	}
+	defer nc.Drain()
+
+	// Subscribe to relevant channels
+		var subs []*nats.Subscription
+
+		{{- range .Channels }}
+			sub := subscribers.Subscribe{{ .MessageName }}(nc, ws)
+			if sub == nil {
+				log.Println("Subscription to {{ .ChannelName }} failed, closing WebSocket")
+				return
+			}
+			subs = append(subs, sub)
+		{{- end }}
+
+	// Keep WebSocket open
+	for {
+		if _, _, err := ws.ReadMessage(); err != nil {
+				for _, s := range subs {
+					s.Unsubscribe()
+				}
+			break
+		}
+	}
+}

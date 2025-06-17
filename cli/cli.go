@@ -10,7 +10,6 @@ import (
 	"dredger/core"
 	genAsyncAPI "dredger/generator/asyncapi"
 	genOpenAPI "dredger/generator/openapi"
-	"dredger/parser"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -55,6 +54,39 @@ var generateCmd = &cobra.Command{
 		}
 		projectDestination := filepath.Join(projectPath)
 
+//emy
+		// Falls --async gesetzt, erzwinge AsyncAPI
+		if asyncPath != "" {
+			log.Info().Msg("AsyncAPI via --async übergeben.")
+			config := genAsyncAPI.AsyncAPIConfig{
+				AsyncAPIPath: specPath,
+				OutputPath:   projectDestination,
+				ModuleName:   projectName,
+			}
+			if err := genAsyncAPI.GenerateAsyncService(config); err != nil {
+				log.Error().Err(err).Msg("AsyncAPI: Fehler beim Generieren")
+			}
+			return
+		}
+
+		// Spectype automatisch erkennen
+		isAsync, isOpen, err := detectSpecType(specPath)
+		if err != nil {
+			log.Error().Err(err).Msg("Konnte Spec-Datei nicht öffnen oder lesen")
+			return
+		}
+		switch {
+		case isAsync:
+			log.Info().Msg("Erkannt: AsyncAPI-Spec – wir parsen & generieren mit dem AsyncAPI-Generator")
+
+			config := genAsyncAPI.AsyncAPIConfig{
+				AsyncAPIPath: specPath,
+				OutputPath:   projectDestination,
+				ModuleName:   projectName,
+			}
+			if err := genAsyncAPI.GenerateAsyncService(config); err != nil {
+				log.Error().Err(err).Msg("AsyncAPI: Fehler beim Generieren")
+//div
 		specPaths := args
 
 		for _, specPath := range specPaths {
@@ -67,6 +99,7 @@ var generateCmd = &cobra.Command{
 			if err != nil {
 				log.Error().Err(err).Msg("Konnte Spec-Datei nicht öffnen oder lesen")
 				continue
+//alex
 			}
 
 			switch {
