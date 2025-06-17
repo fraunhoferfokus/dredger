@@ -21,7 +21,6 @@ var (
 	projectName  string
 	databaseFlag bool
 	frontendFlag bool
-	asyncPath    string
 )
 
 // rootCmd repräsentiert den Basis-Befehl
@@ -41,13 +40,12 @@ var showVersion = &cobra.Command{
 }
 
 var generateCmd = &cobra.Command{
-	Use:     "generate <path to Spec>",
+	Use:     "generate <path to Spec> [more specs...]",
 	Short:   "Create server code from OpenAPI or AsyncAPI Spec",
 	Long:    "Je nach übergebener Spec (OpenAPI bzw. AsyncAPI) wird der passende Generator aufgerufen.",
-	Example: "  dredger generate ./stores.yaml -o ./outputPath -n StoresAPI",
-	Args:    cobra.ExactArgs(1),
+	Example: "  dredger generate api.yaml async.yaml moreasync.yaml -o ./out -n multi",
+	Args:    cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		specPath := args[0]
 		if projectPath == "" {
 			projectPath = "src"
 		}
@@ -56,6 +54,7 @@ var generateCmd = &cobra.Command{
 		}
 		projectDestination := filepath.Join(projectPath)
 
+//emy
 		// Falls --async gesetzt, erzwinge AsyncAPI
 		if asyncPath != "" {
 			log.Info().Msg("AsyncAPI via --async übergeben.")
@@ -87,26 +86,53 @@ var generateCmd = &cobra.Command{
 			}
 			if err := genAsyncAPI.GenerateAsyncService(config); err != nil {
 				log.Error().Err(err).Msg("AsyncAPI: Fehler beim Generieren")
+//div
+		specPaths := args
+
+		for _, specPath := range specPaths {
+			specPath = strings.TrimSpace(specPath)
+			if specPath == "" || specPath == "\\" {
+				// Ignore stray arguments from malformed line breaks
+				continue
+			}
+			isAsync, isOpen, err := detectSpecType(specPath)
+			if err != nil {
+				log.Error().Err(err).Msg("Konnte Spec-Datei nicht öffnen oder lesen")
+				continue
+//alex
 			}
 
-		case isOpen:
-			log.Info().Msg("Erkannt: OpenAPI-Spec – wir parsen & generieren mit dem OpenAPI-Generator")
-			config := genOpenAPI.GeneratorConfig{
-				OpenAPIPath:  specPath,
-				OutputPath:   projectDestination,
-				ModuleName:   projectName,
-				DatabaseName: "database",
-				Flags: genOpenAPI.Flags{
-					AddDatabase: databaseFlag,
-					AddFrontend: frontendFlag,
-				},
-			}
-			if err := genOpenAPI.GenerateServer(config); err != nil {
-				log.Error().Err(err).Msg("OpenAPI: Fehler beim Generieren")
-			}
+			switch {
+			case isAsync:
+				log.Info().Msgf("Erkannt: AsyncAPI-Spec %s – wir parsen & generieren", specPath)
+				spec, err := parser.ParseAsyncAPISpecFile(specPath)
+				if err != nil {
+					log.Error().Err(err).Msg("AsyncAPI: Fehler beim Parsen")
+					continue
+				}
+				if err := genAsyncAPI.GenerateService(spec, projectDestination, projectName); err != nil {
+					log.Error().Err(err).Msg("AsyncAPI: Fehler beim Generieren")
+				}
 
-		default:
-			log.Error().Msg("Datei ist weder gültige AsyncAPI- noch gültige OpenAPI-Spec.")
+			case isOpen:
+				log.Info().Msgf("Erkannt: OpenAPI-Spec %s – wir parsen & generieren", specPath)
+				config := genOpenAPI.GeneratorConfig{
+					OpenAPIPath:  specPath,
+					OutputPath:   projectDestination,
+					ModuleName:   projectName,
+					DatabaseName: "database",
+					Flags: genOpenAPI.Flags{
+						AddDatabase: databaseFlag,
+						AddFrontend: frontendFlag,
+					},
+				}
+				if err := genOpenAPI.GenerateServer(config); err != nil {
+					log.Error().Err(err).Msg("OpenAPI: Fehler beim Generieren")
+				}
+
+			default:
+				log.Error().Msgf("Datei %s ist weder gültige AsyncAPI- noch gültige OpenAPI-Spec.", specPath)
+			}
 		}
 	},
 }
@@ -124,13 +150,9 @@ func init() {
 	generateCmd.Flags().BoolVarP(&databaseFlag, "database", "D", false, "füge SQLite3-Datenbank in den generierten Code ein")
 	generateCmd.Flags().BoolVarP(&frontendFlag, "frontend", "f", false, "füge Frontend-Code hinzu")
 
-	generateCmd.Flags().StringVarP(
-		&asyncPath, "async", "a", "",
-		"Pfad zur AsyncAPI-Spec (für AsyncAPI-Generator)",
-	)
 }
 
-// detectSpecType liest bis 1 MiB und sucht nach asyncapi/openapi/swagger
+// automatische spec erkennung 💃
 func detectSpecType(specPath string) (isAsync bool, isOpenAPI bool, err error) {
 	f, err := os.Open(specPath)
 	if err != nil {
@@ -151,6 +173,7 @@ func detectSpecType(specPath string) (isAsync bool, isOpenAPI bool, err error) {
 	if strings.Contains(text, "\"openapi\"") || strings.HasPrefix(text, "openapi:") {
 		return false, true, nil
 	}
+	//veraltete "schreibweise" jetzt openapi
 	if strings.Contains(text, "\"swagger\"") || strings.HasPrefix(text, "swagger:") {
 		return false, true, nil
 	}
