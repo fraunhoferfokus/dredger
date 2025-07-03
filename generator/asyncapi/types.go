@@ -12,10 +12,10 @@ type BrokerConfig struct {
 }
 
 type ChannelConfig struct {
-	ModuleName  string
-	ChannelName string // Topic/Subject Name
-	Description string
-	Action      *OperationConfig // optional
+	ModuleName    string
+	ChannelName   string // Topic/Subject Name
+	Description   string
+	OperationName string
 }
 
 type OperationConfig struct {

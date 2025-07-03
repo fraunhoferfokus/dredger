@@ -20,6 +20,7 @@ import (
 )
 
 const (
+	AsyncPkg          = "async"
 	Cmd               = "cmd"
 	Public            = "public"
 	CorePkg           = "core"
@@ -47,10 +48,13 @@ var (
 
 // GenerateServer ist der Entry-Point für das OpenAPI-Scaffolding.
 func GenerateServer(conf GeneratorConfig) error {
-	spec, err := oasparser.ParseOpenAPISpecFile(conf.OpenAPIPath)
-	if err != nil || spec == nil {
-		log.Error().Err(err).Msg("Failed to load OpenAPI spec file")
-		return err
+	spec := &openapi3.T{}
+	if conf.OpenAPIPath != "" {
+		spec, err := oasparser.ParseOpenAPISpecFile(conf.OpenAPIPath)
+		if err != nil || spec == nil {
+			log.Error().Err(err).Msg("Failed to load OpenAPI spec file")
+			return err
+		}
 	}
 
 	// Initialisiere Projekt-Konfiguration
@@ -156,6 +160,8 @@ func generateServerTemplate(spec *openapi3.T, generatorConf GeneratorConfig) (se
 
 	return conf
 }
+
+//TODO: Make a generateServerTemplate-Function that is either making an async, open or both
 
 // ----------------------------
 // parseSteps + Hilfsfunktionen
@@ -305,6 +311,7 @@ func parseSteps(path string) []Step {
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
 var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
 
+// Adds a space, if it´s snake case
 func AddedSpace(str string) string {
 	snake := matchFirstCap.ReplaceAllString(str, "${1} ${2}")
 	return matchAllCap.ReplaceAllString(snake, "${1} ${2}")

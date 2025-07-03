@@ -39,6 +39,7 @@ type ImportsConfig struct {
 	ImportDefs []ImportDefinition
 }
 
+// Aus den Schemas in Components die Typdefinitionen und generiert entities,imports,structs und validate files
 func GenerateTypes(spec *openapi3.T, pConf ProjectConfig) {
 	if spec != nil && spec.Components != nil {
 		schemaDefs := generateTypeDefs(&spec.Components.Schemas)

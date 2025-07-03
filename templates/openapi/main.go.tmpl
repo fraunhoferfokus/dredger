@@ -30,6 +30,7 @@ import (
 var embeddedFS embed.FS
 
 func main() {
+	flag.Parse()
 	log.Setup(core.AppConfig.Name, core.Service, core.AppConfig.LogFile, core.AppConfig.LokiServer, core.AppConfig.LokiKey, core.AppConfig.LokiLabels, core.AppConfig.LokiBuffersize, core.AppConfig.LokiMaxDelay, core.AppConfig.Debug)
 
 	// init Opentelemetry
@@ -65,6 +66,9 @@ func main() {
 
 	e.GET("/metrics", echoprometheus.NewHandler()) // adds route to serve gathered metrics
 	rest.NewHandler(e)
+
+	//start nats server
+	//server.RegisterHandlers(e)
 
 	{{- if .AddFrontend }}
 

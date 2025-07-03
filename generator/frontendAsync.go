@@ -1,0 +1,96 @@
+package generator
+
+import (
+	fs "dredger/fileUtils"
+	"errors"
+	"os"
+	"path"
+	"path/filepath"
+
+	asyncapiv3 "github.com/lerenn/asyncapi-codegen/pkg/asyncapi/v3"
+	"github.com/rs/zerolog/log"
+)
+
+func generateEmptyFrontendAsync(_ *asyncapiv3.Specification, conf GeneratorConfig) {
+	frontendPath := filepath.Join(conf.OutputPath, "web")
+	fs.GenerateFolder(frontendPath)
+	createFileFromTemplate(filepath.Join(frontendPath, "README.md"), "templates/openapi/web/README.md.tmpl", conf)
+}
+
+func generateFrontendAsync(spec *asyncapiv3.Specification, conf GeneratorConfig) {
+	//	generateOpenAPIDoc(conf)
+
+	// create folders
+	corePath := filepath.Join(conf.OutputPath, "core")
+	asyncPath := filepath.Join(conf.OutputPath, "async")
+	restPath := filepath.Join(conf.OutputPath, "rest")
+	frontendPath := filepath.Join(conf.OutputPath, "web")
+	javascriptPath := filepath.Join(frontendPath, "js")
+	stylesheetPath := filepath.Join(frontendPath, "css")
+	imagesPath := filepath.Join(frontendPath, "images")
+	fontsPath := filepath.Join(stylesheetPath, "fonts")
+	pagesPath := filepath.Join(frontendPath, "pages")
+	localesPath := filepath.Join(corePath, "locales")
+	publicPath := filepath.Join(frontendPath, "public")
+	docPath := filepath.Join(frontendPath, "doc")
+
+	fs.GenerateFolder(frontendPath)
+	fs.GenerateFolder(javascriptPath)
+	fs.GenerateFolder(stylesheetPath)
+	fs.GenerateFolder(imagesPath)
+	fs.GenerateFolder(fontsPath)
+	fs.GenerateFolder(pagesPath)
+	fs.GenerateFolder(localesPath)
+	fs.GenerateFolder(publicPath)
+	fs.GenerateFolder(docPath)
+	fs.GenerateFolder(asyncPath)
+
+	// files in root directory
+	createFileFromTemplate(filepath.Join(frontendPath, "README.md"), "templates/openapi/web/README.md.tmpl", conf)
+
+	// files in javascript directory
+	fs.CopyWebFile("web/js", javascriptPath, "bootstrap.bundle.min.js", true)
+	fs.CopyWebFile("web/js", javascriptPath, "htmx.min.js", true)
+	fs.CopyWebFile("web/js", javascriptPath, "hyperscript.js", true)
+	fs.CopyWebFile("web/js", javascriptPath, "sse.js", true)
+	fs.CopyWebFile("web/js", javascriptPath, "rapidoc-min.js", true)
+	fs.CopyWebFile("web/js", javascriptPath, "elements.min.js", true)
+
+	// files in stylesheet directory
+	fs.CopyWebFile("web/css", stylesheetPath, "bootstrap-icons.min.css", true)
+	fs.CopyWebFile("web/css/fonts", fontsPath, "bootstrap-icons.woff", true)
+	fs.CopyWebFile("web/css/fonts", fontsPath, "bootstrap-icons.woff2", true)
+	fs.CopyWebFile("web/css", stylesheetPath, "bootstrap.min.css", true)
+	fs.CopyWebFile("web/css", stylesheetPath, "pico.min.css", true)
+	fs.CopyWebFile("web/css", stylesheetPath, "pico.colors.min.css", true)
+	fs.CopyWebFile("web/css", stylesheetPath, "elements.min.css", true)
+
+	// files in images directory
+	fs.CopyWebFile("web/images", imagesPath, "favicon.ico", false)
+
+	// files in web directory
+	fs.CopyWebFile("web", frontendPath, "web.go", true)
+
+	// files in core directory
+	createFileFromTemplate(filepath.Join(corePath, "localize.go"), "templates/openapi/core/localize.go.tmpl", conf)
+	if _, err := os.Stat(filepath.Join(localesPath, "locale.de.toml")); errors.Is(err, os.ErrNotExist) {
+		createFileFromTemplate(filepath.Join(localesPath, "locale.de.toml"), "templates/openapi/core/locales/locale.de.toml", conf)
+		createFileFromTemplate(filepath.Join(localesPath, "locale.en.toml"), "templates/openapi/core/locales/locale.en.toml", conf)
+	}
+
+	// files in pages directory
+	fs.CopyWebFile("web/pages", restPath, "render.go", true)
+	if _, err := os.Stat(filepath.Join(pagesPath, "languages.templ")); errors.Is(err, os.ErrNotExist) {
+		createFileFromTemplate(filepath.Join(pagesPath, "languages.templ"), "templates/openapi/web/pages/languages.templ.tmpl", conf)
+	}
+
+	// files in public directory
+	fs.CopyWebFile(path.Join("web", "public"), publicPath, "README.md", false)
+
+	// files in doc directory
+	fs.CopyWebFile(path.Join("web", "doc"), docPath, "README.md", false)
+
+	// support for events
+
+	log.Info().Msg("Created Frontend successfully.")
+}

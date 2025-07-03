@@ -8,6 +8,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// Kann für OpenAPI als auch für AsyncAPI verwendet werden
 func generateDatabaseFiles(conf GeneratorConfig) {
 	log.Info().Msg("Adding SQLite database.")
 

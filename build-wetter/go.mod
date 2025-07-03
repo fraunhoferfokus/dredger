@@ -1,0 +1,14 @@
+module async-service/async
+
+go 1.24
+
+require (
+    github.com/nats-io/nats.go v1.18.0
+    github.com/rs/zerolog v1.34.0
+    go.opentelemetry.io/otel v1.23.0
+    go.opentelemetry.io/otel/exporters/jaeger v1.23.0
+)
+
+replace (
+    // ggf. lokale Overrides hier
+)
