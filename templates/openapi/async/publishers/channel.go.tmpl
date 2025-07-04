@@ -1,7 +1,7 @@
 package publishers
 
 import (
-	"{{.ModuleName}}/entities"
+	"{{ lcfirst ( camelcase .ModuleName ) }}/entities"
 	"encoding/json"
 	"log" //noch an core logger anpassen
 	"math/rand"

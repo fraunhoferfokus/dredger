@@ -12,7 +12,7 @@ import (
 	"{{ lcfirst ( camelcase .ModuleName ) }}/core/tracing"
 
 	{{- if .AsyncAPI }}
-	"{{ lcfirst ( camelcase .ModuleName ) }}/asnyc/server"
+	"{{ lcfirst ( camelcase .ModuleName ) }}/async/server"
 	{{end}}
 
 	{{- if .OpenAPI }}
@@ -95,7 +95,7 @@ func main() {
 	   log.Info().Msg("Enabled Rapidoc documentation")
 	   e.FileFS("/doc", "web/doc/rapidoc.html", embeddedFS)
 	}
-	
+
 	{{- if .OpenAPI}}
 	{{ range .AllOpenAPINames}}
 	e.FileFS("/{{.OpenAPIName}}.yaml", "web/doc/{{.OpenAPIName}}.yaml", embeddedFS)

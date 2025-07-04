@@ -82,8 +82,8 @@ func GenerateAsyncService(conf GeneratorConfig) error {
 		}
 	}
 
-	Config.Path = conf.OutputPath
-	Config.Name = conf.ModuleName
+	//Config.Path = conf.OutputPath
+	//Config.Name = conf.ModuleName
 
 	log.Debug().Str("Spec info title to check if actually processed", spec.Info.Version).Msg("Check spec actually processed or not")
 	createProjectPathDirectoryAsync(conf)

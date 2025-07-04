@@ -66,7 +66,6 @@ var generateCmd = &cobra.Command{
 		projectDestination := filepath.Join(projectPath)
 
 		specPaths := args
-		var allSpecs []gen.GeneratorConfig
 
 		for _, specPath := range specPaths {
 			specPath = strings.TrimSpace(specPath)
@@ -98,7 +97,6 @@ var generateCmd = &cobra.Command{
 						AddFrontend: frontendFlag,
 					},
 				}
-				allSpecs = append(allSpecs, config)
 				if err := gen.GenerateAsyncService(config); err != nil {
 					log.Error().Err(err).Msg("AsyncAPI: Fehler beim Generieren")
 				}
