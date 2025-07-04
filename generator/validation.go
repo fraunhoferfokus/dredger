@@ -11,7 +11,7 @@ func generateValidation(conf GeneratorConfig) {
 	log.Info().Msg("Adding validation middleware.")
 
 	fileName := "validation.go"
-	filePath := filepath.Join(config.Path, MiddlewarePackage, fileName)
+	filePath := filepath.Join(Config.Path, MiddlewarePackage, fileName)
 	templateFile := "templates/openapi/middleware/validation.go.tmpl"
 	fs.GenerateFile(filePath)
 	createFileFromTemplate(filePath, templateFile, conf)

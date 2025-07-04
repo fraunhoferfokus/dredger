@@ -73,11 +73,11 @@ func GenerateSubscriberFile(spec *asyncapiv3.Specification, genConf GeneratorCon
 func extractOperations(spec *asyncapiv3.Specification) []Operation {
 	allOperations := []Operation{}
 	for opName, op := range spec.Operations {
-		if len(op.Messages) == 1 {
+		if len(op.Messages) == 0 { // Default if no messages noted
 			allOperations = append(allOperations, Operation{
-				OperationName: opName,
-				ChannelName:   checkChannel(op.Channel.Reference),
-				MessageName:   checkMessage(op.Messages[0]),
+				OperationName: "OperationName",
+				ChannelName:   "ChannelName",
+				MessageName:   "MessageName",
 			})
 		} else {
 			for _, msg := range op.Messages {

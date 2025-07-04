@@ -12,7 +12,7 @@ import (
 func generateConfigFiles(serverConf ServerConfig) {
 	// 1) .env
 	fileName := ".env"
-	filePath := filepath.Join(config.Path, fileName)
+	filePath := filepath.Join(Config.Path, fileName)
 	templateFile := "templates/common/ENVIRONMENT.md.tmpl" // falls du eine andere Vorlage willst, passe hier an
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filePath, templateFile, serverConf)
@@ -20,13 +20,13 @@ func generateConfigFiles(serverConf ServerConfig) {
 
 	// 2) config.go
 	fileName = "config.go"
-	filePath = filepath.Join(config.Path, CorePkg, fileName)
+	filePath = filepath.Join(Config.Path, CorePkg, fileName)
 	templateFile = "templates/openapi/core/config.go.tmpl"
 	createFileFromTemplate(filePath, templateFile, serverConf)
 
 	// 3) configSvc.go
 	fileName = "configSvc.go"
-	filePath = filepath.Join(config.Path, CorePkg, fileName)
+	filePath = filepath.Join(Config.Path, CorePkg, fileName)
 	templateFile = "templates/openapi/core/configSvc.go.tmpl"
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filePath, templateFile, serverConf)
@@ -34,7 +34,7 @@ func generateConfigFiles(serverConf ServerConfig) {
 
 	// 4) version (und Symlink)
 	fileName = "version"
-	filePath = filepath.Join(config.Path, CorePkg, fileName)
+	filePath = filepath.Join(Config.Path, CorePkg, fileName)
 	templateFile = "templates/openapi/core/version"
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filePath, templateFile, serverConf)

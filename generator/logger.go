@@ -2,6 +2,7 @@ package generator
 
 import (
 	fs "dredger/fileUtils"
+	//"path"
 	"path/filepath"
 
 	"github.com/rs/zerolog/log"
@@ -17,7 +18,7 @@ func generateLogger(conf GeneratorConfig) {
 	templateFile := "templates/openapi/core/log/log.go.tmpl"
 	createFileFromTemplate(filePath, templateFile, conf)
 
-	// event.go & zerolog.go
+	// event.go & zerolog.go & loki.go
 	createFileFromTemplate(
 		filepath.Join(conf.OutputPath, LoggerPkg, "event.go"),
 		"templates/openapi/core/log/logger/event.go",
@@ -36,7 +37,7 @@ func generateLogger(conf GeneratorConfig) {
 
 	// Logger-Middleware
 	fileName := "logger.go"
-	filePath = filepath.Join(config.Path, MiddlewarePackage, fileName)
+	filePath = filepath.Join(conf.OutputPath, MiddlewarePackage, fileName)
 	templateFile = "templates/openapi/middleware/logger.go.tmpl"
 	createFileFromTemplate(filePath, templateFile, conf)
 

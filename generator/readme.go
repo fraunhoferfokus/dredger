@@ -21,7 +21,7 @@ func generateReadme(conf GeneratorConfig, serverConf ServerConfig) {
 
 	// ENVIRONMENT.md
 	fileName := "ENVIRONMENT.md"
-	filePath := filepath.Join(config.Path, fileName)
+	filePath := filepath.Join(Config.Path, fileName)
 	templateFile := "templates/common/ENVIRONMENT.md.tmpl"
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		log.Info().Msg("CREATE ENVIRONMENT.md")

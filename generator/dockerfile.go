@@ -20,7 +20,7 @@ func generateDockerfile(conf GeneratorConfig, serverConf ServerConfig) {
 
 	// 1) Dockerfile
 	fileName := "Dockerfile"
-	filePath := filepath.Join(config.Path, fileName)
+	filePath := filepath.Join(Config.Path, fileName)
 	templateFile := "templates/common/Dockerfile.tmpl"
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		log.Debug().Msg("CREATE Dockerfile")
@@ -30,7 +30,7 @@ func generateDockerfile(conf GeneratorConfig, serverConf ServerConfig) {
 
 	// 2) .gitlab-ci.yml
 	fileName = ".gitlab-ci.yml"
-	filePath = filepath.Join(config.Path, fileName)
+	filePath = filepath.Join(Config.Path, fileName)
 	templateFile = "templates/common/gitlab-ci.yml.tmpl"
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		log.Debug().Msg("CREATE .gitlab-ci.yml")
@@ -40,7 +40,7 @@ func generateDockerfile(conf GeneratorConfig, serverConf ServerConfig) {
 
 	// 3) .gitignore
 	fileName = ".gitignore"
-	filePath = filepath.Join(config.Path, fileName)
+	filePath = filepath.Join(Config.Path, fileName)
 	templateFile = "templates/common/gitignore.tmpl"
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		log.Debug().Msg("CREATE .gitignore")
@@ -50,7 +50,7 @@ func generateDockerfile(conf GeneratorConfig, serverConf ServerConfig) {
 
 	// 4) .gitleaksignore
 	fileName = ".gitleaksignore"
-	filePath = filepath.Join(config.Path, fileName)
+	filePath = filepath.Join(Config.Path, fileName)
 	templateFile = "templates/common/gitleaksignore.tmpl"
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		log.Debug().Msg("CREATE .gitleaksignore")
@@ -60,7 +60,7 @@ func generateDockerfile(conf GeneratorConfig, serverConf ServerConfig) {
 
 	// 5) image-manifest.yml
 	fileName = "image-manifest.yml"
-	filePath = filepath.Join(config.Path, fileName)
+	filePath = filepath.Join(Config.Path, fileName)
 	templateFile = "templates/common/image-manifest.yml.tmpl"
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		log.Debug().Msg("CREATE image-manifest.yml")

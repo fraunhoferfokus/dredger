@@ -14,10 +14,10 @@ func generateDatabaseFiles(conf GeneratorConfig) {
 
 	// erzeugt <DatabaseName>.db und <DatabaseName>.go
 	fileName := conf.DatabaseName + ".db"
-	filePath := filepath.Join(config.Path, DatabasePkg, fileName)
+	filePath := filepath.Join(conf.OutputPath, DatabasePkg, fileName)
 	fs.GenerateFile(filePath)
 
-	goFile := filepath.Join(config.Path, DatabasePkg, conf.DatabaseName+".go")
+	goFile := filepath.Join(conf.OutputPath, DatabasePkg, conf.DatabaseName+".go")
 	templateFile := "templates/openapi/db/database.go.tmpl"
 	createFileFromTemplate(goFile, templateFile, conf)
 }

@@ -43,7 +43,7 @@ var (
 	// This variable holds those embedded templates.
 	TmplFS embed.FS
 
-	config ProjectConfig
+	Config ProjectConfig
 )
 
 // GenerateServer ist der Entry-Point für das OpenAPI-Scaffolding.
@@ -58,8 +58,8 @@ func GenerateServer(conf GeneratorConfig) error {
 	}
 
 	// Initialisiere Projekt-Konfiguration
-	config.Name = conf.ModuleName
-	config.Path = conf.OutputPath
+	Config.Name = conf.ModuleName
+	Config.Path = conf.OutputPath
 
 	// API‐Key‐Security erkennen
 	if spec.Components != nil {
@@ -89,7 +89,7 @@ func GenerateServer(conf GeneratorConfig) error {
 	generateTracing(conf)
 	generateLifecycleFiles(spec, conf)
 	generateHandlerFuncs(spec, conf)
-	GenerateTypes(spec, config)
+	GenerateTypes(spec, Config)
 
 	if conf.AddDatabase {
 		generateDatabaseFiles(conf)
@@ -107,19 +107,19 @@ func GenerateServer(conf GeneratorConfig) error {
 
 // createProjectPathDirectory legt die Grundordner an.
 func createProjectPathDirectory(conf GeneratorConfig) {
-	fs.GenerateFolder(config.Path)
-	fs.GenerateFolder(filepath.Join(config.Path, CorePkg))
-	fs.GenerateFolder(filepath.Join(config.Path, RestPkg))
-	fs.GenerateFolder(filepath.Join(config.Path, EntitiesPkg))
-	fs.GenerateFolder(filepath.Join(config.Path, UsecasesPkg))
+	fs.GenerateFolder(Config.Path)
+	fs.GenerateFolder(filepath.Join(Config.Path, CorePkg))
+	fs.GenerateFolder(filepath.Join(Config.Path, RestPkg))
+	fs.GenerateFolder(filepath.Join(Config.Path, EntitiesPkg))
+	fs.GenerateFolder(filepath.Join(Config.Path, UsecasesPkg))
 	if conf.AddDatabase {
-		fs.GenerateFolder(filepath.Join(config.Path, DatabasePkg))
+		fs.GenerateFolder(filepath.Join(Config.Path, DatabasePkg))
 	}
-	fs.GenerateFolder(filepath.Join(config.Path, MiddlewarePackage))
+	fs.GenerateFolder(filepath.Join(Config.Path, MiddlewarePackage))
 	log.Info().Msg("Created project directory.")
 }
 
-// generateServerTemplate erzeugt main.go / mainSvc.go aus common-Templates.
+// generateServerTemplate gets all info for ServerConfig to be used by other functions
 func generateServerTemplate(spec *openapi3.T, generatorConf GeneratorConfig) (serverConf ServerConfig) {
 	openAPIName := fs.GetFileNameWithEnding(generatorConf.OpenAPIPath)
 	conf := ServerConfig{
@@ -147,21 +147,41 @@ func generateServerTemplate(spec *openapi3.T, generatorConf GeneratorConfig) (se
 	}
 
 	log.Info().Msg("Adding logging middleware.")
-
-	// main.go aus openapi/
-	mainPath := filepath.Join(config.Path, "main.go")
-	createFileFromTemplate(mainPath, "templates/openapi/main.go.tmpl", conf)
-
-	// mainSvc.go aus openapi/
-	svcPath := filepath.Join(config.Path, "mainSvc.go")
-	if _, err := os.Stat(svcPath); errors.Is(err, os.ErrNotExist) {
-		createFileFromTemplate(svcPath, "templates/openapi/mainSvc.go.tmpl", conf)
-	}
-
 	return conf
 }
 
-//TODO: Make a generateServerTemplate-Function that is either making an async, open or both
+// TODO: Make a GenerateMain-Function that is either making an async, open, both or none
+// Problem: Certain information comes from the actual specs, so need to give that over as well
+//
+//	needs OpenAPIName if openapi
+//
+// Generates main and mainSvc files only once
+func GenerateMain(openAPINames []OpenAPIConfig, outputPath string, moduleName string, openapi bool, asyncapi bool, dataBase bool, frontend bool) {
+	if len(openAPINames) == 0 && !asyncapi && !openapi {
+		log.Info().Msg("No specification was given. Default project will be made.")
+	}
+	mainConf := MainConfig{
+		AllOpenAPINames: openAPINames,
+		ModuleName:      moduleName,
+		Flags: Flags{
+			AddDatabase: dataBase,
+			AddFrontend: frontend,
+			OpenAPI:     openapi,
+			AsyncAPI:    asyncapi,
+		},
+	}
+
+	// main.go aus openapi/
+	mainPath := filepath.Join(Config.Path, "main.go")
+	createFileFromTemplate(mainPath, "templates/openapi/main.go.tmpl", mainConf)
+
+	// mainSvc.go aus openapi/
+	svcPath := filepath.Join(Config.Path, "mainSvc.go")
+	if _, err := os.Stat(svcPath); errors.Is(err, os.ErrNotExist) {
+		createFileFromTemplate(svcPath, "templates/openapi/mainSvc.go.tmpl", mainConf)
+	}
+	log.Info().Msg("Main was sucessfully generated.")
+}
 
 // ----------------------------
 // parseSteps + Hilfsfunktionen

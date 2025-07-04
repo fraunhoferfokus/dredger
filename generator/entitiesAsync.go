@@ -43,9 +43,7 @@ func GenerateAsyncTypes(spec *asyncapiv3.Specification, pConf ProjectConfig) {
 			filePath := filepath.Join(pConf.Path, EntitiesPkg, fileName)
 			templateFiles := []string{
 				"templates/openapi/entities/entities.go.tmpl",
-				"templates/openapi/entities/imports.tmpl",
 				"templates/openapi/entities/structs.tmpl",
-				"templates/openapi/entities/validate.tmpl",
 			}
 			createFileFromTemplates(filePath, templateFiles, conf)
 		}

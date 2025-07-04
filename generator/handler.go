@@ -80,7 +80,7 @@ func generateHandlerFuncStub(op *openapi3.Operation, method string, path string,
 	}
 	if genConf.AddFrontend && hasHtmlResponse && slices.Contains(op.Tags, "page") {
 		fileName := xstrings.FirstRuneToLower(xstrings.ToCamelCase(conf.OperationID)) + ".templ"
-		filePath := filepath.Join(config.Path, PagesPkg, fileName)
+		filePath := filepath.Join(Config.Path, PagesPkg, fileName)
 		templateFile := "templates/openapi/web/pages.templ.tmpl"
 		if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 			createFileFromTemplate(filePath, templateFile, conf)
@@ -123,7 +123,7 @@ func generateHandlerFuncStub(op *openapi3.Operation, method string, path string,
 
 	canBeEdited := true
 	fileName := xstrings.FirstRuneToLower(xstrings.ToCamelCase(conf.OperationID)) + ".go"
-	filePath := filepath.Join(config.Path, RestPkg, fileName)
+	filePath := filepath.Join(Config.Path, RestPkg, fileName)
 	templateFile := "templates/openapi/rest/handlerFunc.go.tmpl"
 	if hasHtmlResponse && slices.Contains(op.Tags, "page") {
 		templateFile = "templates/openapi/rest/pageHandlerFunc.go.tmpl"
@@ -159,7 +159,7 @@ func generateHandlerFuncStub(op *openapi3.Operation, method string, path string,
 		createFileFromTemplate(filePath, templateFile, conf)
 	}
 	// remove unused imports
-	extCmd.RunCommand("goimports -w "+fileName, filepath.Join(config.Path, RestPkg))
+	extCmd.RunCommand("goimports -w "+fileName, filepath.Join(Config.Path, RestPkg))
 	return conf, nil
 }
 
@@ -202,12 +202,12 @@ func generateHandlerFuncs(spec *openapi3.T, genConf GeneratorConfig) {
 	}
 
 	fileName := "rest.go"
-	filePath := filepath.Join(config.Path, RestPkg, fileName)
+	filePath := filepath.Join(Config.Path, RestPkg, fileName)
 	templateFile := "templates/openapi/rest/handler.go.tmpl"
 	createFileFromTemplate(filePath, templateFile, conf)
 
 	fileName = "restSvc.go"
-	filePath = filepath.Join(config.Path, RestPkg, fileName)
+	filePath = filepath.Join(Config.Path, RestPkg, fileName)
 	templateFile = "templates/openapi/rest/restSvc.go.tmpl"
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filePath, templateFile, conf)

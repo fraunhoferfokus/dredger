@@ -19,7 +19,7 @@ func generateJustfile(conf GeneratorConfig, serverConf ServerConfig) {
 	justfileConf.Port = serverConf.Port
 
 	fileName := "Justfile"
-	filePath := filepath.Join(config.Path, fileName)
+	filePath := filepath.Join(Config.Path, fileName)
 	templateFile := "templates/common/Justfile.tmpl"
 
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
