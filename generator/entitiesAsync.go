@@ -68,14 +68,14 @@ func generateAsyncMessagePayloads(messages map[string]*asyncapiv3.Message) map[s
 			goType, _ := toGoTypeAsync(prop)
 
 			field := TypeDefinitionAsync{
-				Name:        stringy.New(propName).CamelCase().ToLower(), // e.g., "station_id" → "StationID"
+				Name:        stringy.New(propName).UcFirst(), // e.g., "station_id" → "StationID"
 				Type:        goType,
 				MarshalName: propName,
 			}
 			fields = append(fields, field)
 		}
 
-		typeName := stringy.New(msgName).CamelCase().ToLower() // e.g., "WeatherHumidity" → "WeatherHumidity"
+		typeName := stringy.New(msgName).UcFirst() // e.g., "WeatherHumidity" → "WeatherHumidity"
 		schemaDefs[typeName] = fields
 	}
 
