@@ -34,7 +34,7 @@ func GenerateAsyncTypes(spec *asyncapiv3.Specification, pConf ProjectConfig) {
 	log.Debug().Msg("In GenerateAsyncTypes, before if statement")
 	if spec != nil && len(spec.Components.Messages) != 0 {
 		log.Debug().Msg("In GenerateAsyncTypes, in if statement")
-		schemaDefs := generateAsyncTypeDefs(spec.Components.Schemas)
+		schemaDefs := generateAsyncMessagePayloads(spec.Components.Messages)
 		imports := generateAsyncImports()
 		var conf ModelConfigAsync
 		conf.Imports = imports
@@ -45,7 +45,7 @@ func GenerateAsyncTypes(spec *asyncapiv3.Specification, pConf ProjectConfig) {
 			fileName := strings.ToLower(schema) + ".go"
 			filePath := filepath.Join(pConf.Path, EntitiesPkg, fileName)
 			templateFiles := []string{
-				"templates/openapi/entities/entities.go.tmpl",
+				"templates/openapi/entities/entitiesAsync.go.tmpl",
 				"templates/openapi/entities/structs.tmpl",
 			}
 			createFileFromTemplates(filePath, templateFiles, conf)
@@ -54,69 +54,31 @@ func GenerateAsyncTypes(spec *asyncapiv3.Specification, pConf ProjectConfig) {
 	}
 }
 
-func generateAsyncTypeDefs(schemas map[string]*asyncapiv3.Schema) map[string][]TypeDefinitionAsync {
-	schemaDefs := make(map[string][]TypeDefinitionAsync, len(schemas))
-	for name, ref := range schemas {
-		var goType string
-		switch {
+func generateAsyncMessagePayloads(messages map[string]*asyncapiv3.Message) map[string][]TypeDefinitionAsync {
+	schemaDefs := make(map[string][]TypeDefinitionAsync)
 
-		case ref.Type == "number":
-			switch ref.Format {
-			case "float":
-				goType = "float32"
-			case "double":
-				goType = "float64"
-			default:
-				goType = "float"
-			}
-		case ref.Type == "integer":
-			goType = "int"
-			if ref.Format != "" {
-				goType = ref.Format
-			}
-		case ref.Type == "boolean":
-			goType = "bool"
-		case ref.Type == "string":
-			switch ref.Format {
-			case "binary":
-				goType = "[]byte"
-			case "date":
-				IMPORT_TIME = true
-				goType = "time.Time"
-			case "uuid":
-				IMPORT_UUID = true
-				goType = "uuid.UUID"
-			default:
-				goType = "string"
-			}
-		case ref.Type == "array":
-			items, _ := toGoTypeAsync(ref.Items)
-			goType = "[]" + items
-		case ref.Type == "object":
-			if ref.AdditionalProperties != nil {
-				goType, _ = toGoTypeAsync(ref.AdditionalProperties)
-			} else {
-				goType = "map[string]interface{}"
-			}
-		default:
-			types := ref.Type
-			if len(types) > 0 {
-				goType = types
-			}
+	for msgName, msg := range messages {
+		payload := msg.Payload
+		if payload == nil || payload.Type != "object" {
+			continue
 		}
 
-		schemaDefs[name] = []TypeDefinitionAsync{{
-			Name:        name,
-			Type:        goType,
-			MinLength:   ref.MinLength,
-			MaxLength:   uintOrMaxA(&ref.MaxLength),
-			Pattern:     ref.Pattern,
-			Minimum:     floatOrMinA(&ref.Minimum),
-			Maximum:     floatOrMaxA(&ref.Maximum),
-			MarshalName: stringy.New(name).LcFirst(),
-			NestedTypes: nil,
-		}}
+		var fields []TypeDefinitionAsync
+		for propName, prop := range payload.Properties {
+			goType, _ := toGoTypeAsync(prop)
+
+			field := TypeDefinitionAsync{
+				Name:        stringy.New(propName).CamelCase().ToLower(), // e.g., "station_id" → "StationID"
+				Type:        goType,
+				MarshalName: propName,
+			}
+			fields = append(fields, field)
+		}
+
+		typeName := stringy.New(msgName).CamelCase().ToLower() // e.g., "WeatherHumidity" → "WeatherHumidity"
+		schemaDefs[typeName] = fields
 	}
+
 	return schemaDefs
 }
 
