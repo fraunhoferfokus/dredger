@@ -80,12 +80,14 @@ func extractOperations(spec *asyncapiv3.Specification) []Operation {
 				MessageName:   "MessageName",
 			})
 		} else {
-			for _, msg := range op.Messages {
-				allOperations = append(allOperations, Operation{
-					OperationName: opName,
-					ChannelName:   checkChannel(op.Channel.Reference),
-					MessageName:   checkMessage(msg),
-				})
+			if op.Action.IsSend() {
+				for _, msg := range op.Messages {
+					allOperations = append(allOperations, Operation{
+						OperationName: opName,
+						ChannelName:   checkChannel(op.Channel.Reference),
+						MessageName:   checkMessage(msg),
+					})
+				}
 			}
 		}
 	}

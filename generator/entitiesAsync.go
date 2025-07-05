@@ -9,6 +9,7 @@ import (
 	//	open "dredger/generator"
 	"github.com/gobeam/stringy"
 	asyncapiv3 "github.com/lerenn/asyncapi-codegen/pkg/asyncapi/v3"
+	"github.com/rs/zerolog/log"
 )
 
 type TypeDefinitionAsync struct {
@@ -30,7 +31,9 @@ type ModelConfigAsync struct {
 }
 
 func GenerateAsyncTypes(spec *asyncapiv3.Specification, pConf ProjectConfig) {
+	log.Debug().Msg("In GenerateAsyncTypes, before if statement")
 	if spec != nil && len(spec.Components.Messages) != 0 {
+		log.Debug().Msg("In GenerateAsyncTypes, in if statement")
 		schemaDefs := generateAsyncTypeDefs(spec.Components.Schemas)
 		imports := generateAsyncImports()
 		var conf ModelConfigAsync
@@ -47,6 +50,7 @@ func GenerateAsyncTypes(spec *asyncapiv3.Specification, pConf ProjectConfig) {
 			}
 			createFileFromTemplates(filePath, templateFiles, conf)
 		}
+		log.Debug().Msg("In GenerateAsyncTypes, after for loop, end of function")
 	}
 }
 

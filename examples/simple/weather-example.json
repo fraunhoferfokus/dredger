@@ -31,7 +31,7 @@
         }
     },
     "operations": {
-        "subscribeToHumidityReadings": {
+        "SubscribeToHumidityReadings": {
             "title": "subscribeToHumidityReadings",
             "action": "receive",
             "summary": "Receives real-time humidity readings",
@@ -44,7 +44,7 @@
                 }
             ]
         },
-        "publishHumidityReading": {
+        "PublishHumidityReading": {
            "title": "publishHumidityReading",
             "action": "send",
             "summary": "Publishes simulated humidity readings",
@@ -57,7 +57,7 @@
                 }
             ]
         },
-        "subscribeToTemperatureReadings": {
+        "SubscribeToTemperatureReadings": {
             "title": "subscribeToTemperatureReadings",
             "action": "receive",
             "summary": "Receives real-time temperature readings",
@@ -70,7 +70,7 @@
                 }
             ]
         },
-        "publishTemperatureReading": {
+        "PublishTemperatureReading": {
             "title": "publishTemperatureReading",
             "action": "send",
             "summary": "Publishes simulated temperature readings",

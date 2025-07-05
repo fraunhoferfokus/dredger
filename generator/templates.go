@@ -17,11 +17,15 @@ func snakecase(s string) string {
 }
 
 func camelcase(s string) string {
-	return stringy.New(s).CamelCase("?", "", "#", "").Get()
+	return stringy.New(s).CamelCase("?", "", "#", "", "-", "").Get()
 }
 
 func lcFirst(s string) string {
 	return stringy.New(s).LcFirst()
+}
+
+func ucFirst(s string) string {
+	return stringy.New(s).UcFirst()
 }
 
 func createFileFromTemplate(filePath string, tmplPath string, config interface{}) {
@@ -30,6 +34,7 @@ func createFileFromTemplate(filePath string, tmplPath string, config interface{}
 	funcmap["camelcase"] = camelcase
 	funcmap["snakecase"] = snakecase
 	funcmap["lcfirst"] = lcFirst
+	funcmap["ucfirst"] = ucFirst
 
 	// Create file and open it
 	fs.GenerateFile(filePath)

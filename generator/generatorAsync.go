@@ -112,6 +112,11 @@ func GenerateAsyncService(conf GeneratorConfig) error {
 	if conf.AddDatabase {
 		generateDatabaseFiles(conf)
 	}
+	//Generating entities and structs
+	GenerateAsyncTypes(spec, ProjectConfig{
+		Name: conf.ModuleName,
+		Path: conf.OutputPath,
+	})
 
 	log.Info().Msg("Created AsyncAPI NATS service files successfully")
 	return nil
