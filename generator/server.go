@@ -80,7 +80,7 @@ func extractOperations(spec *asyncapiv3.Specification) []Operation {
 				MessageName:   "MessageName",
 			})
 		} else {
-			if op.Action.IsSend() {
+			if op.Action.IsReceive() {
 				for _, msg := range op.Messages {
 					allOperations = append(allOperations, Operation{
 						OperationName: opName,
