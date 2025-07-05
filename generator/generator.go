@@ -49,8 +49,9 @@ var (
 // GenerateServer ist der Entry-Point für das OpenAPI-Scaffolding.
 func GenerateServer(conf GeneratorConfig) error {
 	spec := &openapi3.T{}
+	var err error
 	if conf.OpenAPIPath != "" {
-		spec, err := oasparser.ParseOpenAPISpecFile(conf.OpenAPIPath)
+		spec, err = oasparser.ParseOpenAPISpecFile(conf.OpenAPIPath)
 		if err != nil || spec == nil {
 			log.Error().Err(err).Msg("Failed to load OpenAPI spec file")
 			return err
