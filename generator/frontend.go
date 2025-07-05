@@ -52,27 +52,27 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	createFileFromTemplate(filepath.Join(frontendPath, "README.md"), "templates/openapi/web/README.md.tmpl", conf)
 
 	// files in javascript directory
-	fs.CopyWebFile("web/js", javascriptPath, "bootstrap.bundle.min.js", true)
-	fs.CopyWebFile("web/js", javascriptPath, "htmx.min.js", true)
-	fs.CopyWebFile("web/js", javascriptPath, "hyperscript.js", true)
-	fs.CopyWebFile("web/js", javascriptPath, "sse.js", true)
-	fs.CopyWebFile("web/js", javascriptPath, "rapidoc-min.js", true)
-	fs.CopyWebFile("web/js", javascriptPath, "elements.min.js", true)
+	fs.CopyWebFile("openapi/web/js", javascriptPath, "bootstrap.bundle.min.js", true)
+	fs.CopyWebFile("openapi/web/js", javascriptPath, "htmx.min.js", true)
+	fs.CopyWebFile("openapi/web/js", javascriptPath, "hyperscript.js", true)
+	fs.CopyWebFile("openapi/web/js", javascriptPath, "sse.js", true)
+	fs.CopyWebFile("openapi/web/js", javascriptPath, "rapidoc-min.js", true)
+	fs.CopyWebFile("openapi/web/js", javascriptPath, "elements.min.js", true)
 
 	// files in stylesheet directory
-	fs.CopyWebFile("web/css", stylesheetPath, "bootstrap-icons.min.css", true)
-	fs.CopyWebFile("web/css/fonts", fontsPath, "bootstrap-icons.woff", true)
-	fs.CopyWebFile("web/css/fonts", fontsPath, "bootstrap-icons.woff2", true)
-	fs.CopyWebFile("web/css", stylesheetPath, "bootstrap.min.css", true)
-	fs.CopyWebFile("web/css", stylesheetPath, "pico.min.css", true)
-	fs.CopyWebFile("web/css", stylesheetPath, "pico.colors.min.css", true)
-	fs.CopyWebFile("web/css", stylesheetPath, "elements.min.css", true)
+	fs.CopyWebFile("openapi/web/css", stylesheetPath, "bootstrap-icons.min.css", true)
+	fs.CopyWebFile("openapi/web/css/fonts", fontsPath, "bootstrap-icons.woff", true)
+	fs.CopyWebFile("openapi/web/css/fonts", fontsPath, "bootstrap-icons.woff2", true)
+	fs.CopyWebFile("openapi/web/css", stylesheetPath, "bootstrap.min.css", true)
+	fs.CopyWebFile("openapi/web/css", stylesheetPath, "pico.min.css", true)
+	fs.CopyWebFile("openapi/web/css", stylesheetPath, "pico.colors.min.css", true)
+	fs.CopyWebFile("openapi/web/css", stylesheetPath, "elements.min.css", true)
 
 	// files in images directory
-	fs.CopyWebFile("web/images", imagesPath, "favicon.ico", false)
+	fs.CopyWebFile("openapi/web/images", imagesPath, "favicon.ico", false)
 
 	// files in web directory
-	fs.CopyWebFile("web", frontendPath, "web.go", true)
+	fs.CopyWebFile("openapi/web", frontendPath, "web.go", true)
 
 	// files in core directory
 	createFileFromTemplate(filepath.Join(corePath, "localize.go"), "templates/openapi/core/localize.go.tmpl", conf)
@@ -82,7 +82,7 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	}
 
 	// files in pages directory
-	fs.CopyWebFile("web/pages", restPath, "render.go", true)
+	fs.CopyWebFile("openapi/web/pages", restPath, "render.go", true)
 	if _, err := os.Stat(filepath.Join(pagesPath, "languages.templ")); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filepath.Join(pagesPath, "languages.templ"), "templates/openapi/web/pages/languages.templ.tmpl", conf)
 	}
@@ -113,10 +113,10 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	}
 
 	// files in public directory
-	fs.CopyWebFile(path.Join("web", "public"), publicPath, "README.md", false)
+	fs.CopyWebFile(path.Join("openapi/web", "public"), publicPath, "README.md", false)
 
 	// files in doc directory
-	fs.CopyWebFile(path.Join("web", "doc"), docPath, "README.md", false)
+	fs.CopyWebFile(path.Join("openapi/web", "doc"), docPath, "README.md", false)
 
 	// support for events
 	if spec.Paths.Find("/events") != nil && spec.Paths.Find("/events").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/events").Operations()[http.MethodGet].Tags, "builtin") {
