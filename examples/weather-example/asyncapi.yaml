@@ -20,7 +20,7 @@ channels:
   weather-temperature:
     address: weather-temperature
     messages:
-      weatherTemperatur:
+      weatherTemperature:
         $ref: '#/components/messages/WeatherTemperature'
 operations:
   subscribeToHumidityReadings:
