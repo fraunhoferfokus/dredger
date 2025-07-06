@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	asyncapiv3 "github.com/lerenn/asyncapi-codegen/pkg/asyncapi/v3"
 	"github.com/rs/zerolog/log"
@@ -18,8 +19,6 @@ func generateEmptyFrontendAsync(_ *asyncapiv3.Specification, conf GeneratorConfi
 }
 
 func generateFrontendAsync(spec *asyncapiv3.Specification, conf GeneratorConfig) {
-	//	generateOpenAPIDoc(conf)
-
 	// create folders
 	corePath := filepath.Join(conf.OutputPath, "core")
 	asyncPath := filepath.Join(conf.OutputPath, "async")
@@ -78,7 +77,6 @@ func generateFrontendAsync(spec *asyncapiv3.Specification, conf GeneratorConfig)
 		createFileFromTemplate(filepath.Join(localesPath, "locale.en.toml"), "templates/openapi/core/locales/locale.en.toml", conf)
 	}
 
-
 	// files in pages directory
 	fs.CopyWebFile("openapi/web/pages", restPath, "render.go", true)
 	if _, err := os.Stat(filepath.Join(pagesPath, "languages.templ")); errors.Is(err, os.ErrNotExist) {
@@ -86,17 +84,60 @@ func generateFrontendAsync(spec *asyncapiv3.Specification, conf GeneratorConfig)
 	}
 
 	// files in public directory
+
+	tmplData := frontendTemplateConfig{
+		Title:    spec.Info.Title,
+		Version:  spec.Info.Version,
+		Channels: extractChannels(spec),
+	}
+
 	createFileFromTemplate(
-    	filepath.Join(publicPath, "index.html"),
-    	"templates/openapi/web/public/index.html.tmpl",
-    	conf,
+		filepath.Join(publicPath, "index.html"),
+		"templates/openapi/web/public/index.html.tmpl",
+		tmplData,
 	)
 	fs.CopyWebFile(path.Join("web", "public"), publicPath, "README.md", false)
 
 	// files in doc directory
 	fs.CopyWebFile(path.Join("web", "doc"), docPath, "README.md", false)
 
-	// support for events
-
 	log.Info().Msg("Created Frontend successfully.")
+}
+
+type frontendTemplateConfig struct {
+	Title    string
+	Version  string
+	Channels []channelInfo
+}
+
+type channelInfo struct {
+	Name   string
+	Title  string
+	Fields []fieldInfo
+}
+
+type fieldInfo struct {
+	GoName   string
+	JSONName string
+	Label    string
+}
+
+func extractChannels(spec *asyncapiv3.Specification) []channelInfo {
+	var channels []channelInfo
+	for name, ch := range spec.Channels {
+		c := channelInfo{
+			Name:  name,
+			Title: ch.Description,
+		}
+
+		channels = append(channels, c)
+	}
+	return channels
+}
+
+func capitalize(s string) string {
+	if len(s) == 0 {
+		return s
+	}
+	return strings.ToUpper(s[:1]) + s[1:]
 }
