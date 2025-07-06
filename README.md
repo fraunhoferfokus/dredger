@@ -1,12 +1,12 @@
 # dredger
 
-A generator for REST APIs from a given <a href="https://www.openapis.org/">OpenAPI 3</a> Specification file in either JSON or YAML format. The HTTP server uses Go's <a href="https://echo.labstack.com/">Echo</a> HTTP server as base.
+A generator for REST and Async APIs from a given <a href="https://www.openapis.org/">OpenAPI 3</a> or <a href="https://www.asyncapi.com/">AsyncAPI 3</a> Specification file in either JSON or YAML format. The HTTP server uses Go's <a href="https://echo.labstack.com/">Echo</a> HTTP server as base.
 
 This is a fork of https://github.com/MVA-OpenApi/go-open-api-generator.
 
 # Purpose
 
-We aim to make the life of Golang REST API developers (or non technical users) easier by creating a tool which takes an OpenAPI 3 Specification file as input and generates a basic project structure from it so that the developers can focus on the business logic. But this code could also be used by other code generators (low code) to add code using their models to create application specific micro services.
+We aim to make the life of Golang (REST and Async) API developers (or non technical users) easier by creating a tool which takes OpenAPI 3 and AsyncAPI 3 Specification files as input and generates a basic project structure from it so that the developers can focus on the business logic. But this code could also be used by other code generators (low code) to add code using their models to create application specific micro services.
 
 The code generation uses Go text templates to generate the code. Therefore, the code can be easily modified and extended.
 
@@ -112,5 +112,7 @@ generated.
 # Contributions
 
 The origin of this project was made by 6 students (A. Uluc, A. Munteau, O. Rosenblatt, J. Wilke, C. Szramek, F. Yzeiri) of the TU Berlin as part of the module "Moderne Verteilte Anwendungen Programmierpraktikum" when studying B.Sc Computer Science and could be found at https://github.com/MVA-OpenApi/go-open-api-generator.
+
+The work on the AsyncAPI - Compatibility was done by 4 more students (E. To, A. Gaydikhovych, K. Eichler, T. Hillerscheid) of the TU Berlin as part of the same module in the year 2025.
 
 Further contributors: J. Gottschick
