@@ -78,6 +78,7 @@ func generateFrontendAsync(spec *asyncapiv3.Specification, conf GeneratorConfig)
 		createFileFromTemplate(filepath.Join(localesPath, "locale.en.toml"), "templates/openapi/core/locales/locale.en.toml", conf)
 	}
 
+
 	// files in pages directory
 	fs.CopyWebFile("openapi/web/pages", restPath, "render.go", true)
 	if _, err := os.Stat(filepath.Join(pagesPath, "languages.templ")); errors.Is(err, os.ErrNotExist) {
@@ -85,6 +86,11 @@ func generateFrontendAsync(spec *asyncapiv3.Specification, conf GeneratorConfig)
 	}
 
 	// files in public directory
+	createFileFromTemplate(
+    	filepath.Join(publicPath, "index.html"),
+    	"templates/openapi/web/public/index.html.tmpl",
+    	conf,
+	)
 	fs.CopyWebFile(path.Join("web", "public"), publicPath, "README.md", false)
 
 	// files in doc directory
