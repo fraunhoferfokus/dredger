@@ -96,10 +96,10 @@ func generateFrontendAsync(spec *asyncapiv3.Specification, conf GeneratorConfig)
 		"templates/openapi/web/public/index.html.tmpl",
 		tmplData,
 	)
-	fs.CopyWebFile(path.Join("web", "public"), publicPath, "README.md", false)
+	fs.CopyWebFile(path.Join("openapi/web", "public"), publicPath, "README.md", false)
 
 	// files in doc directory
-	fs.CopyWebFile(path.Join("web", "doc"), docPath, "README.md", false)
+	fs.CopyWebFile(path.Join("openapi/web", "doc"), docPath, "README.md", false)
 
 	log.Info().Msg("Created Frontend successfully.")
 }
