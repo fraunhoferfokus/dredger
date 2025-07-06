@@ -43,14 +43,14 @@ operations:
     channel:
       $ref: '#/channels/weather-temperature'
     messages:
-      - $ref: '#/channels/weather-temperature/messages/weatherTemperatur'
+      - $ref: '#/channels/weather-temperature/messages/weatherTemperature'
   publishTemperatureReading:
     action: send
     summary: Publishes simulated temperature readings
     channel:
       $ref: '#/channels/weather-temperature'
     messages:
-      - $ref: '#/channels/weather-temperature/messages/weatherTemperatur'
+      - $ref: '#/channels/weather-temperature/messages/weatherTemperature'
 components:
   messages:
     WeatherHumidity:
