@@ -57,6 +57,7 @@ Generation flags:
 For typical tasks you can use the [just](https://just.systems/man/en/) recipes:
 
     build              # Build the local dredger binary
+    download-deps      # Download all necessary libs for generating async
     download-elements  # Download elements, an OpenAPI documentation viewer
     download-rapidoc   # Download rapidoc, an OpenAPI documentation viewer
     download-style     # Download frontend libraries
