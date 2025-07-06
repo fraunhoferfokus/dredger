@@ -36,6 +36,14 @@ tools:
 	go install golang.org/x/tools/cmd/goimports@latest
 	go install github.com/a-h/templ/cmd/templ@latest
 
+# Download all necessary libraries and tidy up go mod
+download-deps:
+    go mod download github.com/nats-io/nats.go
+    go mod download github.com/rs/zerolog
+    go mod download go.opentelemetry.io/otel
+    go mod download github.com/nats-io/nkeys
+    go mod tidy
+
 # Download rapidoc, an OpenAPI documentation viewer
 download-rapidoc:
     curl -o templates/web/js/rapidoc-min.js -L https://unpkg.com/rapidoc/dist/rapidoc-min.js
