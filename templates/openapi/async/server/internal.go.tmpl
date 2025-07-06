@@ -39,7 +39,7 @@ func RegisterHandlers(e *echo.Echo) {
 		var subscriptions []*nats.Subscription
 
 		{{ range .Channels }}
-		{{ lcfirst ( camelcase .OperationName ) }}sub := {{.OperationName}}(nc, ws)
+		{{ lcfirst ( camelcase .OperationName ) }}sub := {{ ucfirst ( camelcase .OperationName) }}(nc, ws)
 		if {{ lcfirst ( camelcase .OperationName ) }}sub == nil {
 			log.Println("Subscription to {{ .ChannelName }} failed")
 			return nil

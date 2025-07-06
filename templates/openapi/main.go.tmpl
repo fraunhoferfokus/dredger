@@ -98,7 +98,7 @@ func main() {
 
 	{{- if .OpenAPI}}
 	{{ range .AllOpenAPINames}}
-	e.FileFS("/{{.OpenAPIPath}}.yaml", "web/doc/{{.OpenAPIPath}}.yaml", embeddedFS)
+	e.FileFS("/{{.OpenAPIPath}}", "web/doc/{{.OpenAPIPath}}", embeddedFS)
 	{{end}}
 	{{end}}
 	// serve default stylesheets and javascript files
