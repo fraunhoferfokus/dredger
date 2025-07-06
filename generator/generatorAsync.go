@@ -88,11 +88,11 @@ func GenerateAsyncService(conf GeneratorConfig) error {
 	log.Debug().Str("Spec info title to check if actually processed", spec.Info.Version).Msg("Check spec actually processed or not")
 	createProjectPathDirectoryAsync(conf)
 
-	//	if conf.AddFrontend {
-	//		generateFrontendAsync(spec, conf)
-	//	} else {
-	//		generateEmptyFrontendAsync(spec, conf)
-	//	}
+	if conf.AddFrontend {
+		generateFrontendAsync(spec, conf)
+	} else {
+		generateEmptyFrontendAsync(spec, conf)
+	}
 
 	// Hauptdateien
 	createFileFromTemplate(filepath.Join(conf.OutputPath, "README.md"), "templates/asyncapi/README.md.tmpl", conf)
