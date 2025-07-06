@@ -8,8 +8,10 @@ import (
 	"strings"
 
 	"dredger/core"
-	genAsyncAPI "dredger/generator/asyncapi"
-	genOpenAPI "dredger/generator/openapi"
+	gen "dredger/generator"
+
+	//genAsyncAPI "dredger/generator/asyncapi"
+	"dredger/parser"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -22,6 +24,15 @@ var (
 	databaseFlag bool
 	frontendFlag bool
 )
+
+// Variables to know what needs to be in the main
+var (
+	openapi  bool
+	asyncapi bool
+)
+
+// Just a temporary struct, to hold information about
+var allOpenAPINames []gen.OpenAPIConfig
 
 // rootCmd repräsentiert den Basis-Befehl
 var rootCmd = &cobra.Command{
@@ -54,39 +65,6 @@ var generateCmd = &cobra.Command{
 		}
 		projectDestination := filepath.Join(projectPath)
 
-//emy
-		// Falls --async gesetzt, erzwinge AsyncAPI
-		if asyncPath != "" {
-			log.Info().Msg("AsyncAPI via --async übergeben.")
-			config := genAsyncAPI.AsyncAPIConfig{
-				AsyncAPIPath: specPath,
-				OutputPath:   projectDestination,
-				ModuleName:   projectName,
-			}
-			if err := genAsyncAPI.GenerateAsyncService(config); err != nil {
-				log.Error().Err(err).Msg("AsyncAPI: Fehler beim Generieren")
-			}
-			return
-		}
-
-		// Spectype automatisch erkennen
-		isAsync, isOpen, err := detectSpecType(specPath)
-		if err != nil {
-			log.Error().Err(err).Msg("Konnte Spec-Datei nicht öffnen oder lesen")
-			return
-		}
-		switch {
-		case isAsync:
-			log.Info().Msg("Erkannt: AsyncAPI-Spec – wir parsen & generieren mit dem AsyncAPI-Generator")
-
-			config := genAsyncAPI.AsyncAPIConfig{
-				AsyncAPIPath: specPath,
-				OutputPath:   projectDestination,
-				ModuleName:   projectName,
-			}
-			if err := genAsyncAPI.GenerateAsyncService(config); err != nil {
-				log.Error().Err(err).Msg("AsyncAPI: Fehler beim Generieren")
-//div
 		specPaths := args
 
 		for _, specPath := range specPaths {
@@ -99,41 +77,58 @@ var generateCmd = &cobra.Command{
 			if err != nil {
 				log.Error().Err(err).Msg("Konnte Spec-Datei nicht öffnen oder lesen")
 				continue
-//alex
 			}
 
 			switch {
 			case isAsync:
 				log.Info().Msgf("Erkannt: AsyncAPI-Spec %s – wir parsen & generieren", specPath)
-				spec, err := parser.ParseAsyncAPISpecFile(specPath)
+				_, err := parser.ParseAsyncAPISpecFile(specPath)
 				if err != nil {
 					log.Error().Err(err).Msg("AsyncAPI: Fehler beim Parsen")
 					continue
 				}
-				if err := genAsyncAPI.GenerateService(spec, projectDestination, projectName); err != nil {
-					log.Error().Err(err).Msg("AsyncAPI: Fehler beim Generieren")
-				}
-
-			case isOpen:
-				log.Info().Msgf("Erkannt: OpenAPI-Spec %s – wir parsen & generieren", specPath)
-				config := genOpenAPI.GeneratorConfig{
-					OpenAPIPath:  specPath,
+				config := gen.GeneratorConfig{ //auch an den GenerateService / GenerateServer übergeben
+					AsyncAPIPath: specPath,
 					OutputPath:   projectDestination,
 					ModuleName:   projectName,
 					DatabaseName: "database",
-					Flags: genOpenAPI.Flags{
+					Flags: gen.Flags{
 						AddDatabase: databaseFlag,
 						AddFrontend: frontendFlag,
 					},
 				}
-				if err := genOpenAPI.GenerateServer(config); err != nil {
+				if err := gen.GenerateAsyncService(config); err != nil {
+					log.Error().Err(err).Msg("AsyncAPI: Fehler beim Generieren")
+				}
+				asyncapi = true
+			case isOpen:
+				log.Info().Msgf("Erkannt: OpenAPI-Spec %s – wir parsen & generieren", specPath)
+				config := gen.GeneratorConfig{
+					OpenAPIPath:  specPath,
+					OutputPath:   projectDestination,
+					ModuleName:   projectName,
+					DatabaseName: "database",
+					Flags: gen.Flags{
+						AddDatabase: databaseFlag,
+						AddFrontend: frontendFlag,
+					},
+				}
+				if err := gen.GenerateServer(config); err != nil {
 					log.Error().Err(err).Msg("OpenAPI: Fehler beim Generieren")
 				}
-
+				openapi = true
+				allOpenAPINames = append(allOpenAPINames, gen.OpenAPIConfig{
+					OpenAPIPath: specPath,
+				})
 			default:
 				log.Error().Msgf("Datei %s ist weder gültige AsyncAPI- noch gültige OpenAPI-Spec.", specPath)
+				//Needs default case code for no spec given
+				// GenerateDefault
 			}
 		}
+
+		// IDEE: Array mit allen specPaths, welche OpenAPI sind, da sie für den OpenAPIName gebraucht werden, wenn es OpenAPI ist
+		gen.GenerateMain(allOpenAPINames, projectDestination, projectName, openapi, asyncapi, databaseFlag, frontendFlag)
 	},
 }
 

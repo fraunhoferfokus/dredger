@@ -1,7 +1,8 @@
 package parser
 
 import (
-	//fs "dredger/fileUtils"
+	fs "dredger/fileUtils"
+	"errors"
 
 	//"embed"
 
@@ -18,6 +19,10 @@ const schemaFile = "./examples/schemas/asyncapiv3Schema.json"
 // ParseAsyncAPISpecFile liest eine AsyncAPI-Datei (YAML oder JSON) ein,
 // prüft Basisfelder und gibt sie als Struct zurück.
 func ParseAsyncAPISpecFile(path string) (*v3.Specification, error) {
+	if !fs.CheckIfFileExists(path) {
+		return nil, errors.New("file not found")
+	}
+
 	fileParams := async.FromFileParams{
 		Path:         path,
 		MajorVersion: 3,

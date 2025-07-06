@@ -1,0 +1,24 @@
+package publishers
+
+import (
+	"{{ lcfirst ( camelcase .ModuleName ) }}/entities"
+	"encoding/json"
+	"log" //noch an core logger anpassen
+	"math/rand"
+	"time"
+
+	"github.com/nats-io/nats.go"
+)
+
+func {{ ucfirst .OperationName }}() {
+	nc, err := nats.Connect(nats.DefaultURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer nc.Drain()
+
+
+	//err = nc.Publish("{{.ChannelName}}", data)
+
+    //Add your business logic here
+}
