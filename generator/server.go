@@ -37,7 +37,7 @@ func GenerateInternalFile(spec *asyncapiv3.Specification, genConf GeneratorConfi
 		Channels: channelInfos,
 	}
 	log.Debug().Msg("After extracting SubInfos")
-	filePath := path.Join(genConf.OutputPath, AsyncPkg, "server", "internal.go")
+	filePath := path.Join(genConf.OutputPath, AsyncPkg, "server", "internal_"+spec.Info.Title+".go")
 	tmplPath := path.Join("templates", "openapi", AsyncPkg, "server", "internal.go.tmpl")
 	//filepath und tmplpath bestimmen und daraus dann die createFileFromTemplate(filepath, tmplPath und das c füllen)
 	log.Debug().Msgf("Extracted %d channels", len(channelInfos))
@@ -63,7 +63,7 @@ func GenerateSubscriberFile(spec *asyncapiv3.Specification, genConf GeneratorCon
 		Operations: operations,
 	}
 
-	filePath := path.Join(genConf.OutputPath, AsyncPkg, "server", "subscribers.go")
+	filePath := path.Join(genConf.OutputPath, AsyncPkg, "server", "subscribers_"+spec.Info.Title+".go")
 	tmplPath := path.Join("templates", "openapi", AsyncPkg, "server", "subscribers.go.tmpl")
 	//filepath und tmplpath bestimmen und daraus dann die createFileFromTemplate(filepath, tmplPath und das c füllen)
 	createFileFromTemplate(filePath, tmplPath, conf)
