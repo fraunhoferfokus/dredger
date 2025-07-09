@@ -8,7 +8,6 @@ import (
 	"slices"
 
 	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/rs/zerolog/log"
 )
 
 func generateInfoFiles(spec *openapi3.T, serverConf ServerConfig) {
@@ -30,7 +29,7 @@ func generateInfoFiles(spec *openapi3.T, serverConf ServerConfig) {
 	if spec.Paths.Find("/infoz") != nil &&
 		spec.Paths.Find("/infoz").Operations()[http.MethodGet] != nil &&
 		slices.Contains(spec.Paths.Find("/infoz").Operations()[http.MethodGet].Tags, "builtin") {
-		log.Debug().Msg("Generating default /infoz endpoint.")
+		//log.Debug().Msg("Generating default /infoz endpoint.")
 		op := openapi3.NewOperation()
 		op.AddResponse(http.StatusOK, createOAPIResponse("The service is ready"))
 		updateOAPIOperation(op, "GetInfo", "Returns infos about the service", "200")

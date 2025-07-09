@@ -73,7 +73,7 @@ func GenerateService(spec *asyncapiv3.Specification, outputPath, moduleName stri
 func GenerateAsyncService(conf GeneratorConfig) error {
 	spec := &asyncapiv3.Specification{}
 	var err error
-	log.Debug().Msg("AsyncAPIPath: " + conf.AsyncAPIPath)
+	//log.Debug().Msg("AsyncAPIPath: " + conf.AsyncAPIPath)
 	if conf.AsyncAPIPath != "" {
 		spec, err = parser.ParseAsyncAPISpecFile(conf.AsyncAPIPath)
 		if err != nil || spec == nil {
@@ -85,7 +85,7 @@ func GenerateAsyncService(conf GeneratorConfig) error {
 	//Config.Path = conf.OutputPath
 	//Config.Name = conf.ModuleName
 
-	log.Debug().Str("Spec info title to check if actually processed", spec.Info.Version).Msg("Check spec actually processed or not")
+	//log.Debug().Str("Spec info title to check if actually processed", spec.Info.Version).Msg("Check spec actually processed or not")
 	createProjectPathDirectoryAsync(conf)
 
 	if conf.AddFrontend {
@@ -128,25 +128,24 @@ func GenerateAsyncService(conf GeneratorConfig) error {
 
 // createProjectPathDirectory legt die Grundordner bei Async an
 func createProjectPathDirectoryAsync(conf GeneratorConfig) {
-	log.Debug().Msg("Now in CreateProjectPathDirectoryAsync")
 	fs.GenerateFolder(conf.OutputPath)
-	log.Debug().Msg("Created " + conf.OutputPath)
+	//log.Debug().Msg("Created " + conf.OutputPath)
 	fs.GenerateFolder(filepath.Join(conf.OutputPath, CorePkg))
-	log.Debug().Msg("Created " + CorePkg)
+	//log.Debug().Msg("Created " + CorePkg)
 	fs.GenerateFolder(filepath.Join(conf.OutputPath, AsyncPkg))
 	fs.GenerateFolder(filepath.Join(conf.OutputPath, AsyncPkg, "publishers"))
 	fs.GenerateFolder(filepath.Join(conf.OutputPath, AsyncPkg, "server"))
-	log.Debug().Msg("Created " + AsyncPkg)
+	//log.Debug().Msg("Created " + AsyncPkg)
 	fs.GenerateFolder(filepath.Join(conf.OutputPath, RestPkg))
-	log.Debug().Msg("Created " + RestPkg)
+	//log.Debug().Msg("Created " + RestPkg)
 	fs.GenerateFolder(filepath.Join(conf.OutputPath, EntitiesPkg))
-	log.Debug().Msg("Created " + EntitiesPkg)
+	//log.Debug().Msg("Created " + EntitiesPkg)
 	fs.GenerateFolder(filepath.Join(conf.OutputPath, UsecasesPkg))
-	log.Debug().Msg("Created " + UsecasesPkg)
+	//log.Debug().Msg("Created " + UsecasesPkg)
 	if conf.AddDatabase {
 		fs.GenerateFolder(filepath.Join(conf.OutputPath, DatabasePkg))
-		log.Debug().Msg("Created " + DatabasePkg)
+		//log.Debug().Msg("Created " + DatabasePkg)
 	}
 	fs.GenerateFolder(filepath.Join(conf.OutputPath, MiddlewarePackage))
-	log.Info().Msg("Created project directory.")
+	//log.Info().Msg("Created project directory.")
 }

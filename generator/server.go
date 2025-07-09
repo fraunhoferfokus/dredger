@@ -25,26 +25,23 @@ type SubscribeOperation struct {
 
 // Generate the internal.go File in templates, needs: Channels, OperationName, ChannelName,
 func GenerateInternalFile(spec *asyncapiv3.Specification, genConf GeneratorConfig) error {
-	log.Debug().Msg("In GenerateInternalFile before checking spec")
 	if spec == nil {
 		err := errors.New("Could not generate internal-file. Specification not available.")
 		log.Error().Err(err).Msg("")
 		return err
 	}
-	log.Debug().Msg("After spec check before extracting SubInfos")
 	channelInfos := extractSubInfo(spec)
 	conf := InternalConfig{
 		Channels: channelInfos,
 	}
-	log.Debug().Msg("After extracting SubInfos")
 	filePath := path.Join(genConf.OutputPath, AsyncPkg, "server", "internal_"+spec.Info.Title+".go")
 	tmplPath := path.Join("templates", "openapi", AsyncPkg, "server", "internal.go.tmpl")
 	//filepath und tmplpath bestimmen und daraus dann die createFileFromTemplate(filepath, tmplPath und das c füllen)
-	log.Debug().Msgf("Extracted %d channels", len(channelInfos))
-	for i, ch := range channelInfos {
-		log.Debug().Msgf("Channel %d: OperationName=%s, ChannelName=%s", i, ch.OperationName, ch.ChannelName)
-	}
-
+	/*log.Debug().Msgf("Extracted %d channels", len(channelInfos))
+	*for i, ch := range channelInfos {
+	*	log.Debug().Msgf("Channel %d: OperationName=%s, ChannelName=%s", i, ch.OperationName, ch.ChannelName)
+	*}
+	 */
 	createFileFromTemplate(filePath, tmplPath, conf)
 
 	return nil
@@ -106,7 +103,6 @@ func checkMessage(message *asyncapiv3.Message) string {
 // Filters all Subscribe Operations and gets their OperationName and the ChannelName they belong to
 // returns InternalConfig to be used for template
 func extractSubInfo(spec *asyncapiv3.Specification) []ChannelInfo {
-	log.Debug().Msg("In extractSubInfo before iterating over Operations in spec: " + spec.Info.Title)
 	allSubChans := []ChannelInfo{}
 	for opName, op := range spec.Operations {
 		if op.Action.IsReceive() && op.Channel != nil {
@@ -115,7 +111,7 @@ func extractSubInfo(spec *asyncapiv3.Specification) []ChannelInfo {
 					OperationName: opName,
 					ChannelName:   checkChannel(op.Channel.Reference), //TODO get ChannelName not Channelstruct
 				})
-			log.Debug().Msg("Appended OperationName: " + opName + " and ChannelName: " + checkChannel(op.Channel.Reference))
+			//log.Debug().Msg("Appended OperationName: " + opName + " and ChannelName: " + checkChannel(op.Channel.Reference))
 		} else {
 			log.Warn().Str("operation", opName).Msg("Missing channel reference")
 		}

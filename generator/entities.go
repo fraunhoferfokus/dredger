@@ -44,9 +44,7 @@ type ImportsConfig struct {
 
 // Aus den Schemas in Components die Typdefinitionen und generiert entities,imports,structs und validate files
 func GenerateTypes(spec *openapi3.T, pConf ProjectConfig) {
-	log.Debug().Msg("In GenerateTypes for openapi.")
 	if spec != nil && spec.Components != nil {
-		log.Debug().Msg("In if statement, so spec should not be nil")
 		schemaDefs := generateTypeDefs(&spec.Components.Schemas)
 		imports := generateImports()
 		var conf ModelConfig
@@ -54,7 +52,7 @@ func GenerateTypes(spec *openapi3.T, pConf ProjectConfig) {
 		conf.ProjectName = pConf.Name
 
 		for schema, defs := range schemaDefs {
-			log.Debug().Str("Operationname", schema).Msg("SchemaDefs")
+			//log.Debug().Str("Operationname", schema).Msg("SchemaDefs")
 			conf.SchemaDefs = map[string][]TypeDefinition{schema: defs}
 			fileName := strings.ToLower(schema) + ".go"
 			filePath := filepath.Join(pConf.Path, EntitiesPkg, fileName)
@@ -72,7 +70,6 @@ func GenerateTypes(spec *openapi3.T, pConf ProjectConfig) {
 
 func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 	schemaDefs := make(map[string][]TypeDefinition, len(*schemas))
-	log.Debug().Msg("In generateTypeDefs for openapi.")
 	for schemaName, ref := range *schemas {
 		fmt.Printf("%s: %#v\n\n", schemaName, ref.Value.Type)
 		var goType string
@@ -192,7 +189,6 @@ func floatOrMax(x *float64) float64 {
 }
 
 func generatePropertyDefs(properties *openapi3.Schemas) []TypeDefinition {
-	log.Debug().Msg("In generatePropertyDefs for openapi.")
 	typeDefs := make([]TypeDefinition, len(*properties))
 	i := 0
 	for name, property := range *properties {
@@ -221,7 +217,6 @@ func generatePropertyDefs(properties *openapi3.Schemas) []TypeDefinition {
 
 // schema type to generated go type
 func toGoType(sRef *openapi3.SchemaRef) (goType string, nested bool) {
-	log.Debug().Msg("In toGoType for openapi.")
 	if sRef.Value.Type.Includes("number") {
 		switch sRef.Value.Format {
 		case "float":

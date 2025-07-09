@@ -120,7 +120,7 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 
 	// support for events
 	if spec.Paths.Find("/events") != nil && spec.Paths.Find("/events").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/events").Operations()[http.MethodGet].Tags, "builtin") {
-		log.Debug().Msg("Generating default /events endpoint.")
+		//log.Debug().Msg("Generating default /events endpoint.")
 		createFileFromTemplate(filepath.Join(restPath, "progress.go"), "templates/openapi/web/pages/progress.go.tmpl", conf)
 		createFileFromTemplate(filepath.Join(restPath, "notice.go"), "templates/openapi/web/pages/notice.go.tmpl", conf)
 
