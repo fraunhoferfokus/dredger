@@ -1,0 +1,64 @@
+asyncapi: 3.0.0
+info:
+  title: Live Wetter Feed (Test)
+  version: 1.0.1
+  description: >
+    A test version of the NATS-based microservice that publishes mock weather alerts
+    for internal testing and validation.
+
+servers:
+  testNATS:
+    host: localhost:4333
+    protocol: nats
+    description: Local NATS server for test purposes
+
+channels:
+  weather-alerts:
+    address: weather-alerts
+    messages:
+      weatherAlert:
+        $ref: '#/components/messages/WeatherAlert'
+
+operations:
+  subscribeToAlerts:
+    action: receive
+    summary: Receives simulated weather alerts
+    channel:
+      $ref: '#/channels/weather-alerts'
+    messages:
+      - $ref: '#/channels/weather-alerts/messages/weatherAlert'
+  publishTestAlert:
+    action: send
+    summary: Publishes a test weather alert
+    channel:
+      $ref: '#/channels/weather-alerts'
+    messages:
+      - $ref: '#/channels/weather-alerts/messages/weatherAlert'
+
+components:
+  messages:
+    WeatherAlert:
+      name: WeatherAlert
+      title: Wetterwarnung
+      summary: Simulated alert data for weather anomalies
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          alert_id:
+            type: string
+            example: alert-xyz-999
+          level:
+            type: string
+            enum: [info, warning, critical]
+            example: warning
+          region:
+            type: string
+            example: Central-West
+          timestamp:
+            type: string
+            format: date-time
+            example: '2025-07-01T10:15:00Z'
+          message:
+            type: string
+            example: Thunderstorm expected in the next 30 minutes.
