@@ -110,6 +110,11 @@ go run main.go generate ./spec1.yaml ./spec2.yaml ./async1.json ./async2.json \
 If the schema file cannot be found, validation is skipped and the code is still
 generated.
 
+# Limitations
+
+- Add a AsyncAPI Info Title if multiple specs are used! (You can have one spec file without one)
+- For multiple AsyncAPI files, only the public `index.html` for the last spec is generated 
+
 # Contributions
 
 The origin of this project was made by 6 students (A. Uluc, A. Munteau, O. Rosenblatt, J. Wilke, C. Szramek, F. Yzeiri) of the TU Berlin as part of the module "Moderne Verteilte Anwendungen Programmierpraktikum" when studying B.Sc Computer Science and could be found at https://github.com/MVA-OpenApi/go-open-api-generator.
