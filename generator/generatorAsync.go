@@ -101,7 +101,6 @@ func GenerateAsyncService(conf GeneratorConfig) error {
 
 	// Publisher Channels generieren
 	GenerateChannelFile(spec, conf)
-	log.Debug().Msg("After GenerateChannelFile, before GenerateInternalFile")
 	// Internal Server files generieren
 	GenerateInternalFile(spec, conf)
 	// Subscriber files generieren

@@ -154,7 +154,7 @@ func generateHandlerFuncStub(op *openapi3.Operation, method string, path string,
 		templateFile = "templates/openapi/rest/handleEvents.go.tmpl"
 	}
 
-	log.Debug().Str("operation", conf.OperationID).Str("template", templateFile).Msg("Generate handler")
+	//log.Debug().Str("operation", conf.OperationID).Str("template", templateFile).Msg("Generate handler")
 	if _, err := os.Stat(filePath); !canBeEdited || errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filePath, templateFile, conf)
 	}

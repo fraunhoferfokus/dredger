@@ -1,15 +1,12 @@
 package generator
 
 import (
-	"fmt"
 	"math"
 	"path/filepath"
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gobeam/stringy"
-
-	"github.com/rs/zerolog/log"
 )
 
 var IMPORT_UUID bool
@@ -65,13 +62,12 @@ func GenerateTypes(spec *openapi3.T, pConf ProjectConfig) {
 			createFileFromTemplates(filePath, templateFiles, conf)
 		}
 	}
-	log.Debug().Msg("In GenerateTypes for openapi at the end")
 }
 
 func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 	schemaDefs := make(map[string][]TypeDefinition, len(*schemas))
 	for schemaName, ref := range *schemas {
-		fmt.Printf("%s: %#v\n\n", schemaName, ref.Value.Type)
+		//fmt.Printf("%s: %#v\n\n", schemaName, ref.Value.Type)
 		var goType string
 		if ref.Value.Type.Includes("number") {
 			switch ref.Value.Format {
