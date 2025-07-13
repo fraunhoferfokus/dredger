@@ -13,7 +13,7 @@ func generateConfigFiles(serverConf ServerConfig) {
 	// 1) .env
 	fileName := ".env"
 	filePath := filepath.Join(Config.Path, fileName)
-	templateFile := "templates/common/ENVIRONMENT.md.tmpl" // falls du eine andere Vorlage willst, passe hier an
+	templateFile := "templates/openapi/core/app.env.tmpl" // falls du eine andere Vorlage willst, passe hier an
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filePath, templateFile, serverConf)
 	}
