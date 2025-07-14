@@ -17,7 +17,7 @@ func snakecase(s string) string {
 }
 
 func camelcase(s string) string {
-	return stringy.New(s).CamelCase("?", "", "#", "", "-", "").Get()
+	return stringy.New(s).CamelCase("?", "", "#", "").Get()
 }
 
 func lcFirst(s string) string {
