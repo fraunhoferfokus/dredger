@@ -7,12 +7,14 @@ import (
 	"path/filepath"
 	"strings"
 
+	extCmd "dredger/cmd"
 	"dredger/core"
 	gen "dredger/generator"
 
 	//genAsyncAPI "dredger/generator/asyncapi"
 	"dredger/parser"
 
+	"github.com/huandu/xstrings"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
@@ -125,10 +127,30 @@ var generateCmd = &cobra.Command{
 				//Needs default case code for no spec given
 				// GenerateDefault
 			}
+
 		}
 
 		// IDEE: Array mit allen specPaths, welche OpenAPI sind, da sie für den OpenAPIName gebraucht werden, wenn es OpenAPI ist
 		gen.GenerateMain(allOpenAPINames, projectDestination, projectName, openapi, asyncapi, databaseFlag, frontendFlag)
+
+		// Create go.mod if not exist
+		fileName := "go.mod"
+		filePath := filepath.Join(projectDestination, fileName)
+		if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+			log.Info().Msg("RUN `go mod init " + xstrings.FirstRuneToLower(xstrings.ToCamelCase(projectName)) + "`")
+			extCmd.RunCommand("go mod init "+xstrings.FirstRuneToLower(xstrings.ToCamelCase(projectName)), projectDestination)
+		}
+
+		log.Info().Msg("RUN `goimports`")
+		extCmd.RunCommand("goimports -w .", projectDestination)
+
+		log.Info().Msg("RUN `go mod tidy`")
+		extCmd.RunCommand("go mod tidy", projectDestination)
+
+		log.Info().Msg("RUN `go fmt`")
+		extCmd.RunCommand("go fmt ./...", projectDestination)
+
+		log.Info().Msg("DONE project created at: " + projectDestination)
 	},
 }
 
