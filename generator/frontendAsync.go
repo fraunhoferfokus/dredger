@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	genasync "dredger/generator/asyncapi"
 	asyncapiv3 "github.com/lerenn/asyncapi-codegen/pkg/asyncapi/v3"
 	"github.com/rs/zerolog/log"
 )
@@ -19,6 +20,7 @@ func generateEmptyFrontendAsync(_ *asyncapiv3.Specification, conf GeneratorConfi
 }
 
 func generateFrontendAsync(spec *asyncapiv3.Specification, conf GeneratorConfig) {
+	generateAsyncAPIDoc(conf)
 	// create folders
 	corePath := filepath.Join(conf.OutputPath, "core")
 	asyncPath := filepath.Join(conf.OutputPath, "async")
@@ -140,4 +142,27 @@ func capitalize(s string) string {
 		return s
 	}
 	return strings.ToUpper(s[:1]) + s[1:]
+}
+
+func generateAsyncAPIDoc(conf GeneratorConfig) {
+	spec, err := genasync.ParseLite(conf.AsyncAPIPath)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to parse AsyncAPI spec for docs")
+		return
+	}
+
+	path := filepath.Join(conf.OutputPath, "web", "doc")
+	fs.GenerateFolder(path)
+
+	createFileFromTemplate(
+		filepath.Join(path, "index.html"),
+		"templates/asyncapi/index.html.tmpl",
+		spec,
+	)
+
+	if conf.AsyncAPIPath != "" {
+		fs.CopyFile(conf.AsyncAPIPath, path, fs.GetFileNameWithEnding(conf.AsyncAPIPath))
+	}
+
+	log.Info().Msg("Created AsyncAPI Documentation successfully.")
 }

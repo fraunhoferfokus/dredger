@@ -20,9 +20,10 @@ import (
 	"{{ lcfirst ( camelcase .ModuleName ) }}/rest/middleware"
 	{{end}}
 
-	"{{ lcfirst ( camelcase .ModuleName ) }}/web"
-	_ "embed"
-	"context"
+	    "{{ lcfirst ( camelcase .ModuleName ) }}/web"
+        _ "embed"
+        "context"
+       "flag"
 
 	{{- if .AddDatabase}}
 		"os"
