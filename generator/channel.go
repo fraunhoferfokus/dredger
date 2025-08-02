@@ -15,7 +15,11 @@ import (
 type Operation struct {
 	OperationName string
 	ChannelName   string
-	MessageName   string
+	Messages      []Message
+}
+
+type Message struct {
+	MessageName string
 }
 
 type GenConfig struct {
