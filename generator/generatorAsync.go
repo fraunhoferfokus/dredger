@@ -34,6 +34,45 @@ type mainConfig struct {
 	Title      string
 }
 
+// GenerateService creates a minimal async service based on the given spec.
+func GenerateService(spec *asyncapiv3.Specification, outputPath, moduleName string) error {
+	log.Info().Msg("What does this do?")
+	conf := mainConfig{
+		ModuleName: moduleName,
+		Title:      spec.Info.Title,
+	}
+
+	fs.GenerateFolder(outputPath)
+	base := filepath.Join(outputPath, "src")
+	subdirs := []string{"cmd", "internal", "logger", "tracing", "web"}
+	fs.GenerateFolder(base)
+	for _, d := range subdirs {
+		fs.GenerateFolder(filepath.Join(base, d))
+	}
+	fs.GenerateFolder(filepath.Join(base, "cmd", "publisher"))
+	fs.GenerateFolder(filepath.Join(base, "cmd", "server"))
+	fs.GenerateFolder(filepath.Join(base, "internal", "config"))
+	fs.GenerateFolder(filepath.Join(base, "internal", "server"))
+	fs.GenerateFolder(filepath.Join(base, "server", "subscribers"))
+
+	createFileFromTemplate(filepath.Join(outputPath, "README.md"), "templates/asyncapi/README.md.tmpl", conf)
+	createFileFromTemplate(filepath.Join(outputPath, "ENVIRONMENT.md"), "templates/asyncapi/ENVIRONMENT.md.tmpl", conf)
+	createFileFromTemplate(filepath.Join(outputPath, "go.mod"), "templates/asyncapi/go.mod.tmpl", conf)
+
+	createFileFromTemplate(filepath.Join(base, "cmd", "publisher", "channel.go"), "templates/asyncapi/src/cmd/publisher/channel.go.tmpl", conf)
+	createFileFromTemplate(filepath.Join(base, "cmd", "server", "main.go"), "templates/asyncapi/src/cmd/server/main.go.tmpl", conf)
+	createFileFromTemplate(filepath.Join(base, "internal", "structs", "envelope.go"), "templates/asyncapi/src/internal/structs/envelope.go.tmpl", conf)
+	createFileFromTemplate(filepath.Join(base, "internal", "structs", "message.go"), "templates/asyncapi/src/internal/structs/message.go.tmpl", conf)
+	createFileFromTemplate(filepath.Join(base, "internal", "server", "subscribers", "channel.go"), "templates/asyncapi/src/internal/server/subscribers/channel.go.tmpl", conf)
+	createFileFromTemplate(filepath.Join(base, "internal", "server", "mainSvc.go"), "templates/asyncapi/src/internal/server/mainSvc.go.tmpl", conf)
+	createFileFromTemplate(filepath.Join(base, "logger", "logger.go"), "templates/asyncapi/src/logger/logger.go.tmpl", conf)
+	createFileFromTemplate(filepath.Join(base, "tracing", "tracing.go"), "templates/asyncapi/src/tracing/tracing.go.tmpl", conf)
+	createFileFromTemplate(filepath.Join(base, "web", "index.html"), "templates/asyncapi/src/web/index.html.tmpl", conf)
+
+	log.Info().Msg("Created AsyncAPI service files successfully")
+	return nil
+}
+
 func GenerateAsyncService(conf GeneratorConfig) error {
 	spec := &asyncapiv3.Specification{}
 	var err error
