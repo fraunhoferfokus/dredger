@@ -32,8 +32,7 @@ type mainConfig struct {
 }
 
 // GenerateService creates a minimal async service based on the given spec.
-func GenerateService(spec *asyncapiv3.Specification, outputPath, moduleName string) error {
-	log.Info().Msg("What does this do?")
+/*func GenerateService(spec *asyncapiv3.Specification, outputPath, moduleName string) error {
 	conf := mainConfig{
 		ModuleName: moduleName,
 		Title:      spec.Info.Title,
@@ -69,7 +68,7 @@ func GenerateService(spec *asyncapiv3.Specification, outputPath, moduleName stri
 	log.Info().Msg("Created AsyncAPI service files successfully")
 	return nil
 }
-
+*/
 func GenerateAsyncService(conf GeneratorConfig) error {
 	spec := &asyncapiv3.Specification{}
 	var err error
