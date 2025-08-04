@@ -39,5 +39,5 @@ func generateLifecycleFiles(spec *openapi3.T, conf GeneratorConfig) {
 	}
 
 	restPath := filepath.Join(conf.OutputPath, "rest")
-	fs.CopyWebFile("openapi/web", restPath, "robots.txt", false)
+	fs.CopyWebFile("common/web", restPath, "robots.txt", false)
 }
