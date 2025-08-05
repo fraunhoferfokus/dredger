@@ -81,7 +81,7 @@ func generateHandlerFuncStub(op *openapi3.Operation, method string, path string,
 	if genConf.AddFrontend && hasHtmlResponse && slices.Contains(op.Tags, "page") {
 		fileName := xstrings.FirstRuneToLower(xstrings.ToCamelCase(conf.OperationID)) + ".templ"
 		filePath := filepath.Join(Config.Path, PagesPkg, fileName)
-		templateFile := "templates/openapi/web/pages.templ.tmpl"
+		templateFile := "templates/common/web/pages.templ.tmpl"
 		if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 			createFileFromTemplate(filePath, templateFile, conf)
 		}

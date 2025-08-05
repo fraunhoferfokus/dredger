@@ -174,12 +174,12 @@ func GenerateMain(openAPINames []OpenAPIConfig, outputPath string, moduleName st
 
 	// main.go aus openapi/
 	mainPath := filepath.Join(outputPath, "main.go")
-	createFileFromTemplate(mainPath, "templates/openapi/main.go.tmpl", mainConf)
+	createFileFromTemplate(mainPath, "templates/common/main.go.tmpl", mainConf)
 
 	// mainSvc.go aus openapi/
 	svcPath := filepath.Join(outputPath, "mainSvc.go")
 	if _, err := os.Stat(svcPath); errors.Is(err, os.ErrNotExist) {
-		createFileFromTemplate(svcPath, "templates/openapi/mainSvc.go.tmpl", mainConf)
+		createFileFromTemplate(svcPath, "templates/common/mainSvc.go.tmpl", mainConf)
 	}
 	log.Info().Msg("Main was sucessfully generated.")
 }

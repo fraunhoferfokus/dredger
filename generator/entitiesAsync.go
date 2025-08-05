@@ -42,14 +42,14 @@ func GenerateAsyncTypes(spec *asyncapiv3.Specification, pConf ProjectConfig) {
 			fileName := strings.ToLower(schema) + ".go"
 			filePath := filepath.Join(pConf.Path, EntitiesPkg, fileName)
 			templateFiles := []string{
-				"templates/openapi/entities/entitiesAsync.go.tmpl",
-				"templates/openapi/entities/structs.tmpl",
+				"templates/common/entities/entitiesAsync.go.tmpl",
+				"templates/common/entities/structs.tmpl",
 			}
 			createFileFromTemplates(filePath, templateFiles, conf)
 		}
 		envelopeFilePath := filepath.Join(pConf.Path, EntitiesPkg, "envelope.go")
 		templateFiles := []string{
-			"templates/openapi/entities/envelope.go.tmpl",
+			"templates/common/entities/envelope.go.tmpl",
 		}
 		createFileFromTemplates(envelopeFilePath, templateFiles, conf)
 	}

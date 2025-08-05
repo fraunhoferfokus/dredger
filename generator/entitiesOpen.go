@@ -54,10 +54,10 @@ func GenerateTypes(spec *openapi3.T, pConf ProjectConfig) {
 			fileName := strings.ToLower(schema) + ".go"
 			filePath := filepath.Join(pConf.Path, EntitiesPkg, fileName)
 			templateFiles := []string{
-				"templates/openapi/entities/entities.go.tmpl",
-				"templates/openapi/entities/imports.tmpl",
-				"templates/openapi/entities/structs.tmpl",
-				"templates/openapi/entities/validate.tmpl",
+				"templates/common/entities/entities.go.tmpl",
+				"templates/common/entities/imports.tmpl",
+				"templates/common/entities/structs.tmpl",
+				"templates/common/entities/validate.tmpl",
 			}
 			createFileFromTemplates(filePath, templateFiles, conf)
 		}

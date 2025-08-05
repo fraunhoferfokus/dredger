@@ -46,7 +46,7 @@ func GenerateChannelFile(spec *asyncapiv3.Specification, conf GeneratorConfig) {
 	}
 
 	fpath := path.Join(conf.OutputPath, AsyncPkg, "publishers")
-	tmplPath := path.Join("templates", "openapi", AsyncPkg, "publishers", "channel.go.tmpl")
+	tmplPath := path.Join("templates", "asyncapi", AsyncPkg, "publishers", "channel.go.tmpl")
 	absPath, _ := filepath.Abs(tmplPath)
 	log.Info().Msgf("Loading template from: %s", absPath)
 	for _, c := range configs {
