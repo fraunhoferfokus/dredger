@@ -8,6 +8,7 @@ import (
 	"slices"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	asyncapiv3 "github.com/lerenn/asyncapi-codegen/pkg/asyncapi/v3"
 )
 
 func generateInfoFiles(spec *openapi3.T, serverConf ServerConfig) {
@@ -35,4 +36,21 @@ func generateInfoFiles(spec *openapi3.T, serverConf ServerConfig) {
 		updateOAPIOperation(op, "GetInfo", "Returns infos about the service", "200")
 		spec.AddOperation("/infoz", http.MethodGet, op)
 	}
+}
+
+func generateInfoFilesAsync(spec *asyncapiv3.Specification, serverConf ServerConfig) {
+	// info.go
+	fileName := "info.go"
+	filePath := filepath.Join(Config.Path, CorePkg, fileName)
+	templateFile := "templates/openapi/core/info.go.tmpl"
+	createFileFromTemplate(filePath, templateFile, serverConf)
+
+	// infoSvc.go
+	fileName = "infoSvc.go"
+	filePath = filepath.Join(Config.Path, CorePkg, fileName)
+	templateFile = "templates/openapi/core/infoSvc.go.tmpl"
+	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+		createFileFromTemplate(filePath, templateFile, serverConf)
+	}
+
 }
