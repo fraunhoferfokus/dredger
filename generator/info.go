@@ -15,13 +15,13 @@ func generateInfoFiles(spec *openapi3.T, serverConf ServerConfig) {
 	// info.go
 	fileName := "info.go"
 	filePath := filepath.Join(Config.Path, CorePkg, fileName)
-	templateFile := "templates/openapi/core/info.go.tmpl"
+	templateFile := "templates/common/core/info.go.tmpl"
 	createFileFromTemplate(filePath, templateFile, serverConf)
 
 	// infoSvc.go
 	fileName = "infoSvc.go"
 	filePath = filepath.Join(Config.Path, CorePkg, fileName)
-	templateFile = "templates/openapi/core/infoSvc.go.tmpl"
+	templateFile = "templates/common/core/infoSvc.go.tmpl"
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filePath, templateFile, serverConf)
 	}
@@ -42,13 +42,13 @@ func generateInfoFilesAsync(spec *asyncapiv3.Specification, serverConf ServerCon
 	// info.go
 	fileName := "info.go"
 	filePath := filepath.Join(Config.Path, CorePkg, fileName)
-	templateFile := "templates/openapi/core/info.go.tmpl"
+	templateFile := "templates/common/core/info.go.tmpl"
 	createFileFromTemplate(filePath, templateFile, serverConf)
 
 	// infoSvc.go
 	fileName = "infoSvc.go"
 	filePath = filepath.Join(Config.Path, CorePkg, fileName)
-	templateFile = "templates/openapi/core/infoSvc.go.tmpl"
+	templateFile = "templates/common/core/infoSvc.go.tmpl"
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filePath, templateFile, serverConf)
 	}
