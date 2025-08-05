@@ -42,6 +42,7 @@ func generateInfoFilesAsync(spec *asyncapiv3.Specification, serverConf ServerCon
 	// info.go
 	fileName := "info.go"
 	filePath := filepath.Join(Config.Path, CorePkg, fileName)
+<<<<<<< HEAD:generator/infoOpen.go
 <<<<<<< HEAD:generator/infotest.go
 <<<<<<< HEAD
 	templateFile := "templates/common/core/info.go.tmpl"
@@ -51,11 +52,19 @@ func generateInfoFilesAsync(spec *asyncapiv3.Specification, serverConf ServerCon
 =======
 	templateFile := "templates/openapi/core/info.go.tmpl"
 >>>>>>> 8c640d3 (Added function for async):generator/info.go
+=======
+<<<<<<< HEAD:generator/infoOpen.go
+	templateFile := "templates/openapi/core/info.go.tmpl"
+=======
+	templateFile := "templates/common/core/info.go.tmpl"
+>>>>>>> eae80b4 (assimilating branches):generator/info.go
+>>>>>>> 1c1da96 (try agaain):generator/info.go
 	createFileFromTemplate(filePath, templateFile, serverConf)
 
 	// infoSvc.go
 	fileName = "infoSvc.go"
 	filePath = filepath.Join(Config.Path, CorePkg, fileName)
+<<<<<<< HEAD:generator/infoOpen.go
 <<<<<<< HEAD:generator/infotest.go
 <<<<<<< HEAD
 	templateFile = "templates/common/core/infoSvc.go.tmpl"
@@ -65,6 +74,13 @@ func generateInfoFilesAsync(spec *asyncapiv3.Specification, serverConf ServerCon
 =======
 	templateFile = "templates/openapi/core/infoSvc.go.tmpl"
 >>>>>>> 8c640d3 (Added function for async):generator/info.go
+=======
+<<<<<<< HEAD:generator/infoOpen.go
+	templateFile = "templates/openapi/core/infoSvc.go.tmpl"
+=======
+	templateFile = "templates/common/core/infoSvc.go.tmpl"
+>>>>>>> eae80b4 (assimilating branches):generator/info.go
+>>>>>>> 1c1da96 (try agaain):generator/info.go
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filePath, templateFile, serverConf)
 	}
