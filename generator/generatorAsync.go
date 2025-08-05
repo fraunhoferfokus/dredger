@@ -3,6 +3,9 @@ package generator
 import (
 	//	"embed"
 	"path/filepath"
+	"strconv"
+	"strings"
+
 	//"strings"
 
 	fs "dredger/fileUtils"
@@ -31,45 +34,6 @@ type mainConfig struct {
 	Title      string
 }
 
-// GenerateService creates a minimal async service based on the given spec.
-func GenerateService(spec *asyncapiv3.Specification, outputPath, moduleName string) error {
-
-	conf := mainConfig{
-		ModuleName: moduleName,
-		Title:      spec.Info.Title,
-	}
-
-	fs.GenerateFolder(outputPath)
-	base := filepath.Join(outputPath, "src")
-	subdirs := []string{"cmd", "internal", "logger", "tracing", "web"}
-	fs.GenerateFolder(base)
-	for _, d := range subdirs {
-		fs.GenerateFolder(filepath.Join(base, d))
-	}
-	fs.GenerateFolder(filepath.Join(base, "cmd", "publisher"))
-	fs.GenerateFolder(filepath.Join(base, "cmd", "server"))
-	fs.GenerateFolder(filepath.Join(base, "internal", "config"))
-	fs.GenerateFolder(filepath.Join(base, "internal", "server"))
-	fs.GenerateFolder(filepath.Join(base, "server", "subscribers"))
-
-	createFileFromTemplate(filepath.Join(outputPath, "README.md"), "templates/asyncapi/README.md.tmpl", conf)
-	createFileFromTemplate(filepath.Join(outputPath, "ENVIRONMENT.md"), "templates/asyncapi/ENVIRONMENT.md.tmpl", conf)
-	createFileFromTemplate(filepath.Join(outputPath, "go.mod"), "templates/asyncapi/go.mod.tmpl", conf)
-
-	createFileFromTemplate(filepath.Join(base, "cmd", "publisher", "channel.go"), "templates/asyncapi/src/cmd/publisher/channel.go.tmpl", conf)
-	createFileFromTemplate(filepath.Join(base, "cmd", "server", "main.go"), "templates/asyncapi/src/cmd/server/main.go.tmpl", conf)
-	createFileFromTemplate(filepath.Join(base, "internal", "structs", "envelope.go"), "templates/asyncapi/src/internal/structs/envelope.go.tmpl", conf)
-	createFileFromTemplate(filepath.Join(base, "internal", "structs", "message.go"), "templates/asyncapi/src/internal/structs/message.go.tmpl", conf)
-	createFileFromTemplate(filepath.Join(base, "internal", "server", "subscribers", "channel.go"), "templates/asyncapi/src/internal/server/subscribers/channel.go.tmpl", conf)
-	createFileFromTemplate(filepath.Join(base, "internal", "server", "mainSvc.go"), "templates/asyncapi/src/internal/server/mainSvc.go.tmpl", conf)
-	createFileFromTemplate(filepath.Join(base, "logger", "logger.go"), "templates/asyncapi/src/logger/logger.go.tmpl", conf)
-	createFileFromTemplate(filepath.Join(base, "tracing", "tracing.go"), "templates/asyncapi/src/tracing/tracing.go.tmpl", conf)
-	createFileFromTemplate(filepath.Join(base, "web", "index.html"), "templates/asyncapi/src/web/index.html.tmpl", conf)
-
-	log.Info().Msg("Created AsyncAPI service files successfully")
-	return nil
-}
-
 func GenerateAsyncService(conf GeneratorConfig) error {
 	spec := &asyncapiv3.Specification{}
 	var err error
@@ -82,8 +46,8 @@ func GenerateAsyncService(conf GeneratorConfig) error {
 		}
 	}
 
-	//Config.Path = conf.OutputPath
-	//Config.Name = conf.ModuleName
+	Config.Path = conf.OutputPath
+	Config.Name = conf.ModuleName
 
 	//log.Debug().Str("Spec info title to check if actually processed", spec.Info.Version).Msg("Check spec actually processed or not")
 	createProjectPathDirectoryAsync(conf)
@@ -107,10 +71,19 @@ func GenerateAsyncService(conf GeneratorConfig) error {
 	GenerateSubscriberFile(spec, conf)
 	// Generating logging files
 	generateLogger(conf)
+	// Generating Tracing files
+	generateTracing(conf)
 	// Generating data base files
 	if conf.AddDatabase {
 		generateDatabaseFiles(conf)
 	}
+	serverConf := generateServerTemplateAsync(spec, conf)
+	// Generating the config files
+	generateConfigFiles(serverConf)
+	generateJustfile(conf, serverConf)
+	//generateReadme(conf, serverConf)
+	//generateDockerfile(conf, serverConf)
+	generateInfoFilesAsync(spec, serverConf)
 	//Generating entities and structs
 	GenerateAsyncTypes(spec, ProjectConfig{
 		Name: conf.ModuleName,
@@ -119,6 +92,41 @@ func GenerateAsyncService(conf GeneratorConfig) error {
 
 	log.Info().Msg("Created AsyncAPI NATS service files successfully")
 	return nil
+}
+
+// generateServerTemplate gets all info for ServerConfig to be used by other functions
+func generateServerTemplateAsync(spec *asyncapiv3.Specification, generatorConf GeneratorConfig) (serverConf ServerConfig) {
+	asyncAPIName := fs.GetFileNameWithEnding(generatorConf.AsyncAPIPath)
+	conf := ServerConfig{
+		Port:        DefaultPort,
+		ModuleName:  generatorConf.ModuleName,
+		Flags:       generatorConf.Flags,
+		OpenAPIName: asyncAPIName,
+	}
+
+	strDefaultPort := strconv.Itoa(DefaultPort)
+	if spec.Servers != nil {
+		for _, server := range spec.Servers {
+			if server.Host != "" && server.Protocol == "nats" {
+				portStr := server.Host
+				parts := strings.Split(portStr, ":")
+				if len(parts) == 2 {
+					portStr = strings.TrimSpace(parts[1])
+					if p, err := strconv.ParseInt(portStr, 10, 16); err == nil {
+						conf.Port = int16(p)
+					} else {
+						log.Warn().Msg("Invalid port, using default " + strDefaultPort)
+					}
+				}
+			} // if you extend for more protocols you could add more if cases: server.Protocol== "kafka"
+		}
+
+	} else {
+		log.Warn().Msg("No servers field found, using default port " + strDefaultPort)
+	}
+
+	log.Info().Msg("Adding logging middleware.")
+	return conf
 }
 
 //TODO: Funktion that creates the files and then a function that checks if the info was actually there
