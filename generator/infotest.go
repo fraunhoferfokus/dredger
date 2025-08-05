@@ -42,21 +42,29 @@ func generateInfoFilesAsync(spec *asyncapiv3.Specification, serverConf ServerCon
 	// info.go
 	fileName := "info.go"
 	filePath := filepath.Join(Config.Path, CorePkg, fileName)
+<<<<<<< HEAD:generator/infotest.go
 <<<<<<< HEAD
 	templateFile := "templates/common/core/info.go.tmpl"
 =======
 	templateFile := "templates/openapi/core/info.go.tmpl"
 >>>>>>> 8c640d3 (Added function for async)
+=======
+	templateFile := "templates/openapi/core/info.go.tmpl"
+>>>>>>> 8c640d3 (Added function for async):generator/info.go
 	createFileFromTemplate(filePath, templateFile, serverConf)
 
 	// infoSvc.go
 	fileName = "infoSvc.go"
 	filePath = filepath.Join(Config.Path, CorePkg, fileName)
+<<<<<<< HEAD:generator/infotest.go
 <<<<<<< HEAD
 	templateFile = "templates/common/core/infoSvc.go.tmpl"
 =======
 	templateFile = "templates/openapi/core/infoSvc.go.tmpl"
 >>>>>>> 8c640d3 (Added function for async)
+=======
+	templateFile = "templates/openapi/core/infoSvc.go.tmpl"
+>>>>>>> 8c640d3 (Added function for async):generator/info.go
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filePath, templateFile, serverConf)
 	}
