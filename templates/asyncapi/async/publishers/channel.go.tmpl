@@ -11,7 +11,7 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-func {{ ucfirst .OperationName }}() {
+func {{ ucfirst ( camelcase .OperationName) }}() {
 	nc, err := nats.Connect(nats.DefaultURL)
 	if err != nil {
 		log.Fatal(err)
