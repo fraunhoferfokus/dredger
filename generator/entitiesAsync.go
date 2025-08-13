@@ -105,9 +105,10 @@ func floatOrMaxA(x *float64) float64 {
 }
 
 func toGoTypeAsync(s *asyncapiv3.Schema) (string, bool) {
-	if s.Reference == "" || s.ReferenceTo == nil {
-		return "interface{}", false
-	}
+	//if s.Reference == "" || s.ReferenceTo == nil {
+	//	return "any", false
+	//}
+
 	switch {
 	case s.Type == "number":
 		switch s.Format {
@@ -149,13 +150,13 @@ func toGoTypeAsync(s *asyncapiv3.Schema) (string, bool) {
 		if s.Reference != "" {
 			return path.Base(s.Reference), false
 		}
-		return "map[string]interface{}", false
+		return "map[string]any", false
 	default:
 		types := s.Type
 		if len(types) > 0 {
 			return types, false
 		}
-		return "interface{}", false
+		return "any", false
 	}
 }
 
