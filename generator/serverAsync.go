@@ -14,7 +14,8 @@ type ChannelInfo struct {
 	ChannelName   string
 }
 type InternalConfig struct {
-	Channels []ChannelInfo
+	Channels   []ChannelInfo
+	ModuleName string
 }
 
 // Needes Info for subscribers-file
@@ -32,9 +33,10 @@ func GenerateInternalFile(spec *asyncapiv3.Specification, genConf GeneratorConfi
 	}
 	channelInfos := extractSubInfo(spec)
 	conf := InternalConfig{
-		Channels: channelInfos,
+		Channels:   channelInfos,
+		ModuleName: genConf.ModuleName,
 	}
-	filePath := path.Join(genConf.OutputPath, AsyncPkg, "server", "internal_"+snakecase(spec.Info.Title)+".go")
+	filePath := path.Join(genConf.OutputPath, AsyncPkg, "async"+".go")
 	tmplPath := path.Join("templates", "asyncapi", AsyncPkg, "server", "internal.go.tmpl")
 	//filepath und tmplpath bestimmen und daraus dann die createFileFromTemplate(filepath, tmplPath und das c füllen)
 	/*log.Debug().Msgf("Extracted %d channels", len(channelInfos))
