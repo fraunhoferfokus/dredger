@@ -3,6 +3,7 @@ package generator
 import (
 	"os"
 	"path"
+	"strings"
 	"text/template"
 
 	fs "dredger/fileUtils"
@@ -17,7 +18,10 @@ func snakecase(s string) string {
 }
 
 func camelcase(s string) string {
-	return stringy.New(s).CamelCase("?", "", "#", "").Get()
+	if strings.ContainsAny(s, "-_.") {
+		return stringy.New(s).CamelCase().Get()
+	}
+	return s
 }
 
 func lcFirst(s string) string {
