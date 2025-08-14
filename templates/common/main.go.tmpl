@@ -12,7 +12,7 @@ import (
 	"{{ lcfirst ( camelcase .ModuleName ) }}/core/tracing"
 
 	{{- if .AsyncAPI }}
-	"{{ lcfirst ( camelcase .ModuleName ) }}/async/server"
+	"{{ lcfirst ( camelcase .ModuleName ) }}/async"
 	{{end}}
 
 	{{- if .OpenAPI }}
@@ -83,7 +83,7 @@ func main() {
 
 	{{- if .AsyncAPI }}
 	//start nats server
-	server.RegisterHandlers(e)
+	async.RegisterHandlers(e)
 	{{end}}
 
 	{{- if .AddFrontend }}
