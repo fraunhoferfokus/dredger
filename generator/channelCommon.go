@@ -50,7 +50,7 @@ func GenerateChannelFile(spec *asyncapiv3.Specification, conf GeneratorConfig) {
 	absPath, _ := filepath.Abs(tmplPath)
 	log.Info().Msgf("Loading template from: %s", absPath)
 	for _, c := range configs {
-		destPath := path.Join(fpath, camelcase(c.ChannelName)+".go")
+		destPath := path.Join(fpath, lcFirst(c.OperationName)+".go")
 		createFileFromTemplate(destPath, tmplPath, c)
 	}
 	log.Info().Msg("Finished generating all files for Publishers folder")
