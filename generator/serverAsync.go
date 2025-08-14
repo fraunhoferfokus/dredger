@@ -62,7 +62,7 @@ func GenerateSubscriberFile(spec *asyncapiv3.Specification, genConf GeneratorCon
 		Operations: operations,
 	}
 
-	filePath := path.Join(genConf.OutputPath, AsyncPkg, "server", "subscribers_"+snakecase(spec.Info.Title)+".go")
+	filePath := path.Join(genConf.OutputPath, AsyncPkg, "subscribers", "subscribers_"+snakecase(spec.Info.Title)+".go")
 	tmplPath := path.Join("templates", "asyncapi", AsyncPkg, "server", "subscribers.go.tmpl")
 	//filepath und tmplpath bestimmen und daraus dann die createFileFromTemplate(filepath, tmplPath und das c füllen)
 	createFileFromTemplate(filePath, tmplPath, conf)
