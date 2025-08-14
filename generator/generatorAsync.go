@@ -141,7 +141,7 @@ func createProjectPathDirectoryAsync(conf GeneratorConfig) {
 	//log.Debug().Msg("Created " + CorePkg)
 	fs.GenerateFolder(filepath.Join(conf.OutputPath, AsyncPkg))
 	fs.GenerateFolder(filepath.Join(conf.OutputPath, AsyncPkg, "publishers"))
-	fs.GenerateFolder(filepath.Join(conf.OutputPath, AsyncPkg, "server"))
+	fs.GenerateFolder(filepath.Join(conf.OutputPath, AsyncPkg, "subscribers"))
 	//log.Debug().Msg("Created " + AsyncPkg)
 	fs.GenerateFolder(filepath.Join(conf.OutputPath, RestPkg))
 	//log.Debug().Msg("Created " + RestPkg)
