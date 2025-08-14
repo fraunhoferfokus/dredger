@@ -40,12 +40,12 @@ func RegisterHandlers(e *echo.Echo) {
 		var subscriptions []*nats.Subscription
 
 		{{ range .Channels }}
-		{{ lcfirst .OperationName  }}sub := server.{{ ucfirst  .OperationName }}(nc, ws)
-		if {{ lcfirst .OperationName  }}sub == nil {
+		{{ lcfirst ( camelcase .OperationName ) }}sub := server.{{ ucfirst ( camelcase .OperationName) }}(nc, ws)
+		if {{ lcfirst ( camelcase .OperationName ) }}sub == nil {
 			log.Println("Subscription to {{ .ChannelName }} failed")
 			return nil
 		}
-		subscriptions = append(subscriptions, {{ lcfirst .OperationName  }}sub)
+		subscriptions = append(subscriptions, {{ lcfirst ( camelcase .OperationName ) }}sub)
 		{{ end }}
 
 		// Keep WebSocket open until client closes

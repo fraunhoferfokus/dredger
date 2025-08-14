@@ -11,21 +11,21 @@ import (
 )
 
 {{- range .Operations }}
-func {{ ucfirst .OperationName }}(nc *nats.Conn, ws *websocket.Conn) *nats.Subscription {
+func {{ ucfirst ( camelcase .OperationName) }}(nc *nats.Conn, ws *websocket.Conn) *nats.Subscription {
 
 	// Subscribe to "{{.ChannelName}}"
 	Sub, err := nc.Subscribe("{{.ChannelName}}", func(msg *nats.Msg) {
 		{{- range .Messages }}
-			env{{.MessageName}} := entities.Envelope{
+			env{{ucfirst .MessageName}} := entities.Envelope{
 				Type: "{{.MessageName}}",
 				Data: msg.Data,
 			}
-			out{{.MessageName}}, err := json.Marshal(env{{.MessageName}})
+			out{{ucfirst .MessageName}}, err := json.Marshal(env{{ucfirst .MessageName}})
 			if err != nil {
 				log.Println("Error marshaling {{.MessageName}} envelope:", err)
 				return
 			}
-			if writeErr := ws.WriteMessage(websocket.TextMessage, out{{.MessageName}}); writeErr != nil {
+			if writeErr := ws.WriteMessage(websocket.TextMessage, out{{ucfirst .MessageName}}); writeErr != nil {
 				log.Println("Error writing {{.MessageName}} to WebSocket:", writeErr)
 			}
 		{{ end }}
