@@ -44,11 +44,13 @@ sbom: sbom-build
 		-F "projectName={{"{{program}}"}}/{{ .ModuleName }}" \
 		-F "bom=@sbom.json"
 
+# Create local container image
 docker-build:
 	env GOOS=linux GOARCH=amd64 go build && \
 	docker build -t {{ .ModuleName }} . && \
 	rm -rf {{ .ModuleName }}
 
+# Start local container image
 docker-run:
 	docker run --rm -p {{ .Port }}:{{ .Port }} --env-file=.env {{ .ModuleName }}
 
