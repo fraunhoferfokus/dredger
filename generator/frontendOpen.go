@@ -19,7 +19,7 @@ import (
 func generateEmptyFrontend(_ *openapi3.T, conf GeneratorConfig) {
 	frontendPath := filepath.Join(conf.OutputPath, "web")
 	fs.GenerateFolder(frontendPath)
-	createFileFromTemplate(filepath.Join(frontendPath, "README.md"), "templates/openapi/web/README.md.tmpl", conf)
+	createFileFromTemplate(filepath.Join(frontendPath, "README.md"), "templates/common/web/README.md.tmpl", conf)
 }
 
 func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
