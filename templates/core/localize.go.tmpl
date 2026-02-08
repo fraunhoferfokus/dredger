@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
 
@@ -35,7 +35,7 @@ func init() {
 
 // extract language from the HTTP header
 // If x-language is set it will override the browsers preferred languages
-func Language(c echo.Context) string {
+func Language(c *echo.Context) string {
 	lang := AppConfig.Language
 	if l := c.Request().Header.Get("x-language"); l != "" {
 		lang = l

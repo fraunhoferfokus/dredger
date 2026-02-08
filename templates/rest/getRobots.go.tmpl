@@ -5,7 +5,7 @@ import (
     _ "embed"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 var (
@@ -14,6 +14,6 @@ var (
 )
 
 // Returns robots.txt
-func GetRobots(c echo.Context) error {
-	return c.String(http.StatusOK, robots)
+func GetRobots(c *echo.Context) error {
+	return (*c)String(http.StatusOK, robots)
 }

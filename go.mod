@@ -1,6 +1,6 @@
 module dredger
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
@@ -9,7 +9,7 @@ require (
 	github.com/getkin/kin-openapi v0.133.0
 	github.com/gobeam/stringy v0.0.7
 	github.com/huandu/xstrings v1.5.0
-	github.com/labstack/echo/v4 v4.12.0
+	github.com/labstack/echo/v5 v5.0.3
 	github.com/rs/zerolog v1.34.0
 	github.com/spf13/cobra v1.10.2
 )
@@ -24,7 +24,6 @@ require (
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
@@ -34,13 +33,9 @@ require (
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
-	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/woodsbury/decimal128 v1.4.0 // indirect
 	golang.org/x/crypto v0.47.0 // indirect
-	golang.org/x/net v0.48.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
-	golang.org/x/text v0.33.0 // indirect
 )
 
 require (

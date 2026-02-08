@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/rego"
 
@@ -187,7 +187,7 @@ func checkPolicyOpaSvc(req *http.Request, rule string, input Input) bool {
 	return result.Result
 }
 
-func checkPolicy(c echo.Context) Action {
+func checkPolicy(c *echo.Context) Action {
 	req := c.Request()
 	// Check first, if it is a logout
 	if req.URL.Query().Get("logout") == "true" {
@@ -266,7 +266,7 @@ func checkEntryPoint(req *http.Request) Action {
 
 // Policy Enforcement Point to validate access permission
 func PolicyHandler(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
+	return func(c *echo.Context) error {
 		// check using OPA rules
 		if core.AppConfig.OpaSvc != "" || core.AppConfig.Policy != "" {
 			switch checkPolicy(c) {

@@ -83,9 +83,6 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 
 	// files in pages directory
 	fs.CopyWebFile("web/pages", restPath, "render.go", true)
-	if _, err := os.Stat(filepath.Join(pagesPath, "languages.templ")); errors.Is(err, os.ErrNotExist) {
-		createFileFromTemplate(filepath.Join(pagesPath, "languages.templ"), "templates/web/pages/languages.templ.tmpl", conf)
-	}
 	if spec.Paths.Find("/index.html") != nil && spec.Paths.Find("/index.html").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/index.html").Operations()[http.MethodGet].Tags, "builtin") {
 		if _, err := os.Stat(filepath.Join(pagesPath, "index.templ")); errors.Is(err, os.ErrNotExist) {
 			createFileFromTemplate(filepath.Join(pagesPath, "index.templ"), "templates/web/pages/index.templ.tmpl", conf)
@@ -110,6 +107,15 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 		op.AddResponse(http.StatusOK, createOAPIResponse("The service delivers content page"))
 		updateOAPIOperation(op, "GetContent", "successfully deliver content page", "200")
 		spec.AddOperation("/content.html", http.MethodGet, op)
+	}
+	if spec.Paths.Find("/languages.html") != nil && spec.Paths.Find("/languages.html").Operations()[http.MethodGet] != nil && slices.Contains(spec.Paths.Find("/languages.html").Operations()[http.MethodGet].Tags, "builtin") {
+		if _, err := os.Stat(filepath.Join(pagesPath, "languages.templ")); errors.Is(err, os.ErrNotExist) {
+			createFileFromTemplate(filepath.Join(pagesPath, "languages.templ"), "templates/web/pages/languages.templ.tmpl", conf)
+		}
+		op := openapi3.NewOperation()
+		op.AddResponse(http.StatusOK, createOAPIResponse("The service delivers language page"))
+		updateOAPIOperation(op, "GetLanguages", "successfully deliver language page", "200")
+		spec.AddOperation("/languages.html", http.MethodGet, op)
 	}
 
 	// files in public directory
