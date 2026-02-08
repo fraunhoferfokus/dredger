@@ -1,7 +1,12 @@
 // Edit this file, as it is a specific for your service
 package main
 
-func mainSvc() {
+import "github.com/labstack/echo/v5"
+
+func mainSvc(e *echo.Echo) {
     // Add your own evaluation of the flags for additional commands
     // Add your own service running concurrent with the echo web service
+
+	// e.Use(middleware.PolicyHandler) // Policy Enforcement Point to check access
+    // e.Use(echoMiddleware.CORS())
 }

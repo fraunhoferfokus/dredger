@@ -14,7 +14,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/getkin/kin-openapi/routers"
 	"github.com/getkin/kin-openapi/routers/gorillamux"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 type ValidationError struct {
@@ -26,7 +26,7 @@ func (m ValidationError) Error() string {
 	return m.Message
 }
 
-func ParseOpenAPISpecFile(path string, c echo.Context) (*openapi3.T, error) {
+func ParseOpenAPISpecFile(path string, c *echo.Context) (*openapi3.T, error) {
 	_, err := os.Stat(path)
 	if err != nil {
 		return nil, errors.New("file not found")
@@ -57,7 +57,7 @@ func Validation(swagger *openapi3.T, e *echo.Echo) echo.MiddlewareFunc {
 	}
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
+		return func(c *echo.Context) error {
 			err := ValidateRequest(c, router)
 			if err != nil {
 				return err
@@ -67,7 +67,7 @@ func Validation(swagger *openapi3.T, e *echo.Echo) echo.MiddlewareFunc {
 	}
 }
 
-func ValidateRequest(c echo.Context, r routers.Router) (err error) {
+func ValidateRequest(c *echo.Context, r routers.Router) (err error) {
 	bg := context.Background()
 
 	req := c.Request()
@@ -107,7 +107,7 @@ func ValidateRequest(c echo.Context, r routers.Router) (err error) {
 	return err
 }
 
-/* func ValidateResponse(c echo.Context, r routers.Router) (err error) {
+/* func ValidateResponse(c *echo.Context, r routers.Router) (err error) {
 	bg := context.Background()
 	req := c.Request()
 	res := c.Response()

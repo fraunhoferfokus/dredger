@@ -14,15 +14,15 @@ import (
 	"net/http"
     "strconv"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"go.opentelemetry.io/otel/trace"
 	"gopkg.in/yaml.v2"
 )
 
 // {{ .Summary }}
-func {{ .OperationID }}(c echo.Context) error {
+func {{ .OperationID }}(c *echo.Context) error {
 	// trace span
-	ctx := c.Request().Context()
+	ctx := (*c)Request().Context()
 	ctx, span := tracing.Tracer.Start(ctx, "logMessage")
 	defer span.End()
 
@@ -33,17 +33,17 @@ func {{ .OperationID }}(c echo.Context) error {
 	// session, err := getSession(c)
 	// if err != nil {
 	// 	log.Error().Err(err).Msg("{{ .OperationID }} failed")
-	// 	return c.NoContent(http.StatusInternalServerError)
+	// 	return (*c)NoContent(http.StatusInternalServerError)
 	// }
 
     {{- if eq .Method "POST" "PUT" "PATCH" }}
 
         // Parse body
-        contentType := c.Request().Header.Get("Content-Type")
-        body, err := io.ReadAll(c.Request().Body)
+        contentType := (*c)Request().Header.Get("Content-Type")
+        body, err := io.ReadAll((*c)Request().Body)
         if err != nil {
             log.Error().Err(err).Str("traceId", traceId).Str("spanId", spanId).Msg("Can't read body")
-            return c.String(http.StatusBadRequest, "Can't read body")
+            return (*c)String(http.StatusBadRequest, "Can't read body")
         }
 
         {{ if eq .Schema "" }}
@@ -55,29 +55,29 @@ func {{ .OperationID }}(c echo.Context) error {
             err := json.Unmarshal(body, &content)
             if err != nil {
                 log.Error().Err(err).Str("traceId", traceId).Str("spanId", spanId).Msg("Could not unmarshall JSON input")
-                return c.String(http.StatusBadRequest, "Could not unmarshall JSON input")
+                return (*c)String(http.StatusBadRequest, "Could not unmarshall JSON input")
             }
         } else if contentType == "application/yaml" {
             err := yaml.Unmarshal(body, &content)
             if err != nil {
                 log.Error().Err(err).Str("traceId", traceId).Str("spanId", spanId).Msg("Could not unmarshall YAML input")
-                return c.String(http.StatusBadRequest, "Could not unmarshall YAML input")
+                return (*c)String(http.StatusBadRequest, "Could not unmarshall YAML input")
             }
         } else if contentType == "application/xml" {
             err := xml.Unmarshal(body, &content)
             if err != nil {
                 log.Error().Err(err).Str("traceId", traceId).Str("spanId", spanId).Msg("Could not unmarshall XML input")
-                return c.String(http.StatusBadRequest, "Could not unmarshall XML input")
+                return (*c)String(http.StatusBadRequest, "Could not unmarshall XML input")
             }
         } else {
             log.Error().Str("content type", contentType).Str("traceId", traceId).Str("spanId", spanId).Msg("Wrong content type")
-            return c.String(http.StatusUnsupportedMediaType, "Wrong content type")
+            return (*c)String(http.StatusUnsupportedMediaType, "Wrong content type")
         }
 
         {{ if ne .Schema "" }}
             // validate content
             if err := content.Validate(); err != nil {
-                return c.String(http.StatusUnprocessableEntity, err.Error())
+                return (*c)String(http.StatusUnprocessableEntity, err.Error())
             }
         {{ end }}
 
@@ -86,25 +86,25 @@ func {{ .OperationID }}(c echo.Context) error {
 
     {{ range $name, $type := .PathParams }}
         {{ if eq $type "int32" "int64" "integer" }}
-            {{ $name }}, _ := strconv.Atoi(c.Param("{{ $name }}"))
+            {{ $name }}, _ := strconv.Atoi((*c)Param("{{ $name }}"))
         {{ else if eq $type "float" "double" "number" }}
-            {{ $name }}, _ := strconv.ParseFloat(c.Param("{{ $name }}"))
+            {{ $name }}, _ := strconv.ParseFloat((*c)Param("{{ $name }}"))
         {{ else if eq $type "bool" }}
-            {{ $name }}, _ := strconv.ParseBool(c.Param("{{ $name }}"))
+            {{ $name }}, _ := strconv.ParseBool((*c)Param("{{ $name }}"))
         {{ else}}
-            {{ $name }} := c.Param("{{ $name }}")
+            {{ $name }} := (*c)Param("{{ $name }}")
         {{ end }}
     {{- end }}
 
     {{ range $name, $type := .QueryParams }}
         {{ if eq $type "int32" "int64" "integer" }}
-            {{ $name }}, _ := strconv.Atoi(c.QueryParam("{{ $name }}"))
+            {{ $name }}, _ := strconv.Atoi((*c)QueryParam("{{ $name }}"))
         {{ else if eq $type "float" "double" "number" }}
-            {{ $name }}, _ := strconv.ParseFloat(c.QueryParam("{{ $name }}"))
+            {{ $name }}, _ := strconv.ParseFloat((*c)QueryParam("{{ $name }}"))
         {{ else if eq $type "bool" }}
-            {{ $name }}, _ := strconv.ParseBool(c.QueryParam("{{ $name }}"))
+            {{ $name }}, _ := strconv.ParseBool((*c)QueryParam("{{ $name }}"))
         {{ else }}
-            {{ $name }} := c.QueryParam("{{ $name }}")
+            {{ $name }} := (*c)QueryParam("{{ $name }}")
         {{ end }}
     {{- end }}
 
@@ -113,5 +113,5 @@ func {{ .OperationID }}(c echo.Context) error {
     {{ range .Responses }}
             // {{ .StatusCode }} => {{ .Description }}
     {{- end }}
-	return c.String(http.StatusNotImplemented, "Temporary handler stub.")
+	return (*c)String(http.StatusNotImplemented, "Temporary handler stub.")
 }

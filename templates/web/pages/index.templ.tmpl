@@ -6,14 +6,15 @@ import (
 )
 
 // comment the stylesheets you don't need'
-templ Index(lzr *i18n.Localizer) {
+templ Index(lzr *i18n.Localizer, title string) {
 	<!DOCTYPE html>
 	<html>
 		<head>
 			<meta charset="utf-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<meta name="robots" content="noindex,nofollow" />
             <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
-			<title>index</title>
+			<title>{ title }</title>
 			<link rel="stylesheet" href="css/pico.min.css"/>
 			<link rel="stylesheet" href="css/simple.min.css"/>
 			<link rel="stylesheet" href="/css/bootstrap.min.css"/>
