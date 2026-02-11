@@ -1,12 +1,12 @@
 # dredger
 
-A generator for REST APIs from a given <a href="https://www.openapis.org/">OpenAPI 3</a> Specification file in either JSON or YAML format. The HTTP server uses Go's <a href="https://echo.labstack.com/">Echo</a> HTTP server as base.
+A generator for REST and Async APIs from a given <a href="https://www.openapis.org/">OpenAPI 3</a> or <a href="https://www.asyncapi.com/">AsyncAPI 3</a> Specification file in either JSON or YAML format. The HTTP server uses Go's <a href="https://echo.labstack.com/">Echo</a> HTTP server as base.
 
 This is a fork of https://github.com/MVA-OpenApi/go-open-api-generator.
 
 # Purpose
 
-We aim to make the life of Golang REST API developers (or non technical users) easier by creating a tool which takes an OpenAPI 3 Specification file as input and generates a basic project structure from it so that the developers can focus on the business logic. But this code could also be used by other code generators (low code) to add code using their models to create application specific micro services.
+We aim to make the life of Golang (REST and Async) API developers (or non technical users) easier by creating a tool which takes OpenAPI 3 and AsyncAPI 3 Specification files as input and generates a basic project structure from it so that the developers can focus on the business logic. But this code could also be used by other code generators (low code) to add code using their models to create application specific micro services.
 
 The code generation uses Go text templates to generate the code. Therefore, the code can be easily modified and extended.
 
@@ -57,6 +57,10 @@ Generation flags:
 For typical tasks you can use the [just](https://just.systems/man/en/) recipes:
 
     build              # Build the local dredger binary
+<<<<<<< HEAD
+=======
+    download-deps      # Download all necessary libs for generating async
+>>>>>>> tu-repo/main
     download-elements  # Download elements, an OpenAPI documentation viewer
     download-rapidoc   # Download rapidoc, an OpenAPI documentation viewer
     download-style     # Download frontend libraries
@@ -77,8 +81,47 @@ For typical tasks you can use the [just](https://just.systems/man/en/) recipes:
 
 You can find a few OpenAPI 3 Specification file examples [here](./examples). There is also a minimal [OpenAPI.yaml](./examples/OpenAPI.yaml.min-example) file as starting point for your service.
 
+## AsyncAPI Usage
+
+AsyncAPI specifications are supported as well. The repository now includes a
+small schema file at `examples/schemas/asyncapiv3Schema.json` used for basic
+validation. To generate code from an AsyncAPI v3 file, run:
+
+```bash
+go run main.go generate ./examples/simple/asyncapiv3.json -o ./build-asyncapi -n async-service
+```
+
+To generate both an OpenAPI service and an additional AsyncAPI service in one
+go, pass all spec files as positional arguments. The CLI automatically detects
+whether a file is an OpenAPI or AsyncAPI specification:
+
+```bash
+go run main.go generate ./examples/stores/stores.yaml \
+  ./examples/simple/asyncapiv3.json -o ./build-both -n multi-service
+```
+When copying the command ensure that the line break uses a `\` at the end of the
+first line **without any trailing spaces**, otherwise an extra argument may be
+passed to the CLI.
+
+You can also pass several specs at once, mixing OpenAPI and AsyncAPI files:
+
+```bash
+go run main.go generate ./spec1.yaml ./spec2.yaml ./async1.json ./async2.json \
+  -o ./build-all -n multi-service
+```
+
+If the schema file cannot be found, validation is skipped and the code is still
+generated.
+
+# Limitations
+
+- Add a AsyncAPI Info Title if multiple specs are used! (You can have one spec file without one)
+- For multiple AsyncAPI files, only the public `index.html` for the last spec is generated 
+
 # Contributions
 
 The origin of this project was made by 6 students (A. Uluc, A. Munteau, O. Rosenblatt, J. Wilke, C. Szramek, F. Yzeiri) of the TU Berlin as part of the module "Moderne Verteilte Anwendungen Programmierpraktikum" when studying B.Sc Computer Science and could be found at https://github.com/MVA-OpenApi/go-open-api-generator.
+
+The work on the AsyncAPI - Compatibility was done by 4 more students (E. To, A. Gaydikhovych, K. Eichler, T. Hillerscheid) of the TU Berlin as part of the same module in the year 2025.
 
 Further contributors: J. Gottschick

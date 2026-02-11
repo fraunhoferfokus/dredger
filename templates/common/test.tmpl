@@ -1,0 +1,27 @@
+var liste []string
+
+func next(state,action) (newstate, []action) {
+    case state of
+    {{ range . }}
+    "{{ .state }}" -> [ {{ range .actions }} {{ . }} ] {{end}}
+    {{ end}}
+   //  "action1" -> return ["action2"]
+    // "action2" -> return ["action3","action4"]
+    "" -> "{{ .default}}"
+    end
+}
+
+---
+var liste []string
+
+func main() {
+    {{ range . }}
+        liste += {{ . }}
+    {{ end }}
+}
+
+---
+ls += "Jan"
+ls += "Jacqueline"
+
+gen(tmpl, ls)

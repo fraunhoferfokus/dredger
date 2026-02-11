@@ -4,5 +4,5 @@ import (
 	"embed"
 )
 
-//go:embed web
+//go:embed common/web
 var WebFS embed.FS

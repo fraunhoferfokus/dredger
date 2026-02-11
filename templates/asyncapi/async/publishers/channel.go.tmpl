@@ -1,0 +1,29 @@
+// Edit this file, as it is a specific handler function for your service
+package publishers
+
+import (
+	"{{ lcfirst ( camelcase .ModuleName ) }}/entities"
+	"encoding/json"
+	"log" //noch an core logger anpassen
+	"math/rand"
+	"time"
+	"fmt"
+
+	"github.com/nats-io/nats.go"
+)
+
+func {{ ucfirst ( camelcase .OperationName) }}(v any) error {
+	nc, err := nats.Connect(nats.DefaultURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer nc.Drain()
+
+	// next line depends on contentType
+	data, err := json.Marshal(v)
+	if err!= nil {
+	return fmt.Errorf("Marshalling error")
+	}
+
+	return nc.Publish("{{.ChannelName}}", data)
+}

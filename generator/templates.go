@@ -3,6 +3,7 @@ package generator
 import (
 	"os"
 	"path"
+	"strings"
 	"text/template"
 
 	fs "dredger/fileUtils"
@@ -17,12 +18,19 @@ func snakecase(s string) string {
 }
 
 func camelcase(s string) string {
-	return stringy.New(s).CamelCase("?", "", "#", "").Get()
+	// return stringy.New(s).CamelCase("?", "", "#", "").Get()  // from fokus
+	if strings.ContainsAny(s, "-_.") {
+		return stringy.New(s).CamelCase().Get()
+	}
+	return s
 }
 
 func lcFirst(s string) string {
 	return stringy.New(s).LcFirst()
 }
+
+func ucFirst(s string) string {
+	return stringy.New(s).UcFirst()
 
 func createFileFromTemplate(filePath string, tmplPath string, config interface{}) {
 	templateName := path.Base(tmplPath)
@@ -30,6 +38,7 @@ func createFileFromTemplate(filePath string, tmplPath string, config interface{}
 	funcmap["camelcase"] = camelcase
 	funcmap["snakecase"] = snakecase
 	funcmap["lcfirst"] = lcFirst
+	funcmap["ucfirst"] = ucFirst
 
 	// Create file and open it
 	fs.GenerateFile(filePath)
