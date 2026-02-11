@@ -12,16 +12,9 @@ type AuthConfig struct {
 	ApiKeyHeaderName   string
 	ApiKeySecurityName string
 }
-<<<<<<< HEAD
-type GeneratorConfig struct {
-	OpenAPIPath  string
-=======
-
 type GeneratorConfig struct {
 	OpenAPIPath  string
 	AsyncAPIPath string //Neu
-
->>>>>>> tu-repo/main
 	OutputPath   string
 	ModuleName   string
 	DatabaseName string
@@ -29,8 +22,6 @@ type GeneratorConfig struct {
 	Flags
 }
 
-<<<<<<< HEAD
-=======
 type MainConfig struct {
 	AllOpenAPINames []OpenAPIConfig
 	OutputPath      string
@@ -41,7 +32,6 @@ type OpenAPIConfig struct {
 	OpenAPIPath string
 }
 
->>>>>>> tu-repo/main
 type ProjectConfig struct {
 	Name string
 	Path string
@@ -56,7 +46,7 @@ type ServerConfig struct {
 }
 
 type ResponseConfig struct {
-	StatusCode string
+	StatusCode  string
 	Description string
 }
 

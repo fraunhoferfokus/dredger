@@ -1,14 +1,8 @@
 # Features
 
-<<<<<<< HEAD
-The generator dredger generates from an _openapi.spec_ file the basic code for a microservice in Go. The code includes not only the HTTP server and its handler. It also includes typically required, sophisticated functionally for an API, like security and observability functions.
-
-The generated code can be enhanced by the business code as required. Files, which can be adapted by the developer will not be overwritten, if the generator runs again.
-=======
 The generator dredger generates from an _OpenAPI_ or _AsyncAPI_ specification the basic code for a microservice in Go. It automatically detects the type of specification. OpenAPI files result in an HTTP server with matching handlers, while AsyncAPI files produce NATS-based publisher, subscriber and server code. The generated output includes not only the transport layer but also typically required, sophisticated functionality for an API, like security and observability modules.
 
 The generated code can be enhanced by the business code as required. Files, which can be adapted by the developer will not be overwritten, if the generator runs again. Optional scaffolding for a SQLite database, BDD test templates and a minimal frontend (templ templates and static assets) can also be created. After the generation step `goimports`, `go mod tidy` and `go fmt` are executed to keep the project tidy. A `version` command prints the release information of dredger.
->>>>>>> tu-repo/main
 
 ## Basics
 
@@ -95,13 +89,10 @@ and will be visible, when a call start, progress over time and reappear at the e
 
 The comprehensive documentation of a service should be contained in the OpenAPI specification. Therefor, the OpenAPI documentation will also be embedded with the service and online available at runtime (_/doc_). Two viewers (_rapidoc_ and _Stoplight elements_) are available and configurable.
 
-<<<<<<< HEAD
-=======
 ## AsyncAPI Support
 
 Besides HTTP APIs, dredger can also generate messaging services from AsyncAPI specifications. It creates NATS-based publisher, subscriber and server stubs and derives Go types from the defined messages. The overall project layout mirrors the HTTP variant with configuration, middleware and version files. Because these message types share the `entities` package with the OpenAPI schemata, their names may collide. To mitigate this, message types are generated with the prefix `Msg`. Properties that lack a more specific definition use Go's `any` alias instead of `interface{}`.
 
->>>>>>> tu-repo/main
 ### Testing
 
 When offering an API it should be proper tested. Therefore, the generator optionally provides code for BDD based testing using [godog](https://github.com/cucumber/godog) and _specification by example_ to describe tests.
