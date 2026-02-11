@@ -17,7 +17,8 @@ import (
 func generateEmptyFrontendAsync(_ *asyncapiv3.Specification, conf GeneratorConfig) {
 	frontendPath := filepath.Join(conf.OutputPath, "web")
 	fs.GenerateFolder(frontendPath)
-	createFileFromTemplate(filepath.Join(frontendPath, "README.md"), "templates/openapi/web/README.md.tmpl", conf)
+	// createFileFromTemplate(filepath.Join(frontendPath, "README.md"), "templates/openapi/web/README.md.tmpl", conf)  // path does not exist
+	createFileFromTemplate(filepath.Join(frontendPath, "README.md"), "templates/web/README.md.tmpl", conf)
 }
 
 func generateFrontendAsync(spec *asyncapiv3.Specification, conf GeneratorConfig) {
