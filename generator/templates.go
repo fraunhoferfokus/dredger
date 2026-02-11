@@ -31,6 +31,7 @@ func lcFirst(s string) string {
 
 func ucFirst(s string) string {
 	return stringy.New(s).UcFirst()
+}
 
 func createFileFromTemplate(filePath string, tmplPath string, config interface{}) {
 	templateName := path.Base(tmplPath)
