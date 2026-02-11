@@ -6,9 +6,10 @@ import (
 	"net/http"
 	server "{{ lcfirst ( camelcase .ModuleName ) }}/async/subscribers"
 	"github.com/gorilla/websocket"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/nats-io/nats.go"
 )
+// TODO: verify upgrade to echo v5 did not mess up anything
 
 // WebSocket upgrader
 var upgrader = websocket.Upgrader{

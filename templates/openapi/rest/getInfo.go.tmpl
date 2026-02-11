@@ -5,10 +5,10 @@ import (
 	"{{ lcfirst ( camelcase .ModuleName ) }}/core"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 // Returns infos about the service
-func GetInfo(c echo.Context) error {
-	return c.JSON(http.StatusOK, core.AppInfo)
+func GetInfo(c *echo.Context) error {
+	return (*c).JSON(http.StatusOK, core.AppInfo)
 }

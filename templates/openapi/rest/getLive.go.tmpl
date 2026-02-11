@@ -4,10 +4,10 @@ package rest
 import (
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 // Returns live-state of the service
-func GetLive(c echo.Context) error {
-	return c.String(http.StatusOK, "I'm alive.")
+func GetLive(c *echo.Context) error {
+	return (*c).String(http.StatusOK, "I'm alive.")
 }

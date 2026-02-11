@@ -29,8 +29,8 @@ import (
 		"os"
 	{{- end}}
 
-	"github.com/labstack/echo/v4"
-	echoMiddleware "github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/echo/v5"
+	echoMiddleware "github.com/labstack/echo/v5/middleware"
 	"github.com/labstack/echo-contrib/echoprometheus"
 	// "go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 )
@@ -69,14 +69,14 @@ func main() {
 	e.Use(echoprometheus.NewMiddleware(core.AppConfig.Service)) // adds middleware to gather metrics
 
 	e.Use(echoMiddleware.CORS())
-	
+
 	{{- if .OpenAPI }}
 	e.Use(middleware.LoggerHandler)
 	// e.Use(otelecho.Middleware(core.AppConfig.Sid))
 	e.Use(middleware.PolicyHandler) // Policy Enforcement Point to check access
 	{{end}}
 	e.GET("/metrics", echoprometheus.NewHandler()) // adds route to serve gathered metrics
-	
+
 	{{- if .OpenAPI }}
 	rest.NewHandler(e)
 	{{end}}

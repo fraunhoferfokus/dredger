@@ -9,13 +9,13 @@ import (
 
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 // successfully deliver index page
-func GetRoot(c echo.Context) error {
+func GetRoot(c *echo.Context) error {
 	// trace span
-	ctx := c.Request().Context()
+	ctx := (*c).Request().Context()
 	ctx, span := tracing.Tracer.Start(ctx, "logMessage")
 	defer span.End()
 
@@ -26,7 +26,7 @@ func GetRoot(c echo.Context) error {
 	// session, err := getSession(c)
 	// if err != nil {
 	// 	log.Error().Err(err).Msg("GetIndex failed")
-	// 	return c.NoContent(http.StatusInternalServerError)
+	// 	return (*c).NoContent(http.StatusInternalServerError)
 	// }
 
 	lzr := i18n.NewLocalizer(core.Bundle, core.Language(c))
