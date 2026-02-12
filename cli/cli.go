@@ -150,6 +150,8 @@ var generateCmd = &cobra.Command{
 		log.Info().Msg("RUN `go fmt`")
 		extCmd.RunCommand("go fmt ./...", projectDestination)
 
+		// TODO: create go files from tmpl `templ generate web/pages/*.templ`
+
 		log.Info().Msg("DONE project created at: " + projectDestination)
 	},
 }
