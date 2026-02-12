@@ -10,10 +10,11 @@ func TestFileDoesNotExist(t *testing.T) {
 	_, err := parser.ParseOpenAPISpecFile("../../examples/apiwithexamples.json")
 	if err.Error() != errorMessage {
 		t.Errorf("Actual error %v, and expected %v", err, errorMessage)
-//  Version from praktikum
-// 		_, err := parser.ParseOpenAPISpecFile("../../examples/nonexistent.yaml")
-//	if err == nil || err.Error() != "file not found" {
-// 	}
+		//  Version from praktikum
+		// 		_, err := parser.ParseOpenAPISpecFile("../../examples/nonexistent.yaml")
+		//	if err == nil || err.Error() != "file not found" {
+		// 	}
+	}
 }
 
 func TestFileExists(t *testing.T) {
