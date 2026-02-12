@@ -20,7 +20,7 @@ func CORSConfigFromEnv() echo.MiddlewareFunc {
 	var origins []string
 	containsWildcard := false
 	// Get all allowed origins
-	for _, o := range strings.Split(envOrigins, ",") {
+	for o := range strings.SplitSeq(envOrigins, ",") {
 		o = strings.TrimSpace(o)
 		if o != "" {
 			origins = append(origins, o)
