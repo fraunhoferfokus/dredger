@@ -15,5 +15,5 @@ var (
 
 // Returns robots.txt
 func GetRobots(c *echo.Context) error {
-	return (*c)String(http.StatusOK, robots)
+	return (*c).String(http.StatusOK, robots)
 }
