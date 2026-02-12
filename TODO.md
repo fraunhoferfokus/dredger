@@ -3,6 +3,7 @@
 ## Fixes
 - Symlink error in generation process
 - Async functionality💁
+- verify tracing works, fix if not
 
 ## Features
 - Auto-genrate frontend: When pages exist in spec, set AddFrontend to true
