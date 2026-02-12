@@ -1,8 +1,8 @@
 # Dredger ToDo's:
 
 ## Fixes
-
 - Symlink error in generation process
+- Async functionality💁
 
 ## Features
 - Auto-genrate frontend: When pages exist in spec, set AddFrontend to true
