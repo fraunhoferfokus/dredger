@@ -9,7 +9,6 @@ import (
 	"github.com/labstack/echo/v5"
 	"github.com/nats-io/nats.go"
 )
-// TODO: verify upgrade to echo v5 did not mess up anything
 
 // WebSocket upgrader
 var upgrader = websocket.Upgrader{
@@ -21,7 +20,7 @@ var upgrader = websocket.Upgrader{
 // RegisterHandlers sets up Echo routes including WebSocket
 func RegisterHandlers(e *echo.Echo) {
 	// WebSocket endpoint
-	e.GET("/ws", func(c echo.Context) error {
+	e.GET("/ws", func(c *echo.Context) error {
 		ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 		if err != nil {
 			log.Println("WebSocket upgrade failed:", err)
