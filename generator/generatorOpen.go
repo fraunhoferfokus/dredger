@@ -166,7 +166,7 @@ func GenerateMain(openAPINames []OpenAPIConfig, outputPath string, moduleName st
 		ModuleName:      moduleName,
 		Flags: Flags{
 			AddDatabase: dataBase,
-			AddFrontend: frontend,
+			AddFrontend: frontend, // TODO: set AddFrontend auto-true if required (if pages exists in spec)
 			OpenAPI:     openapi,
 			AsyncAPI:    asyncapi,
 		},

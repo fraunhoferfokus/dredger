@@ -20,7 +20,9 @@ import (
 	"{{ lcfirst ( camelcase .ModuleName ) }}/rest/middleware"
 	{{end}}
 
-	    "{{ lcfirst ( camelcase .ModuleName ) }}/web"
+    {{- if .AddFrontend}}
+    "{{ lcfirst ( camelcase .ModuleName ) }}/web"
+    {{- end}}
         _ "embed"
         "context"
        "flag"
