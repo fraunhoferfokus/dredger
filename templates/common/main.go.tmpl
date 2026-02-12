@@ -26,13 +26,13 @@ import (
         _ "embed"
         "context"
        "flag"
+       "crypto/tls"
 
 	{{- if .AddDatabase}}
 		"os"
 	{{- end}}
 
 	"github.com/labstack/echo/v5"
-	echoMiddleware "github.com/labstack/echo/v5/middleware"
 	"github.com/labstack/echo-contrib/echoprometheus"
 	// "go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 )
@@ -70,7 +70,7 @@ func main() {
 	e := echo.New()
 	e.Use(echoprometheus.NewMiddleware(core.AppConfig.Service)) // adds middleware to gather metrics
 
-	e.Use(echoMiddleware.CORS())
+	e.Use(middleware.CORSConfigFromEnv())
 
 	{{- if .OpenAPI }}
 	e.Use(middleware.LoggerHandler)
@@ -113,8 +113,15 @@ func main() {
 	{{end}}
 
 	if core.AppConfig.CertPem != "" && core.AppConfig.KeyPem != "" {
-		e.Logger.Fatal(e.StartTLS(":" + core.AppConfig.PortNb, []byte(core.AppConfig.CertPem), []byte(core.AppConfig.KeyPem)))
+		sc := echo.StartConfig{
+			Address:   ":443",
+			TLSConfig: &tls.Config{},
+			// core.AppConfig.CertPem), core.AppConfig.KeyPem
+		}
+		if err := sc.Start(context.Background(), e); err != nil {
+			e.Logger.Error("Starting echo HTTP server failed", "error", e.Start(":"+core.AppConfig.PortNb))
+		}
 	} else {
-		e.Logger.Fatal(e.Start(":" + core.AppConfig.PortNb))
+		e.Logger.Error("Starting echo HTTP server failed", "error", e.Start(":"+core.AppConfig.PortNb))
 	}
 }

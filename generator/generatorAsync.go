@@ -71,6 +71,8 @@ func GenerateAsyncService(conf GeneratorConfig) error {
 	GenerateSubscriberFile(spec, conf)
 	// Generating logging files
 	generateLogger(conf)
+	// Generating CORS configuration
+	generateCorsConfig(conf)
 	// Generating Tracing files
 	generateTracing(conf)
 	// Generating data base files

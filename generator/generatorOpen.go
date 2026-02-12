@@ -87,6 +87,7 @@ func GenerateServer(conf GeneratorConfig) error {
 	generateConfigFiles(serverConf)
 	generateInfoFiles(spec, serverConf)
 	generateLogger(conf)
+	generateCorsConfig(conf)
 	generateTracing(conf)
 	generateLifecycleFiles(spec, conf)
 	generateHandlerFuncs(spec, conf)
