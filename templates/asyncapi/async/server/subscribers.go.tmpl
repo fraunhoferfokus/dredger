@@ -3,38 +3,33 @@ package subscribers
 
 import (
 	"{{ lcfirst ( camelcase .ModuleName ) }}/entities"
+	"{{ lcfirst ( camelcase .ModuleName ) }}/core/log"
 	"encoding/json"
-	"log"
 
 	"github.com/gorilla/websocket"
 	"github.com/nats-io/nats.go"
 )
 
 {{- range .Operations }}
-func {{ ucfirst ( camelcase .OperationName) }}(nc *nats.Conn, ws *websocket.Conn) *nats.Subscription {
+{{- $operation := . }}
+{{- range .Messages }}
+func {{ ucfirst ( camelcase $operation.OperationName) }}(nc *nats.Conn) *nats.Subscription {
+	// Subscribe to "{{$operation.ChannelName}}.{{.MessageName}}"
+	Sub, err := nc.Subscribe("{{$operation.ChannelName}}.{{.MessageName}}", func(msg *nats.Msg) {
+        var data entities.{{ .MessageStructName }}
+		err := json.Unmarshal(msg.Data, &data)
+  		if err != nil {
+ 			log.Error().Err(err).Msg("Unmarshalling {{.MessageStructName}} for {{ .MessageName }} in {{ $operation.OperationName}} failded")
+ 			return
+  		}
 
-	// Subscribe to "{{.ChannelName}}"
-	Sub, err := nc.Subscribe("{{.ChannelName}}", func(msg *nats.Msg) {
-		{{- range .Messages }}
-			env{{ucfirst .MessageName}} := entities.Envelope{
-				Type: "{{.MessageName}}",
-				Data: msg.Data,
-			}
-			out{{ucfirst .MessageName}}, err := json.Marshal(env{{ucfirst .MessageName}})
-			if err != nil {
-				log.Println("Error marshaling {{.MessageName}} envelope:", err)
-				return
-			}
-			if writeErr := ws.WriteMessage(websocket.TextMessage, out{{ucfirst .MessageName}}); writeErr != nil {
-				log.Println("Error writing {{.MessageName}} to WebSocket:", writeErr)
-			}
-		{{ end }}
-	})
-	if err != nil {
-		log.Println("NATS subscribe to {{.ChannelName}} failed:", err)
-		return nil
-	}
-
-	return Sub
+        // buisness logic
+    })
+    if err != nil {
+  		log.Error().Err(err).Msg("NATS subscribe to {{ $operation.ChannelName}}.{{ .MessageName }} failed")
+  		return nil
+   	}
+   	return Sub
 }
+{{ end }}
 {{ end }}

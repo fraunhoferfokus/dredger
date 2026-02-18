@@ -5,8 +5,10 @@ import (
 	//	"encoding/json"
 	//	"strings"
 	//	"errors"
+
 	"path"
 	"path/filepath"
+	"strings"
 
 	asyncapiv3 "github.com/lerenn/asyncapi-codegen/pkg/asyncapi/v3"
 	"github.com/rs/zerolog/log"
@@ -19,7 +21,8 @@ type Operation struct {
 }
 
 type Message struct {
-	MessageName string
+	MessageName       string
+	MessageStructName string
 }
 
 type GenConfig struct {
@@ -73,21 +76,44 @@ func GetPublishChannelOperations(spec *asyncapiv3.Specification) []Operation {
 	return result
 }
 
-//Thought i needed them, but didn't  , but might come in handy at a later time
+// Extracts message from spec to a given ref
+func ResolveMessageRef(spec *asyncapiv3.Specification, ref string) *asyncapiv3.Message {
+	const prefix = "#/"
 
-func ResolveMessageRef(ref string, spec *asyncapiv3.Specification) *asyncapiv3.Message {
-	// Extrahiere den Namen aus dem $ref
-	refName := path.Base(ref)
-
-	// Schaue im Components-Block nach der Message
-	msg, ok := spec.Components.Messages[refName]
-	if !ok {
-		log.Info().Str("ref", ref).Msg("Message not found in components")
-		log.Info().Msg("message '" + refName + "' not found in components")
+	// Verify ref structure
+	if !strings.HasPrefix(ref, prefix) {
+		log.Error().Str("ref format", ref).Str("prefix", prefix).Msg("unsupported ref format - must be in prefix")
 		return nil
 	}
 
-	return msg
+	// Allow messages from Components and Channels
+	const channelPrefix = prefix + "channels/"
+	const componentPrefix = prefix + "components/messages"
+	refName := path.Base(ref)
+	if strings.HasPrefix(ref, channelPrefix) {
+		channelName := strings.Split(strings.Replace(ref, channelPrefix, "", 1), "/")[0]
+		channel, ok := spec.Channels[channelName]
+		if !ok {
+			log.Error().Str("ref", ref).Str("channel name", channelName).Any("channels", spec.Channels).Msg("could not find reference in channels")
+			return nil
+		}
+		msg, ok := channel.Messages[refName]
+		if !ok {
+			log.Error().Str("ref", ref).Msg("could not find reference in the channels messages")
+			log.Debug().Str("ref", ref).Any("messages", channel.Messages).Any("result", msg).Msg("could not find reference in the channels messages")
+		}
+		return msg
+	} else if strings.HasPrefix(ref, componentPrefix) {
+		msg, ok := spec.Components.Messages[refName]
+		if !ok {
+			log.Error().Str("ref", ref).Msg("could not find reference in components messages")
+			return nil
+		}
+		return msg
+	}
+
+	log.Error().Str("ref format", ref).Str("prefix", prefix).Msg("unsupported ref format - must be in prefix and either in either in components or channels")
+	return nil
 }
 
 func ResolveChannelRef(ref string, spec *asyncapiv3.Specification) *asyncapiv3.Channel {

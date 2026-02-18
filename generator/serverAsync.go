@@ -83,7 +83,8 @@ func extractOperations(spec *asyncapiv3.Specification) []Operation {
 			if op.Action.IsReceive() {
 				for _, msg := range op.Messages {
 					allMessages = append(allMessages, Message{
-						MessageName: checkMessage(msg),
+						MessageName:       checkMessage(msg),
+						MessageStructName: getStructTypeFromMessage(ResolveMessageRef(spec, msg.Reference)), // use msg.Reference as it was "tested" before in checkMessage
 					})
 				}
 				allOperations = append(allOperations, Operation{
@@ -104,6 +105,11 @@ func checkMessage(message *asyncapiv3.Message) string {
 		log.Error().Msg("Message has to be a written as a ref when noted in operations messages.")
 		return "IncorrectNotation"
 	}
+}
+
+func getStructTypeFromMessage(message *asyncapiv3.Message) string {
+	// read $ref from message and extract last element = name of struct in entities
+	return path.Base(message.Reference)
 }
 
 // Filters all Subscribe Operations and gets their OperationName and the ChannelName they belong to
