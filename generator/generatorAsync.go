@@ -68,7 +68,7 @@ func GenerateAsyncService(conf GeneratorConfig) error {
 	// Internal Server files generieren
 	GenerateInternalFile(spec, conf)
 	// Subscriber files generieren
-	GenerateSubscriberFile(spec, conf)
+	GenerateSubscriberFiles(spec, conf)
 	// Generating logging files
 	generateLogger(conf)
 	// Generating CORS configuration

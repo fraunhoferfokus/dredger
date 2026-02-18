@@ -14,6 +14,7 @@ import (
 )
 
 type Operation struct {
+	ModuleName    string
 	OperationName string
 	ChannelName   string
 	Messages      []Message
@@ -37,7 +38,7 @@ type GenConfig struct {
 // dann an createFileFromTemplate ins Template gelangt
 
 func GenerateChannelFile(spec *asyncapiv3.Specification, conf GeneratorConfig) {
-	var sendOps = GetPublishChannelOperations(spec)
+	var sendOps = GetPublishChannelOperations(spec, conf)
 	configs := []GenConfig{}
 	for _, op := range sendOps {
 		configs = append(configs, GenConfig{
@@ -62,7 +63,7 @@ func GenerateChannelFile(spec *asyncapiv3.Specification, conf GeneratorConfig) {
 // FIXME: immer diese Fehlermeldung: panic: template: pattern matches no files: `templates\openapi\async\publishers\channel.go.tmpl`
 
 // Returns an Array of Operations from spec, that are only Send-Operations (from spec)
-func GetPublishChannelOperations(spec *asyncapiv3.Specification) []Operation {
+func GetPublishChannelOperations(spec *asyncapiv3.Specification, genConf GeneratorConfig) []Operation {
 	var result []Operation
 	for opName, op := range spec.Operations {
 		if op.Action == "send" {
@@ -77,6 +78,7 @@ func GetPublishChannelOperations(spec *asyncapiv3.Specification) []Operation {
 				OperationName: opName,
 				ChannelName:   path.Base(op.Channel.Reference),
 				Messages:      allMessages,
+				ModuleName:    genConf.ModuleName,
 			})
 		}
 	}
