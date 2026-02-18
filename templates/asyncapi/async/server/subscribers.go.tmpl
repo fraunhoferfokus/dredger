@@ -16,7 +16,7 @@ import (
 func {{ ucfirst ( camelcase $operation.OperationName) }}(nc *nats.Conn) *nats.Subscription {
 	// Subscribe to "{{$operation.ChannelName}}.{{.MessageName}}"
 	Sub, err := nc.Subscribe("{{$operation.ChannelName}}.{{.MessageName}}", func(msg *nats.Msg) {
-        var data entities.{{ .MessageStructName }}
+        var data entities.{{ ucfirst ( camelcase .MessageStructName ) }}
 		err := json.Unmarshal(msg.Data, &data)
   		if err != nil {
  			log.Error().Err(err).Msg("Unmarshalling {{.MessageStructName}} for {{ .MessageName }} in {{ $operation.OperationName}} failded")

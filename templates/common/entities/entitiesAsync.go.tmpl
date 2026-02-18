@@ -2,7 +2,7 @@
 package entities
 
 {{ range $SchemaName, $TypeDefs := .SchemaDefs -}}
-  type {{ $SchemaName }} struct {
+  type {{ ucfirst ( camelcase $SchemaName ) }} struct {
   {{- template "structs" $TypeDefs }}
   }
 

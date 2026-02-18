@@ -29,7 +29,7 @@ type GenConfig struct {
 	ModuleName    string
 	OperationName string
 	ChannelName   string
-	MessageName   []string
+	Messages      []Message
 }
 
 //IDEE: Nur die SendOperations, also braucht man erstmal eine Map von allen Send-Operations zu erstellen
@@ -45,6 +45,7 @@ func GenerateChannelFile(spec *asyncapiv3.Specification, conf GeneratorConfig) {
 			ModuleName:    conf.ModuleName,
 			OperationName: op.OperationName,
 			ChannelName:   op.ChannelName,
+			Messages:      op.Messages,
 		})
 	}
 
@@ -66,9 +67,17 @@ func GetPublishChannelOperations(spec *asyncapiv3.Specification) []Operation {
 	var result []Operation
 	for opName, op := range spec.Operations {
 		if op.Action == "send" {
+			allMessages := []Message{}
+			for _, msg := range op.Messages {
+				allMessages = append(allMessages, Message{
+					MessageName:       checkMessage(msg),
+					MessageStructName: getStructTypeFromMessage(ResolveMessageRef(spec, msg.Reference)), // use msg.Reference as it was "tested" before in checkMessage
+				})
+			}
 			result = append(result, Operation{
 				OperationName: opName,
 				ChannelName:   path.Base(op.Channel.Reference),
+				Messages:      allMessages,
 			})
 		}
 	}

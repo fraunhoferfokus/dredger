@@ -45,7 +45,7 @@ func GenerateAsyncTypes(spec *asyncapiv3.Specification, pConf ProjectConfig) {
 				"templates/common/entities/entitiesAsync.go.tmpl",
 				"templates/common/entities/structs.tmpl",
 			}
-			createFileFromTemplates(filePath, templateFiles, conf)
+			createFileFromTemplates(filePath, templateFiles, conf) // TODO fix
 		}
 		envelopeFilePath := filepath.Join(pConf.Path, EntitiesPkg, "envelope.go")
 		templateFiles := []string{

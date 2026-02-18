@@ -3,27 +3,24 @@ package publishers
 
 import (
 	"{{ lcfirst ( camelcase .ModuleName ) }}/entities"
+	"{{ lcfirst ( camelcase .ModuleName ) }}/core/log"
+	"{{ lcfirst ( camelcase .ModuleName ) }}/async"
+
 	"encoding/json"
-	"log" //noch an core logger anpassen
-	"math/rand"
-	"time"
 	"fmt"
 
 	"github.com/nats-io/nats.go"
 )
 
-func {{ ucfirst ( camelcase .OperationName) }}(v any) error {
-	nc, err := nats.Connect(nats.DefaultURL)
+{{ $Operation := .}}
+{{ range .Messages }}
+func {{ ucfirst ( camelcase $Operation.OperationName) }}(v entities.{{ ucfirst ( camelcase .MessageStructName ) }}) error {
+	data, err := json.Marshal(v) // TODO adapt to contentType
 	if err != nil {
-		log.Fatal(err)
-	}
-	defer nc.Drain()
-
-	// next line depends on contentType
-	data, err := json.Marshal(v)
-	if err!= nil {
+	log.Debug().Any("{{ ucfirst ( camelcase .MessageStructName ) }}Object", data).Msg("Marshalling error in {{ ucfirst ( camelcase $Operation.OperationName) }}")
 	return fmt.Errorf("Marshalling error")
 	}
 
-	return nc.Publish("{{.ChannelName}}", data)
+	return async.NC.Publish("{{ $Operation.ChannelName }}.{{ .MessageName }}", data)
 }
+{{ end }}
