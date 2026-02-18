@@ -84,7 +84,7 @@ func extractOperations(spec *asyncapiv3.Specification) []Operation {
 				for _, msg := range op.Messages {
 					allMessages = append(allMessages, Message{
 						MessageName:       checkMessage(msg),
-						MessageStructName: getStructTypeFromMessage(ResolveMessageRef(spec, msg.Reference)), // use msg.Reference as it was "tested" before in checkMessage
+						MessageStructName: getStructTypeFromMessage(msg.ReferenceTo), // use msg.Reference as it was "tested" before in checkMessage
 					})
 				}
 				allOperations = append(allOperations, Operation{
