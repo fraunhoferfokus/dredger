@@ -4,9 +4,13 @@
 ## Fixes
 - Symlink error in generation process
 - Async functionality💁
+- localize generation
+
+### Fixes for generated code
 - verify tracing works, fix if not
 - check and test monitoring code
 - update OPA code
+- organized shutdown
 
 ## Features
 - Auto-genrate frontend: When pages exist in spec, set AddFrontend to true
@@ -16,3 +20,7 @@
 - Generate usecase handler functions in usecases/ to fully "hide" application logic (like dredger-rs)
 - add authenticating code (OpenID, TOTP)
 
+
+### Features for generated code
+- allow form data
+- valitate body against entitiy struct
