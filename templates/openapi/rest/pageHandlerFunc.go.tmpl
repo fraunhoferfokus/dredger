@@ -31,11 +31,13 @@ func {{ .OperationID }}(c *echo.Context) error {
 	spanId := span.SpanContext().SpanID().String()
 	log.Info().Str("traceId", traceId).Str("spanId", spanId).Str("path", "/").Msg("{{ .OperationID }}")
 
+    /* Remove this comment to use session
 	session, err := getSession(c)
 	if err != nil {
 		log.Error().Err(err).Msg("{{ .OperationID }} failed")
 		return (*c).NoContent(http.StatusInternalServerError)
 	}
+	 */
 
     {{- if eq .Method "POST" "PUT" "PATCH" }}
 
@@ -116,6 +118,6 @@ func {{ .OperationID }}(c *echo.Context) error {
     {{- end }}
 
 
-	lzr := i18n.NewLocalizer(core.Bundle, core.Language(c))
+	lzr := i18n.NewLocalizer(pages.Bundle, pages.Language(c))
 	return Render(c, http.StatusOK, pages.{{ .OperationID }}(lzr))
 }
