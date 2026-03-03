@@ -13,6 +13,8 @@
 - update OPA code
 - organized shutdown
 - reflect required fields of objects from spec in validation
+- remove dead code (especially in templates)
+
 
 ## Features
 - Auto-genrate frontend: When pages exist in spec, set AddFrontend to true
