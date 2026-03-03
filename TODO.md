@@ -11,6 +11,7 @@
 - check and test monitoring code
 - update OPA code
 - organized shutdown
+- reflect required fields of objects from spec in validation
 
 ## Features
 - Auto-genrate frontend: When pages exist in spec, set AddFrontend to true
@@ -23,4 +24,4 @@
 
 ### Features for generated code
 - allow form data
-- valitate body against entitiy struct
+- valitate body against entitiy struct, f.e. with "github.com/go-playground/validator/v10" and custom validator if yaml HAS TO BE supported

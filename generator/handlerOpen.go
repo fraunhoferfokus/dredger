@@ -5,9 +5,9 @@ import (
 	fs "dredger/fileUtils"
 	"errors"
 	"os"
+	pathMod "path"
 	"path/filepath"
 	"slices"
-	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/huandu/xstrings"
@@ -46,20 +46,14 @@ func generateHandlerFuncStub(op *openapi3.Operation, method string, path string,
 	}
 	conf.Schema = ""
 	if op.RequestBody != nil {
-		if mt := op.RequestBody.Value.Content.Get("application/json"); mt != nil {
-			x := strings.Split(mt.Schema.Ref, "/")
-			if len(x) > 0 {
-				conf.Schema = x[len(x)-1]
-			}
-		} else if mt := op.RequestBody.Value.Content.Get("application/yaml"); mt != nil {
-			x := strings.Split(mt.Schema.Ref, "/")
-			if len(x) > 0 {
-				conf.Schema = x[len(x)-1]
-			}
-		} else if mt := op.RequestBody.Value.Content.Get("application/xml"); mt != nil {
-			x := strings.Split(mt.Schema.Ref, "/")
-			if len(x) > 0 {
-				conf.Schema = x[len(x)-1]
+		var supportedContentTypes = []string{"application/json", "application/yaml", "application/xml",
+			"application/x-www-form-urlencoded", "multipart/form-data"}
+		// get media type from request with supported content types
+		for _, contentType := range supportedContentTypes {
+			if mt := op.RequestBody.Value.Content.Get(contentType); mt != nil {
+				// found ref => set schema as ref name
+				conf.Schema = pathMod.Base(mt.Schema.Ref)
+				break
 			}
 		}
 	} else if t, exists := op.Extensions["x-requestType"]; exists {

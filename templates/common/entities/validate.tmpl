@@ -2,6 +2,9 @@
 
 {{ range . }}
   {{ if eq .Type "string" }}
+    if v.{{- camelcase .Name}} == "" {
+        return fmt.Errorf("Missing field {{- camelcase .Name}}")
+    }
     {{ if gt .MinLength 0 }}
       if len(v.{{- camelcase .Name }}) < {{ .MinLength }} {
         return fmt.Errorf("string '%s' is too short", "{{- .Name }}")

@@ -5,8 +5,8 @@
   {{- if .NestedTypes }} {{ .Type }} {
     {{ template "structs" .NestedTypes}}
   }
-  
-  {{- else }} {{ .Type }} `json:"{{ .MarshalName }},omitempty" yaml:"{{ .MarshalName }},omitempty" xml:"{{ .MarshalName }},omitempty"`
+
+  {{- else }} {{ .Type }} `json:"{{ .MarshalName }}" yaml:"{{ .MarshalName }}" xml:"{{ .MarshalName }}" form:"{{ .MarshalName }}"`
   {{- end -}}
 {{ end }}
 
