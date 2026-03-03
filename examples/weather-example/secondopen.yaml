@@ -1,0 +1,89 @@
+openapi: 3.0.3
+info:
+  title: Live Wetter Test Service
+  description: >
+    A RESTful test interface for experimenting with weather alert configurations
+    and test sensor behavior, separate from production data.
+  version: 1.0.1
+
+servers:
+  - url: http://localhost:8081
+
+paths:
+  /alerts:
+    get:
+      summary: List all test weather alerts
+      operationId: listTestAlerts
+      responses:
+        '200':
+          description: A list of test alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WeatherAlert'
+
+    post:
+      summary: Create a new test weather alert
+      operationId: createTestAlert
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewWeatherAlert'
+      responses:
+        '201':
+          description: Test alert created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeatherAlert'
+
+  /alerts/{alertId}:
+    delete:
+      summary: Delete a test weather alert
+      operationId: deleteTestAlert
+      parameters:
+        - name: alertId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Alert deleted
+        '404':
+          description: Alert not found
+
+components:
+  schemas:
+    WeatherAlert:
+      type: object
+      properties:
+        id:
+          type: string
+        region:
+          type: string
+        severity:
+          type: string
+          enum: [info, warning, critical]
+        timestamp:
+          type: string
+          format: date-time
+        description:
+          type: string
+      required: [id, region, severity, timestamp, description]
+
+    NewWeatherAlert:
+      type: object
+      properties:
+        region:
+          type: string
+        severity:
+          type: string
+          enum: [info, warning, critical]
+        description:
+          type: string
+      required: [region, severity, description]

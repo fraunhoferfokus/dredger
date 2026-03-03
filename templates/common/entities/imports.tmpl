@@ -1,0 +1,13 @@
+{{ define "imports" }}
+
+
+  import (
+    {{ range .ImportDefs -}}
+        {{- if .Name -}} {{ .Name }} {{ end -}}
+        {{- if .URL -}} {{ .URL }} {{ end }}
+    {{- end }}
+    "fmt"
+    //"regexp"
+  )
+
+{{ end }}

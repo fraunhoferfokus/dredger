@@ -1,0 +1,51 @@
+{{ define "validate" }}
+
+{{ range . }}
+  {{ if eq .Type "string" }}
+    {{ if gt .MinLength 0 }}
+      if len(v.{{- camelcase .Name }}) < {{ .MinLength }} {
+        return fmt.Errorf("string '%s' is too short", "{{- .Name }}")
+      }
+    {{ end }}
+    // ToDo: Improve validation of MaxLength
+    {{ if gt .MaxLength 0 }}
+      if len(v.{{- camelcase .Name }}) > {{ .MaxLength }} {
+        return fmt.Errorf("string '%s' is too long", "{{- .Name }}")
+      }
+    {{ end }}
+    {{ if ne .Pattern "" }}
+      var {{ .Name -}}Pattern = regexp.MustCompile(`{{ .Pattern }}`)
+      if !{{ .Name -}}Pattern.MatchString(v.{{- camelcase .Name }}) {
+        return fmt.Errorf("string '%s' doesn't match required pattern", "{{- .Name }}")
+      }
+    {{ end }}
+  {{ end }}
+  {{ if eq .Type "integer" }}
+    {{ if gt .Minimum 0 }}
+      if len(v.{{- camelcase .Name }}) < {{ .Minimum }} {
+        return fmt.Errorf("integer value '%s' is too small", "{{- .Name }}")
+      }
+    {{ end }}
+    {{ if gt .Maximum 0 }}
+      if len(v.{{- camelcase .Name }}) > {{ .Maximum }} {
+        return fmt.Errorf("integer value '%s' is too big", "{{- .Name }}")
+      }
+    {{ end }}
+  {{ end }}
+  {{ if eq .Type "number" }}
+    {{ if gt .Minimum 0 }}
+      if len(v.{{- camelcase .Name }}) < {{ .Minimum }} {
+        return fmt.Errorf("number value '%s' is too small", "{{- .Name }}")
+      }
+    {{ end }}
+    {{ if gt .Maximum 0 }}
+      if len(v.{{- camelcase .Name }}) > {{ .Maximum }} {
+        return fmt.Errorf("number value '%s' is too big", "{{- .Name }}")
+      }
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+return nil
+
+{{- end }}
