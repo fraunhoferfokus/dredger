@@ -7,6 +7,7 @@
 - verify tracing works, fix if not
 - check and test monitoring code
 - update OPA code
+- remove dead code (especially in templates)
 
 ## Features
 - Auto-genrate frontend: When pages exist in spec, set AddFrontend to true
