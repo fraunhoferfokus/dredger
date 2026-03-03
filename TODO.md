@@ -7,6 +7,7 @@
 - localize generation
 
 ### Fixes for generated code
+- **pass body into rest functions**
 - verify tracing works, fix if not
 - check and test monitoring code
 - update OPA code
