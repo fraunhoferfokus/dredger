@@ -62,7 +62,7 @@ func main() {
 		defer db.CloseDB()
 	{{- end}}
 
-    mainSvc()
+    mainSvc(echo.New())
 
     log.Info().Str("port", core.AppConfig.PortNb).Msg("Starting web service")
 

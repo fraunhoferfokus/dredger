@@ -1,7 +1,7 @@
 {{ define "structs" }}
 
 {{- range . }}
-  {{ camelcase .Name }}
+  {{ ucfirst (camelcase .Name) }}
   {{- if .NestedTypes }} {{ .Type }} {
     {{ template "structs" .NestedTypes}}
   }
