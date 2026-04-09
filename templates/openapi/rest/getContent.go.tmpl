@@ -31,6 +31,6 @@ func GetContent(c *echo.Context) error {
     }
      */
 
-	lzr := i18n.NewLocalizer(pages.Bundle, pages.Language(c))
+	lzr := i18n.NewLocalizer(core.Bundle, core.Language(c))
 	return Render(c, http.StatusOK, pages.Content(lzr))
 }

@@ -73,13 +73,6 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 	// files in web directory
 	fs.CopyWebFile("common/web", frontendPath, "web.go", true)
 
-	// files in core directory
-	createFileFromTemplate(filepath.Join(pagesPath, "localize.go"), "templates/common/web/pages/localize.go.tmpl", conf)
-	if _, err := os.Stat(filepath.Join(localesPath, "locale.de.toml")); errors.Is(err, os.ErrNotExist) {
-		createFileFromTemplate(filepath.Join(localesPath, "locale.de.toml"), "templates/common/web/pages/locales/locale.de.toml", conf)
-		createFileFromTemplate(filepath.Join(localesPath, "locale.en.toml"), "templates/common/web/pages/locales/locale.en.toml", conf)
-	}
-
 	// files in pages directory
 	fs.CopyWebFile("common/web/pages", restPath, "render.go", true)
 	if _, err := os.Stat(filepath.Join(pagesPath, "languages.templ")); errors.Is(err, os.ErrNotExist) {
