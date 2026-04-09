@@ -63,6 +63,12 @@ func createFileFromTemplate(filePath string, tmplPath string, config interface{}
 
 func createFileFromTemplates(filePath string, tmplPaths []string, config interface{}) {
 	templateName := path.Base(tmplPaths[0])
+	// define template funcitons
+	funcmap := sprig.FuncMap()
+	funcmap["camelcase"] = camelcase
+	funcmap["snakecase"] = snakecase
+	funcmap["lcfirst"] = lcFirst
+	funcmap["ucfirst"] = ucFirst
 
 	// Create file and open it
 	fs.GenerateFile(filePath)
@@ -74,7 +80,7 @@ func createFileFromTemplates(filePath string, tmplPaths []string, config interfa
 	defer file.Close()
 
 	// Parse the template and write into file
-	tmpl := template.Must(template.New(templateName).Funcs(sprig.FuncMap()).ParseFS(TmplFS, tmplPaths...))
+	tmpl := template.Must(template.New(templateName).Funcs(funcmap).ParseFS(TmplFS, tmplPaths...))
 	tmplErr := tmpl.Execute(file, config)
 	if tmplErr != nil {
 		log.Fatal().Err(tmplErr).Msg("Failed executing template.")

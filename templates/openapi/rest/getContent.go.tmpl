@@ -23,12 +23,14 @@ func GetContent(c *echo.Context) error {
     spanId := span.SpanContext().SpanID().String()
 	log.Info().Str("traceId", traceId).Str("spanId", spanId).Str("path", "/content.html").Msg("GetContent")
 
-	// session, err := getSession(c)
-	// if err != nil {
-	// 	log.Error().Err(err).Msg("GetIndex failed")
-	// 	return (*c).NoContent(http.StatusInternalServerError)
-	// }
+	/* Remove this comment to use session
+	session, err := getSession(c)
+	if err != nil {
+	 	log.Error().Err(err).Msg("GetIndex failed")
+	 	return (*c).NoContent(http.StatusInternalServerError)
+    }
+     */
 
-	lzr := i18n.NewLocalizer(core.Bundle, core.Language(c))
+	lzr := i18n.NewLocalizer(pages.Bundle, pages.Language(c))
 	return Render(c, http.StatusOK, pages.Content(lzr))
 }

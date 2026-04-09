@@ -24,7 +24,6 @@ func generateEmptyFrontendAsync(_ *asyncapiv3.Specification, conf GeneratorConfi
 func generateFrontendAsync(spec *asyncapiv3.Specification, conf GeneratorConfig) {
 	generateAsyncAPIDoc(conf)
 	// create folders
-	corePath := filepath.Join(conf.OutputPath, "core")
 	asyncPath := filepath.Join(conf.OutputPath, "async")
 	restPath := filepath.Join(conf.OutputPath, "rest")
 	frontendPath := filepath.Join(conf.OutputPath, "web")
@@ -33,7 +32,7 @@ func generateFrontendAsync(spec *asyncapiv3.Specification, conf GeneratorConfig)
 	imagesPath := filepath.Join(frontendPath, "images")
 	fontsPath := filepath.Join(stylesheetPath, "fonts")
 	pagesPath := filepath.Join(frontendPath, "pages")
-	localesPath := filepath.Join(corePath, "locales")
+	localesPath := filepath.Join(pagesPath, "locales")
 	publicPath := filepath.Join(frontendPath, "public")
 	docPath := filepath.Join(frontendPath, "doc")
 
@@ -75,10 +74,10 @@ func generateFrontendAsync(spec *asyncapiv3.Specification, conf GeneratorConfig)
 	fs.CopyWebFile("common/web", frontendPath, "web.go", true)
 
 	// files in core directory
-	createFileFromTemplate(filepath.Join(corePath, "localize.go"), "templates/common/core/localize.go.tmpl", conf)
+	createFileFromTemplate(filepath.Join(pagesPath, "localize.go"), "templates/common/web/pages/localize.go.tmpl", conf)
 	if _, err := os.Stat(filepath.Join(localesPath, "locale.de.toml")); errors.Is(err, os.ErrNotExist) {
-		createFileFromTemplate(filepath.Join(localesPath, "locale.de.toml"), "templates/common/core/locales/locale.de.toml", conf)
-		createFileFromTemplate(filepath.Join(localesPath, "locale.en.toml"), "templates/common/core/locales/locale.en.toml", conf)
+		createFileFromTemplate(filepath.Join(localesPath, "locale.de.toml"), "templates/common/web/pages/locales/locale.de.toml", conf)
+		createFileFromTemplate(filepath.Join(localesPath, "locale.en.toml"), "templates/common/web/pages/locales/locale.en.toml", conf)
 	}
 
 	// files in pages directory

@@ -5,6 +5,7 @@ import (
 	//	"encoding/json"
 	//	"strings"
 	//	"errors"
+
 	"path"
 	"path/filepath"
 
@@ -13,20 +14,22 @@ import (
 )
 
 type Operation struct {
+	ModuleName    string
 	OperationName string
 	ChannelName   string
 	Messages      []Message
 }
 
 type Message struct {
-	MessageName string
+	MessageName       string
+	MessageStructName string
 }
 
 type GenConfig struct {
 	ModuleName    string
 	OperationName string
 	ChannelName   string
-	MessageName   []string
+	Messages      []Message
 }
 
 //IDEE: Nur die SendOperations, also braucht man erstmal eine Map von allen Send-Operations zu erstellen
@@ -35,13 +38,14 @@ type GenConfig struct {
 // dann an createFileFromTemplate ins Template gelangt
 
 func GenerateChannelFile(spec *asyncapiv3.Specification, conf GeneratorConfig) {
-	var sendOps = GetPublishChannelOperations(spec)
+	var sendOps = GetPublishChannelOperations(spec, conf)
 	configs := []GenConfig{}
 	for _, op := range sendOps {
 		configs = append(configs, GenConfig{
 			ModuleName:    conf.ModuleName,
 			OperationName: op.OperationName,
 			ChannelName:   op.ChannelName,
+			Messages:      op.Messages,
 		})
 	}
 
@@ -59,35 +63,27 @@ func GenerateChannelFile(spec *asyncapiv3.Specification, conf GeneratorConfig) {
 // FIXME: immer diese Fehlermeldung: panic: template: pattern matches no files: `templates\openapi\async\publishers\channel.go.tmpl`
 
 // Returns an Array of Operations from spec, that are only Send-Operations (from spec)
-func GetPublishChannelOperations(spec *asyncapiv3.Specification) []Operation {
+func GetPublishChannelOperations(spec *asyncapiv3.Specification, genConf GeneratorConfig) []Operation {
 	var result []Operation
 	for opName, op := range spec.Operations {
 		if op.Action == "send" {
+			allMessages := []Message{}
+			for _, msg := range op.Messages {
+				allMessages = append(allMessages, Message{
+					MessageName:       checkMessage(msg),
+					MessageStructName: getStructTypeFromMessage(msg.ReferenceTo), // use msg.Reference as it was "tested" before in checkMessage
+				})
+			}
 			result = append(result, Operation{
 				OperationName: opName,
 				ChannelName:   path.Base(op.Channel.Reference),
+				Messages:      allMessages,
+				ModuleName:    genConf.ModuleName,
 			})
 		}
 	}
 	log.Info().Msg("Getting Send-Operations")
 	return result
-}
-
-//Thought i needed them, but didn't  , but might come in handy at a later time
-
-func ResolveMessageRef(ref string, spec *asyncapiv3.Specification) *asyncapiv3.Message {
-	// Extrahiere den Namen aus dem $ref
-	refName := path.Base(ref)
-
-	// Schaue im Components-Block nach der Message
-	msg, ok := spec.Components.Messages[refName]
-	if !ok {
-		log.Info().Str("ref", ref).Msg("Message not found in components")
-		log.Info().Msg("message '" + refName + "' not found in components")
-		return nil
-	}
-
-	return msg
 }
 
 func ResolveChannelRef(ref string, spec *asyncapiv3.Specification) *asyncapiv3.Channel {

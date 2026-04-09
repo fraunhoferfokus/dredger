@@ -2,6 +2,7 @@ package generator
 
 import (
 	"errors"
+	"fmt"
 	"path"
 
 	asyncapiv3 "github.com/lerenn/asyncapi-codegen/pkg/asyncapi/v3"
@@ -49,27 +50,29 @@ func GenerateInternalFile(spec *asyncapiv3.Specification, genConf GeneratorConfi
 	return nil
 }
 
-func GenerateSubscriberFile(spec *asyncapiv3.Specification, genConf GeneratorConfig) error {
+func GenerateSubscriberFiles(spec *asyncapiv3.Specification, genConf GeneratorConfig) error {
+	// TODO make file for each subscriber
 	if spec == nil {
-		err := errors.New("Could not generate subscribers-file. Specification not available.")
+		err := errors.New("Could not generate subscribers-files. Specification not available.")
 		log.Error().Err(err).Msg("")
 		return err
 	}
 
-	operations := extractOperations(spec)
-	conf := SubscribeOperation{
-		ModuleName: genConf.ModuleName,
-		Operations: operations,
-	}
+	operations := extractOperations(spec, genConf)
 
-	filePath := path.Join(genConf.OutputPath, AsyncPkg, "subscribers", "subscribers_"+snakecase(spec.Info.Title)+".go")
-	tmplPath := path.Join("templates", "asyncapi", AsyncPkg, "server", "subscribers.go.tmpl")
-	//filepath und tmplpath bestimmen und daraus dann die createFileFromTemplate(filepath, tmplPath und das c füllen)
-	createFileFromTemplate(filePath, tmplPath, conf)
+	basePath := path.Join(genConf.OutputPath, AsyncPkg, "subscribers")
+	tmplPath := path.Join("templates", "asyncapi", AsyncPkg, "server", "subscriber.go.tmpl")
+
+	for _, op := range operations {
+		fileName := fmt.Sprintf("%s.go", camelcase(op.OperationName))
+		filePath := path.Join(basePath, fileName)
+
+		createFileFromTemplate(filePath, tmplPath, op)
+	}
 	return nil
 }
 
-func extractOperations(spec *asyncapiv3.Specification) []Operation {
+func extractOperations(spec *asyncapiv3.Specification, genConf GeneratorConfig) []Operation {
 	allOperations := []Operation{}
 	for opName, op := range spec.Operations {
 		allMessages := []Message{}
@@ -83,13 +86,15 @@ func extractOperations(spec *asyncapiv3.Specification) []Operation {
 			if op.Action.IsReceive() {
 				for _, msg := range op.Messages {
 					allMessages = append(allMessages, Message{
-						MessageName: checkMessage(msg),
+						MessageName:       checkMessage(msg),
+						MessageStructName: getStructTypeFromMessage(msg.ReferenceTo), // using msg.Reference as it was "tested" before in checkMessage
 					})
 				}
 				allOperations = append(allOperations, Operation{
 					OperationName: opName,
 					ChannelName:   checkChannel(op.Channel.Reference),
 					Messages:      allMessages,
+					ModuleName:    genConf.ModuleName,
 				})
 			}
 		}
@@ -104,6 +109,16 @@ func checkMessage(message *asyncapiv3.Message) string {
 		log.Error().Msg("Message has to be a written as a ref when noted in operations messages.")
 		return "IncorrectNotation"
 	}
+}
+
+func getStructTypeFromMessage(message *asyncapiv3.Message) string {
+	// TODO verify this works for all spec scenarios
+	if message.ReferenceTo == nil {
+		// just use name of message
+		return message.Name
+	}
+	// read $ref from message and extract last element = name of struct in entities
+	return path.Base(message.Reference)
 }
 
 // Filters all Subscribe Operations and gets their OperationName and the ChannelName they belong to

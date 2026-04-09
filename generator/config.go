@@ -39,11 +39,7 @@ func generateConfigFiles(serverConf ServerConfig) {
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filePath, templateFile, serverConf)
 		if err := os.Symlink(filePath, fileName); err != nil {
-			log.Warn().
-				Err(err).
-				Str("source", filePath).
-				Str("target", fileName).
-				Msg("Could not create symbolic link, bitte manuell anlegen")
+			log.Warn().Err(err).Str("source", filePath).Str("target", fileName).Msg("Could not create symbolic Link, please create it manually")
 		}
 	}
 }
