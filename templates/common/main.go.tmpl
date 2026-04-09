@@ -62,15 +62,16 @@ func main() {
 		defer db.CloseDB()
 	{{- end}}
 
-    mainSvc(echo.New())
 
     log.Info().Str("port", core.AppConfig.PortNb).Msg("Starting web service")
 
 	// start echo server
 	e := echo.New()
-	e.Use(echoprometheus.NewMiddleware(core.AppConfig.Service)) // adds middleware to gather metrics
+	e.Use(echoprometheus.NewMiddleware(core.AppConfig.Service)) // add middleware to gather metrics
+	e.Use(middleware.CORSConfigFromEnv()) // set custom cors config
 
-	e.Use(middleware.CORSConfigFromEnv())
+	// custom main
+    mainSvc(e)
 
 	{{- if .OpenAPI }}
 	e.Use(middleware.LoggerHandler)
