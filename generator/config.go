@@ -4,6 +4,8 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+
+	"github.com/rs/zerolog/log"
 )
 
 // generateConfigFiles legt .env, config.go, configSvc.go und version an.
@@ -36,5 +38,8 @@ func generateConfigFiles(serverConf ServerConfig) {
 	templateFile = "templates/common/core/version"
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		createFileFromTemplate(filePath, templateFile, serverConf)
+		if err := os.Symlink(filePath, fileName); err != nil {
+			log.Warn().Err(err).Str("source", filePath).Str("target", fileName).Msg("Could not create symbolic Link, please create it manually")
+		}
 	}
 }
