@@ -67,7 +67,7 @@ func GenerateTypes(spec *openapi3.T, pConf ProjectConfig) {
 func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 	schemaDefs := make(map[string][]TypeDefinition, len(*schemas))
 	for schemaName, ref := range *schemas {
-		//fmt.Printf("%s: %#v\n\n", schemaName, ref.Value.Type)
+		// log.Debug().Str("schemaName", schemaName).Any("value", ref.Value.Type).Msg("Read schema")
 		var goType string
 		if ref.Value.Type.Includes("number") {
 			switch ref.Value.Format {
