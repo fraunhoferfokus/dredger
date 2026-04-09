@@ -1,4 +1,5 @@
 cloud.google.com/go v0.114.0/go.mod h1:ZV9La5YYxctro1HTPug5lXH/GefROyW8PPD4T8n9J8E=
+github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
 github.com/PuerkitoBio/goquery v1.8.1/go.mod h1:Q8ICL1kNUJ2sXGoAhPGUdYDJvgQgHzJsnnd3H7Ho5jQ=
 github.com/a-h/htmlformat v0.0.0-20231108124658-5bd994fe268e/go.mod h1:FMIm5afKmEfarNbIXOaPHFY8X7fo+fRQB6I9MPG2nB0=
 github.com/a-h/lexical v0.0.53/go.mod h1:d73jw5cgKXuYypRozNBuxRNFrTWQ3y5hVMG7rUjh1Qw=
