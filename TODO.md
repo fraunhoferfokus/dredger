@@ -2,9 +2,7 @@
 # Dredger ToDo's:
 
 ## Fixes
-- Symlink error in generation process
 - Async functionality💁
-- localize generation
 
 ### Fixes for generated code
 - **pass body into rest functions**
@@ -18,7 +16,7 @@
 
 ## Features
 - Auto-genrate frontend: When pages exist in spec, set AddFrontend to true
-- Convert .templ files to go files after generation
+- Convert .templ files to go files after generation (run `just build` or `just install`)
 - Init git repo (and create initial commit)
 - Post-generation suggestions: "We are done, you can cd ... and start the service just run ..."
 - Generate usecase handler functions in usecases/ to fully "hide" application logic (like dredger-rs)
