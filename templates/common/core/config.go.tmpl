@@ -26,6 +26,7 @@ type Config struct {
 	SessionKey          string            `default:"" split_words:"true"`
 	Host                string            `ignored:"true"`
 	User                string
+	Home                string            `ignored:"true"`
 	Policy              string            `default:""`
 	OpaSvc              string            `default:""`
 	Realm               string            `default:""`
@@ -61,6 +62,7 @@ func init() {
 	AppConfig.Service = Service
 	AppConfig.Host, _ = os.Hostname()
 	AppConfig.User = os.Getenv("USER")
+	AppConfig.Home, _ = os.UserHomeDir()
 	AppConfig.Sid = uuid.Must(uuid.NewV7()).String()
 
 	// parse command line arguments
