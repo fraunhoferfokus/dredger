@@ -1,0 +1,119 @@
+openapi: 3.0.3
+info:
+  title: Live Wetter Updates
+  description: A REST-based Microservice to get and update weather station data for temperature and humidity sensors.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+
+paths:
+  /stations:
+    get:
+      summary: List all weather stations
+      operationId: listStations
+      responses:
+        '200':
+          description: A list of weather stations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WeatherStation'
+    post:
+      summary: Add a new weather station
+      operationId: createStation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewWeatherStation'
+      responses:
+        '201':
+          description: Weather station created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeatherStation'
+
+  /stations/{stationId}:
+    get:
+      summary: Get a specific weather station by ID
+      operationId: getStationById
+      parameters:
+        - name: stationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Details of a weather station
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeatherStation'
+        '404':
+          description: Station not found
+    put:
+      summary: Updates about a weather station
+      operationId: updateStationReading
+      parameters:
+        - name: stationId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WeatherUpdate'
+      responses:
+        '200':
+          description: Weather station updated
+        '404':
+          description: Station not found
+
+components:
+  schemas:
+    WeatherStation:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [temperature, humidity]
+        lastReading:
+          $ref: '#/components/schemas/WeatherUpdate'
+      required: [id, name, type]
+
+    NewWeatherStation:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [temperature, humidity]
+      required: [name, type]
+
+    WeatherUpdate:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        title:
+          type: string
+          description: Short title summarizing the update
+        description:
+          type: string
+          description: Detailed description of the update
+      required: [timestamp, title, description]

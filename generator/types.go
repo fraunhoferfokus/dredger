@@ -3,6 +3,8 @@ package generator
 type Flags struct {
 	AddDatabase bool
 	AddFrontend bool
+	OpenAPI     bool
+	AsyncAPI    bool
 }
 
 type AuthConfig struct {
@@ -12,11 +14,22 @@ type AuthConfig struct {
 }
 type GeneratorConfig struct {
 	OpenAPIPath  string
+	AsyncAPIPath string //Neu
 	OutputPath   string
 	ModuleName   string
 	DatabaseName string
 	AuthConfig
 	Flags
+}
+
+type MainConfig struct {
+	AllOpenAPINames []OpenAPIConfig
+	OutputPath      string
+	ModuleName      string
+	Flags
+}
+type OpenAPIConfig struct {
+	OpenAPIPath string
 }
 
 type ProjectConfig struct {
@@ -33,7 +46,7 @@ type ServerConfig struct {
 }
 
 type ResponseConfig struct {
-	StatusCode string
+	StatusCode  string
 	Description string
 }
 

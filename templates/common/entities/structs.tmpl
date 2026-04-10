@@ -1,0 +1,13 @@
+{{ define "structs" }}
+
+{{- range . }}
+  {{ ucfirst (camelcase .Name) }}
+  {{- if .NestedTypes }} {{ .Type }} {
+    {{ template "structs" .NestedTypes}}
+  }
+
+  {{- else }} {{ .Type }} `json:"{{ .MarshalName }}" yaml:"{{ .MarshalName }}" xml:"{{ .MarshalName }}" form:"{{ .MarshalName }}"`
+  {{- end -}}
+{{ end }}
+
+{{- end }}

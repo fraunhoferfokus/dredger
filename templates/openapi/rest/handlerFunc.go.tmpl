@@ -1,0 +1,95 @@
+// Edit this file, as it is a specific handler function for your service
+package rest
+
+import (
+    "{{ lcfirst ( camelcase .ModuleName ) }}/core/tracing"
+    "{{ lcfirst ( camelcase .ModuleName ) }}/core/log"
+    "{{ lcfirst ( camelcase .ModuleName ) }}/entities"
+    "{{ lcfirst ( camelcase .ModuleName ) }}/usecases"
+    "{{ lcfirst ( camelcase .ModuleName ) }}/web/pages"
+
+    "encoding/json"
+    "encoding/xml"
+    "io"
+	"net/http"
+    "strconv"
+
+	"github.com/labstack/echo/v5"
+	"go.opentelemetry.io/otel/trace"
+	"gopkg.in/yaml.v2"
+)
+
+// {{ .Summary }}
+func {{ .OperationID }}(c *echo.Context) error {
+	// trace span
+	ctx := (*c).Request().Context()
+	ctx, span := tracing.Tracer.Start(ctx, "logMessage")
+	defer span.End()
+
+	traceId := span.SpanContext().TraceID().String()
+	spanId := span.SpanContext().SpanID().String()
+	log.Info().Str("traceId", traceId).Str("spanId", spanId).Str("path", "/").Msg("{{ .OperationID }}")
+
+    /* Remove this comment to use session
+	session, err := getSession(c)
+	if err != nil {
+		log.Error().Err(err).Msg("{{ .OperationID }} failed")
+	 	return (*c).NoContent(http.StatusInternalServerError)
+	}
+	 */
+
+    {{- if eq .Method "POST" "PUT" "PATCH" }}
+
+        {{ if eq .Schema "" }}
+            // No body specified for this endpoint
+        {{ else }}
+            bodyContent := new(entities.{{- .Schema }})
+            if err := c.Bind(bodyContent); err != nil {
+          		log.Error().Err(err).Str("traceId", traceId).Str("spanId", spanId).Msg("Failed to bind bodyContent (type {{- .Schema}}) to reqest at {{.OperationID}}")
+          		return (*c).String(http.StatusBadRequest, "Invalid request body")
+           	}
+           	// TODO improve body validation
+           	if err := bodyContent.Validate(); err != nil {
+          		return (*c).String(http.StatusUnprocessableEntity, err.Error())
+           	}
+        {{ end }}
+
+    {{- end }}
+
+    {{ range $name, $type := .PathParams }}
+        {{ if eq $type "int32" "int64" "integer" }}
+            {{ $name }}, _ := strconv.Atoi((*c).Param("{{ $name }}"))
+        {{ else if eq $type "float" "double" "number" }}
+            {{ $name }}, _ := strconv.ParseFloat((*c).Param("{{ $name }}"))
+        {{ else if eq $type "bool" }}
+            {{ $name }}, _ := strconv.ParseBool((*c).Param("{{ $name }}"))
+        {{ else}}
+            {{ $name }} := (*c).Param("{{ $name }}")
+        {{ end }}
+    {{- end }}
+
+    {{ range $name, $type := .QueryParams }}
+        {{ if eq $type "int32" "int64" "integer" }}
+            {{ $name }}, _ := strconv.Atoi((*c).QueryParam("{{ $name }}"))
+        {{ else if eq $type "float" "double" "number" }}
+            {{ $name }}, _ := strconv.ParseFloat((*c).QueryParam("{{ $name }}"))
+        {{ else if eq $type "bool" }}
+            {{ $name }}, _ := strconv.ParseBool((*c).QueryParam("{{ $name }}"))
+        {{ else }}
+            {{ $name }} := (*c).QueryParam("{{ $name }}")
+        {{ end }}
+    {{- end }}
+
+    /*
+     * Business Logic
+     {{- if eq .Schema "" }}{{else}}
+     * bodyContent: contains parsed request body
+     {{- end}}
+     */
+
+
+    {{ range .Responses }}
+            // {{ .StatusCode }} => {{ .Description }}
+    {{- end }}
+	return (*c).String(http.StatusNotImplemented, "Temporary handler stub.")
+}
