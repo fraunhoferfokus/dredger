@@ -2,7 +2,6 @@
 # Dredger ToDo's:
 
 ## Fixes
-- Async functionality💁
 
 ### Fixes for generated code
 - **pass body into rest functions**
