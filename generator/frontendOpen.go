@@ -214,8 +214,8 @@ func generateOpenAPIDoc(conf GeneratorConfig) {
 		GeneratorConfig
 		OpenAPIFile string
 	}
-	path := filepath.Join(conf.OutputPath, "web", "doc")
-	fs.GenerateFolder(path)
+	docPath := filepath.Join(conf.OutputPath, "web", "doc")
+	fs.GenerateFolder(docPath)
 
 	template := templateConfig{
 		GeneratorConfig: conf,
@@ -223,11 +223,20 @@ func generateOpenAPIDoc(conf GeneratorConfig) {
 	}
 
 	// create static html files
-	createFileFromTemplate(filepath.Join(path, "rapidoc.html"), "templates/openapi/rapidoc/index.html.tmpl", template)
-	createFileFromTemplate(filepath.Join(path, "elements.html"), "templates/openapi/elements/index.html.tmpl", template)
+	createFileFromTemplate(filepath.Join(docPath, "rapidoc.html"), "templates/openapi/rapidoc/index.html.tmpl", template)
+	createFileFromTemplate(filepath.Join(docPath, "elements.html"), "templates/openapi/elements/index.html.tmpl", template)
 
 	// copy OpenAPI Specification in this directory
-	fs.CopyFile(conf.OpenAPIPath, path, template.OpenAPIFile)
+	fs.CopyFile(conf.OpenAPIPath, docPath, template.OpenAPIFile)
+	// add symlink to project root
+	specPath := filepath.Join(docPath, template.OpenAPIFile)
+	linkFilename := "OpenAPI" + path.Ext(template.OpenAPIFile) // static filename for project root
+	linkPath := filepath.Join(Config.Path, linkFilename)
+	if !fs.CheckIfFileExists(linkPath) { // skip it file (symlink) already exists
+		if err := os.Symlink(specPath, linkPath); err != nil {
+			log.Warn().Err(err).Str("source", specPath).Str("target", linkPath).Msg("Failed to create Symlink for OpenAPI specification file")
+		}
+	}
 
 	log.Info().Msg("Created OpenAPI Documentation successfully.")
 }

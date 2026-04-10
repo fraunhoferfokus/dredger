@@ -143,17 +143,27 @@ func generateAsyncAPIDoc(conf GeneratorConfig) {
 		return
 	}
 
-	path := filepath.Join(conf.OutputPath, "web", "doc")
-	fs.GenerateFolder(path)
+	docPath := filepath.Join(conf.OutputPath, "web", "doc")
+	fs.GenerateFolder(docPath)
 
 	createFileFromTemplate(
-		filepath.Join(path, "index.html"),
+		filepath.Join(docPath, "index.html"),
 		"templates/asyncapi/index.html.tmpl",
 		spec,
 	)
 
 	if conf.AsyncAPIPath != "" {
-		fs.CopyFile(conf.AsyncAPIPath, path, fs.GetFileNameWithEnding(conf.AsyncAPIPath))
+		filename := fs.GetFileNameWithEnding(conf.AsyncAPIPath)
+		fs.CopyFile(conf.AsyncAPIPath, docPath, filename)
+		// add symlink to project root
+		specPath := filepath.Join(docPath, filename)
+		linkFilename := "AsyncAPI" + path.Ext(filename) // static filename for project root
+		linkPath := filepath.Join(Config.Path, linkFilename)
+		if !fs.CheckIfFileExists(linkPath) { // skip if file (symlink) exists
+			if err := os.Symlink(specPath, linkPath); err != nil {
+				log.Warn().Err(err).Str("source", specPath).Str("target", linkPath).Msg("Failed to create Symlink for AsyncAPI specification file")
+			}
+		}
 	}
 
 	log.Info().Msg("Created AsyncAPI Documentation successfully.")
