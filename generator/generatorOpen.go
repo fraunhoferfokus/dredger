@@ -98,6 +98,7 @@ func GenerateServer(conf GeneratorConfig) error {
 	}
 
 	generateValidation(conf)
+	generateBinder(conf)
 	generatePolicy(conf)
 	generateJustfile(conf, serverConf)
 	generateReadme(conf, serverConf)
