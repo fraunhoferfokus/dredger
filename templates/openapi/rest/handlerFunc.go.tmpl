@@ -6,6 +6,7 @@ import (
     "{{ lcfirst ( camelcase .ModuleName ) }}/core/log"
     "{{ lcfirst ( camelcase .ModuleName ) }}/entities"
     "{{ lcfirst ( camelcase .ModuleName ) }}/usecases"
+    "{{ lcfirst ( camelcase .ModuleName ) }}/rest/middleware"
     "{{ lcfirst ( camelcase .ModuleName ) }}/web/pages"
 
     "encoding/json"
@@ -44,7 +45,7 @@ func {{ .OperationID }}(c *echo.Context) error {
             // No body specified for this endpoint
         {{ else }}
             bodyContent := new(entities.{{- .Schema }})
-            if err := c.Bind(bodyContent); err != nil {
+            if err := middleware.Bind(c, bodyContent); err != nil {
           		log.Error().Err(err).Str("traceId", traceId).Str("spanId", spanId).Msg("Failed to bind bodyContent (type {{- .Schema}}) to reqest at {{.OperationID}}")
           		return (*c).String(http.StatusBadRequest, "Invalid request body")
            	}
