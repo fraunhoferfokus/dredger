@@ -40,7 +40,6 @@ func {{ .OperationID }}(c *echo.Context) error {
 	 */
 
     {{- if eq .Method "POST" "PUT" "PATCH" }}
-
         // Parse body
         contentType := (*c).Request().Header.Get("Content-Type")
         body, err := io.ReadAll((*c).Request().Body)
@@ -49,42 +48,43 @@ func {{ .OperationID }}(c *echo.Context) error {
             return (*c).String(http.StatusBadRequest, "Can't read body")
         }
 
-        {{ if eq .Schema "" }}
-            var content interface{}
-        {{ else }}
-            var content entities.{{- .Schema }}
-        {{ end }}
-        if contentType == "application/json" {
-            err := json.Unmarshal(body, &content)
-            if err != nil {
-                log.Error().Err(err).Str("traceId", traceId).Str("spanId", spanId).Msg("Could not unmarshall JSON input")
-                return (*c).String(http.StatusBadRequest, "Could not unmarshall JSON input")
+        {{- if eq .Schema "" }}
+            // No body specified for this endpoint
+        {{- else if eq .Schema "." }}
+            var bodyContent any
+            if contentType == "application/json" {
+                err := json.Unmarshal(body, &bodyContent)
+                if err != nil {
+                    log.Error().Err(err).Str("traceId", traceId).Str("spanId", spanId).Msg("Could not unmarshall JSON input")
+                    return (*c).String(http.StatusBadRequest, "Could not unmarshall JSON input")
+                }
+            } else if contentType == "application/yaml" {
+                err := yaml.Unmarshal(body, &bodyContent)
+                if err != nil {
+                    log.Error().Err(err).Str("traceId", traceId).Str("spanId", spanId).Msg("Could not unmarshall YAML input")
+                    return (*c).String(http.StatusBadRequest, "Could not unmarshall YAML input")
+                }
+            } else if contentType == "application/xml" {
+                err := xml.Unmarshal(body, &bodyContent)
+                if err != nil {
+                    log.Error().Err(err).Str("traceId", traceId).Str("spanId", spanId).Msg("Could not unmarshall XML input")
+                    return (*c).String(http.StatusBadRequest, "Could not unmarshall XML input")
+                }
+            } else {
+                log.Error().Str("content type", contentType).Str("traceId", traceId).Str("spanId", spanId).Msg("Wrong content type")
+                return (*c).String(http.StatusUnsupportedMediaType, "Wrong content type")
             }
-        } else if contentType == "application/yaml" {
-            err := yaml.Unmarshal(body, &content)
-            if err != nil {
-                log.Error().Err(err).Str("traceId", traceId).Str("spanId", spanId).Msg("Could not unmarshall YAML input")
-                return (*c).String(http.StatusBadRequest, "Could not unmarshall YAML input")
-            }
-        } else if contentType == "application/xml" {
-            err := xml.Unmarshal(body, &content)
-            if err != nil {
-                log.Error().Err(err).Str("traceId", traceId).Str("spanId", spanId).Msg("Could not unmarshall XML input")
-                return (*c).String(http.StatusBadRequest, "Could not unmarshall XML input")
-            }
-        } else {
-            log.Error().Str("content type", contentType).Str("traceId", traceId).Str("spanId", spanId).Msg("Wrong content type")
-            return (*c).String(http.StatusUnsupportedMediaType, "Wrong content type")
-        }
-
-        {{ if ne .Schema "" }}
-            // validate content
-            if err := content.Validate(); err != nil {
-                return (*c).String(http.StatusUnprocessableEntity, err.Error())
-            }
-        {{ end }}
-
-        // var content contains the payload from the request body
+        {{- else }}
+            bodyContent := new(entities.{{- .Schema }})
+            if err := middleware.Bind(c, bodyContent); err != nil {
+          		log.Error().Err(err).Str("traceId", traceId).Str("spanId", spanId).Msg("Failed to bind bodyContent (type {{- .Schema}}) to reqest at {{.OperationID}}")
+          		return (*c).String(http.StatusBadRequest, "Invalid request body")
+           	}
+           	// TODO improve body validation
+           	if err := bodyContent.Validate(); err != nil {
+          		return (*c).String(http.StatusUnprocessableEntity, err.Error())
+           	}
+        {{- end }}
     {{- end }}
 
     {{ range $name, $type := .PathParams }}
@@ -111,10 +111,24 @@ func {{ .OperationID }}(c *echo.Context) error {
         {{ end }}
     {{- end }}
 
-    // implement your functionality best using a function from a separate file, e.g. {{ .OperationID }}Do.go
+    log.Debug().
+    {{- range $name, $type := .PathParams }}
+        Any("{{ $name }}", {{ $name }}).
+    {{- end }}
+    {{- range $name, $type := .QueryParams }}
+        Any("{{ $name }}", {{ $name }}).
+    {{- end }}
+        Msg("Received request for {{ .OperationID }}, running business logic")
+
+    /*
+     * Business Logic
+     {{- if ne .Schema "" }}
+     * bodyContent: contains parsed request body
+     {{- end }}
+     */
 
     {{ range .Responses }}
-            // {{ .StatusCode }} => {{ .Description }}
+    // {{ .StatusCode }} => {{ .Description }}
     {{- end }}
 
 
