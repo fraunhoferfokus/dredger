@@ -41,6 +41,23 @@ import (
 var embeddedFS embed.FS
 
 func main() {
+    // Create contexts (for shutdown)
+	echoCtx, echoCancel := context.WithCancel(context.Background()) // context only for echo
+	defer echoCancel()                                              // cancel echo when main ends (should not happen, just in case)
+	ctx, cancel := context.WithCancel(context.Background())         // context for everything else
+	defer cancel()                                                  // cancel everything when main ends
+	// Create shutdown listener
+	go func() {
+		sig := make(chan os.Signal, 1)
+		signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+
+		<-sig
+		log.Info().Msg("main received shutdown signal")
+		cancel() // trigger shutdown of everything else
+		rest.SseServer.Close()
+		echoCancel() // trigger shutdown echo
+	}()
+
 	flag.Parse()
 	log.Setup(core.AppConfig.Name, core.Service, core.AppConfig.LogFile, core.AppConfig.LokiServer, core.AppConfig.LokiKey, core.AppConfig.LokiLabels, core.AppConfig.LokiBuffersize, core.AppConfig.LokiMaxDelay, core.AppConfig.Debug)
 
@@ -70,8 +87,8 @@ func main() {
 	e.Use(echoprometheus.NewMiddleware(core.AppConfig.Service)) // add middleware to gather metrics
 	e.Use(middleware.CORSConfigFromEnv()) // set custom cors config
 
-	// custom main
-    mainSvc(e)
+	// custom main, start async so it can wait on shutdown signal for cleanup
+    go mainSvc(ctx)
 
 	{{- if .OpenAPI }}
 	e.Use(middleware.LoggerHandler)
@@ -113,16 +130,30 @@ func main() {
 
 	{{end}}
 
+	// Start echo server (with or without TLS)
+	var echoErr error
 	if core.AppConfig.CertPem != "" && core.AppConfig.KeyPem != "" {
 		sc := echo.StartConfig{
 			Address:   ":443",
 			TLSConfig: &tls.Config{},
 			// core.AppConfig.CertPem), core.AppConfig.KeyPem
 		}
-		if err := sc.Start(context.Background(), e); err != nil {
-			e.Logger.Error("Starting echo HTTP server failed", "error", e.Start(":"+core.AppConfig.PortNb))
-		}
+		log.Info().Msg("Starting echo server with TLS")
+		echoErr = sc.Start(echoCtx, e)
 	} else {
-		e.Logger.Error("Starting echo HTTP server failed", "error", e.Start(":"+core.AppConfig.PortNb))
+		log.Info().Msg("Found no TLS certificates, STARTING WITHOUT TLS")
+		echoErr = e.Start(":" + core.AppConfig.PortNb)
 	}
+
+	// Log shutdown info
+	switch echoErr {
+	case nil:
+		log.Info().Msg("Echo server stopped cleanly")
+	case http.ErrServerClosed:
+		log.Info().Msg("Echo server shutdown")
+	default:
+		log.Error().Err(echoErr).Msg("Echo server failed")
+	}
+
+	log.Info().Msg("main exited")
 }
