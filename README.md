@@ -121,4 +121,4 @@ The origin of this project was made by 6 students (A. Uluc, A. Munteau, O. Rosen
 
 The work on the AsyncAPI - Compatibility was done by 4 more students (E. To, A. Gaydikhovych, K. Eichler, T. Hillerscheid) of the TU Berlin as part of the same module in the year 2025.
 
-Further contributors: J. Gottschick
+Further contributors: J. Gottschick, G. Buchholz

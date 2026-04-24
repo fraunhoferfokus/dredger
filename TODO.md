@@ -4,11 +4,9 @@
 ## Fixes
 
 ### Fixes for generated code
-- **pass body into rest functions**
 - verify tracing works, fix if not
 - check and test monitoring code
 - update OPA code
-- organized shutdown
 - reflect required fields of objects from spec in validation
 - remove dead code (especially in templates)
 
