@@ -61,10 +61,16 @@ func NewHandler(e *echo.Echo){
         {{$path := .Path}}
         {{- range .Operations }}
             // Operations for: "{{ $path }}"
+            {{- $OperationID := .OperationID }}
+            {{- if eq .OperationID "HandleEvents" }}
+            {{/* Handle HandleEvents different -> import of core is required */}}
+            {{- $OperationID = ( list "core." .OperationID | join "" )}}
+            {{- end }}
+
             {{- if .AddAuth }}
-                g.{{ .Method }}("{{ $path }}", {{ .OperationID }}, middleware.Authz)
+                g.{{ .Method }}("{{ $path }}", {{ $OperationID }}, middleware.Authz)
             {{- else }}
-                g.{{ .Method }}("{{ $path }}", {{ .OperationID }})
+                g.{{ .Method }}("{{ $path }}", {{ $OperationID }})
             {{- end}}
         {{- end }}
 

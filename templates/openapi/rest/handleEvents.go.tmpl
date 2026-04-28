@@ -2,16 +2,14 @@
 package rest
 
 import (
+    "{{ lcfirst ( camelcase .ModuleName ) }}/core"
 	"github.com/labstack/echo/v5"
 	"github.com/r3labs/sse/v2"
 )
 
-var SseServer *sse.Server
-var HandleEvents echo.HandlerFunc
-
 func init() {
-	SseServer = sse.New()
-	SseServer.CreateStream("progress")
-	SseServer.CreateStream("notice")
-	HandleEvents = echo.WrapHandler(SseServer)
+	core.SseServer = sse.New()
+	core.SseServer.CreateStream("progress")
+	core.SseServer.CreateStream("notice")
+	core.HandleEvents = echo.WrapHandler(core.SseServer)
 }

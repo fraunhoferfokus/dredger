@@ -10,7 +10,7 @@ import (
 const bsSuccessNotice = `<div class="alert alert-success alert-dismissible fade show" role="alert" _="on load wait 1.5s then remove me">%s<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`
 
 func NoticeSuccessBootstrap(msg string) {
-	SseServer.Publish("notice", &sse.Event{
+	core.SseServer.Publish("notice", &sse.Event{
 		Event: []byte("Notice"),
 		Data:  []byte(fmt.Sprintf(bsSuccessNotice, msg)),
 	})
@@ -19,7 +19,7 @@ func NoticeSuccessBootstrap(msg string) {
 const bsWarningNotice = `<div class="alert alert-warning alert-dismissible fade show" role="alert" _="on load wait 3s then remove me">%s<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`
 
 func NoticeWarningBootstrap(msg string) {
-	SseServer.Publish("notice", &sse.Event{
+	core.SseServer.Publish("notice", &sse.Event{
 		Event: []byte("Notice"),
 		Data:  []byte(fmt.Sprintf(bsWarningNotice, msg)),
 	})
@@ -29,7 +29,7 @@ func NoticeWarningBootstrap(msg string) {
 const bsErrorNotice = `<div class="alert alert-error alert-dismissible fade show" role="alert">%s<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`
 
 func NoticeErrorBootstrap(msg string) {
-	SseServer.Publish("notice", &sse.Event{
+	core.SseServer.Publish("notice", &sse.Event{
 		Event: []byte("Notice"),
 		Data:  []byte(fmt.Sprintf(bsErrorNotice, msg)),
 	})
