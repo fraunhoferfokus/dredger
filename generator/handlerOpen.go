@@ -146,6 +146,8 @@ func generateHandlerFuncStub(op *openapi3.Operation, method string, path string,
 	if conf.OperationID == "HandleEvents" {
 		canBeEdited = false
 		templateFile = "templates/openapi/rest/handleEvents.go.tmpl"
+		// add SSE server to core
+		createFileFromTemplate(filepath.Join(Config.Path, "core", "sse.go"), "templates/common/core/sse.go.tmpl", conf)
 	}
 
 	//log.Debug().Str("operation", conf.OperationID).Str("template", templateFile).Msg("Generate handler")
