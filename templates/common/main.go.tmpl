@@ -59,7 +59,7 @@ func main() {
 	}()
 
 	flag.Parse()
-	log.Setup(core.AppConfig.Name, core.Service, core.AppConfig.LogFile, core.AppConfig.LokiServer, core.AppConfig.LokiKey, core.AppConfig.LokiLabels, core.AppConfig.LokiBuffersize, core.AppConfig.LokiMaxDelay, core.AppConfig.Debug)
+	log.Setup(core.AppConfig.Name, core.Service, core.AppConfig.LogFile, AppConfig.LogJson, core.AppConfig.LokiServer, core.AppConfig.LokiKey, core.AppConfig.LokiLabels, core.AppConfig.LokiBuffersize, core.AppConfig.LokiMaxDelay, core.AppConfig.Debug)
 
 	// init Opentelemetry
     if core.AppConfig.Tracing {
@@ -88,7 +88,7 @@ func main() {
 	e.Use(middleware.CORSConfigFromEnv()) // set custom cors config
 
 	// custom main, start async so it can wait on shutdown signal for cleanup
-    go mainSvc(ctx)
+    go mainSvc(ctx, e)
 
 	{{- if .OpenAPI }}
 	e.Use(middleware.LoggerHandler)

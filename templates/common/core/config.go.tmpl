@@ -37,6 +37,7 @@ type Config struct {
 	CertPem             string            `default:"" split_words:"true"`
 	KeyPem              string            `default:"" split_words:"true"`
 	LogFile             string            `default:"" split_words:"true"`
+	LogJson             bool              `default:"false" split_words:"true"`
 	LokiServer          string            `default:"" split_words:"true"`
 	LokiUser            string            `default:"" split_words:"true"`
 	LokiPassword        string            `default:"" split_words:"true"`
@@ -86,7 +87,7 @@ func init() {
 		AppConfig.Title = AppConfig.Name
 	}
 
-    log.Setup(AppConfig.Name, Service, AppConfig.LogFile, AppConfig.LokiServer, AppConfig.LokiKey, AppConfig.LokiLabels, AppConfig.LokiBuffersize, AppConfig.LokiMaxDelay, AppConfig.Debug)
+    log.Setup(AppConfig.Name, Service, AppConfig.LogFile, AppConfig.LogJson, AppConfig.LokiServer, AppConfig.LokiKey, AppConfig.LokiLabels, AppConfig.LokiBuffersize, AppConfig.LokiMaxDelay, AppConfig.Debug)
 
 	log.Debug().Str("name", AppConfig.Name).Any("environment", os.Environ()).Msg("Got environment")
 
@@ -102,7 +103,7 @@ func init() {
 
     flag.Parse()
 
-    log.Setup(AppConfig.Name, Service, AppConfig.LogFile, AppConfig.LokiServer, AppConfig.LokiKey, AppConfig.LokiLabels, AppConfig.LokiBuffersize, AppConfig.LokiMaxDelay, AppConfig.Debug)
+    log.Setup(AppConfig.Name, Service, AppConfig.LogFile, AppConfig.LogJson, AppConfig.LokiServer, AppConfig.LokiKey, AppConfig.LokiLabels, AppConfig.LokiBuffersize, AppConfig.LokiMaxDelay, AppConfig.Debug)
 
     //  print app version
 	if AppConfig.Version {
