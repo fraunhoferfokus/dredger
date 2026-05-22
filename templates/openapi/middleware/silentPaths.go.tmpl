@@ -1,0 +1,9 @@
+// Edit this file, as it is a specific list of silently logged endpoits for your service
+package middleware
+
+
+// silentPaths are endpoints that are polled frequently and should not clutter the logs.
+// They will be logged at DEBUG level instead of INFO.
+var silentPaths = map[string]bool{
+    // example: "/endpoint/name": true,
+}
