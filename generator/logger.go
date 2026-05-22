@@ -42,11 +42,14 @@ func generateLogger(conf GeneratorConfig) {
 	createFileFromTemplate(filePath, templateFile, conf)
 
 	// Silent paths as separate file
-	createFileFromTemplate(
-		filepath.Join(conf.OutputPath, MiddlewarePackage, "silentPaths.go"),
-		"templates/openapi/middleware/silentPaths.go.tmpl",
-		conf,
-	)
+	targetFile := filepath.Join(conf.OutputPath, MiddlewarePackage, "silentPaths.go")
+	if !fs.CheckIfFileExists(targetFile) { // dont overwrite
+		createFileFromTemplate(
+			targetFile,
+			"templates/openapi/middleware/silentPaths.go.tmpl",
+			conf,
+		)
+	}
 
 	log.Info().Msg("Created logger successfully.")
 }
