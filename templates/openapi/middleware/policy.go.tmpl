@@ -58,7 +58,7 @@ const (
 	NotFound
 )
 
-type Input map[string]interface{}
+type Input map[string]any
 
 func checkAuthorization(authorizationHeader string) (string, bool) {
     log.Debug().Msg("Check authorization")
