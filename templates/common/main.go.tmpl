@@ -90,7 +90,7 @@ func main() {
 	e.Use(middleware.CORSConfigFromEnv()) // set custom cors config
 
 	// custom main, start async so it can wait on shutdown signal for cleanup
-    go mainSvc(ctx, e)
+    go mainSvc(ctx, cancel, e)
 
 	{{- if .OpenAPI }}
 
