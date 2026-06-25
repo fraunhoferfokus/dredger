@@ -26,6 +26,19 @@ var (
 	policyCompiler *ast.Compiler
 )
 
+// Extension hooks for session-based authentication.
+// Set by editable code (mainSvc.go).
+var (
+	// ExtCheckAuthHook checks for an active session.
+	// If it returns ("", false), the legacy Basic/Bearer auth is tried instead.
+	ExtCheckAuthHook func(c *echo.Context) (role string, authorized bool)
+
+	// ExtAuthServiceActive reports whether the auth subsystem is active.
+	// When false, the system is in initial state and allows open access.
+	// When not defined (== nil) the auth is active (no open access by default).
+	ExtAuthServiceActive func() bool
+)
+
 // Default values
 func init() {
 	if core.AppConfig.Policy == "" {
@@ -194,11 +207,27 @@ func checkPolicy(c *echo.Context) Action {
 		return Logout
 	}
 
-	// extract input from request
-	authorization := req.Header.Get("Authorization")
-	role, authorized := checkAuthorization(authorization)
-	if !authorized && core.AppConfig.OpaSvc == "" && core.AppConfig.Policy == "" && (core.AppConfig.ParticipantUser != "" || core.AppConfig.StaffUser != "") {
-		log.Debug().Str("authorization", authorization).Msg("Authorization failed")
+	role, authorized := "", false
+
+	// Use Sesion-based auth via extension hook if available.
+	// Otherwise fallback to Basic/Bearer.
+	if ExtCheckAuthHook != nil {
+		role, authorized = ExtCheckAuthHook(c)
+	} else {
+		authorization := req.Header.Get("Authorization")
+		role, authorized = checkAuthorization(authorization)
+	}
+
+	// Check if auth is active (or initial state) -> if not return user authentication
+	if !authorized && ExtAuthServiceActive != nil && !ExtAuthServiceActive() {
+		log.Debug().Str("role", role).Msg("Auth NOT active (initial state), granted unauthorized user authorization")
+		role, authorized = "user", true
+	}
+
+	// Hard require if no auth and enforcement is active
+	if !authorized && core.AppConfig.OpaSvc == "" && core.AppConfig.Policy == "" &&
+		(core.AppConfig.ParticipantUser != "" || core.AppConfig.StaffUser != "") {
+		log.Debug().Msg("Authorization failed")
 		return Authorize
 	}
 

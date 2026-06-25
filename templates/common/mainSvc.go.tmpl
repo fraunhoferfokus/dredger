@@ -8,7 +8,13 @@ func mainSvc(ctx context.Context, cancel context.CancelFunc, e *echo.Echo) {
     // Add your own evaluation of the flags for additional commands
     // Add your own service running concurrent with the echo web service
 
+    {{- if .Flags.OpenAPI }}
 	// e.Use(middleware.PolicyHandler) // Policy Enforcement Point to check access
+
+	// Use custom authentication extension hooks
+	// middleware.ExtCheckAuthHook = func(c *echo.Context) (role string, authorized bool) {}
+	// middleware.ExtAuthServiceActive = func() bool {}
+	{{- end }}
 
     /***** Shutdown Handling ******/
 	<-ctx.Done() // wait for shutdown signal via context
