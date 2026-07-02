@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"bufio"
 	"errors"
 	"os"
 	"path/filepath"
@@ -75,14 +74,14 @@ var generateCmd = &cobra.Command{
 				// Ignore stray arguments from malformed line breaks
 				continue
 			}
-			isAsync, isOpen, err := detectSpecType(specPath)
+			specType, err := detectSpecType(specPath)
 			if err != nil {
 				log.Error().Err(err).Msg("Konnte Spec-Datei nicht öffnen oder lesen")
 				continue
 			}
 
-			switch {
-			case isAsync:
+			switch specType {
+			case asyncApiSpec:
 				log.Info().Msgf("Erkannt: AsyncAPI-Spec %s – wir parsen & generieren", specPath)
 				_, err := parser.ParseAsyncAPISpecFile(specPath)
 				if err != nil {
@@ -103,7 +102,7 @@ var generateCmd = &cobra.Command{
 					log.Error().Err(err).Msg("AsyncAPI: Fehler beim Generieren")
 				}
 				asyncapi = true
-			case isOpen:
+			case openApiSpec:
 				log.Info().Msgf("Erkannt: OpenAPI-Spec %s – wir parsen & generieren", specPath)
 				config := gen.GeneratorConfig{
 					OpenAPIPath:  specPath,
@@ -122,9 +121,14 @@ var generateCmd = &cobra.Command{
 				allOpenAPINames = append(allOpenAPINames, gen.OpenAPIConfig{
 					OpenAPIPath: specPath,
 				})
+			case componentSpec:
+				log.Info().Msgf("Detected component spec %s - we parse and generate", specPath)
+				// construct full spec file
+				// parse
+				// generate components (entities) only
 			default:
 				log.Error().Msgf("Datei %s ist weder gültige AsyncAPI- noch gültige OpenAPI-Spec.", specPath)
-				//Needs default case code for no spec given
+				// TODO Needs default case code for no spec given
 				// GenerateDefault
 			}
 
@@ -172,54 +176,4 @@ func init() {
 	generateCmd.Flags().BoolVarP(&databaseFlag, "database", "D", false, "füge SQLite3-Datenbank in den generierten Code ein")
 	generateCmd.Flags().BoolVarP(&frontendFlag, "frontend", "f", false, "füge Frontend-Code hinzu")
 
-}
-
-// automatische spec erkennung 💃
-func detectSpecType(specPath string) (isAsync bool, isOpenAPI bool, err error) {
-	firstLine, err := firstNonCommentLine(specPath)
-	if err != nil {
-		return false, false, err
-	}
-
-	if strings.Contains(firstLine, "\"asyncapi\"") || strings.HasPrefix(firstLine, "asyncapi:") {
-		return true, false, nil
-	}
-	if strings.Contains(firstLine, "\"openapi\"") || strings.HasPrefix(firstLine, "openapi:") {
-		return false, true, nil
-	}
-	//veraltete "schreibweise" jetzt openapi
-	if strings.Contains(firstLine, "\"swagger\"") || strings.HasPrefix(firstLine, "swagger:") {
-		return false, true, nil
-	}
-	return false, false, nil
-}
-
-// firstNonCommentLine returns the first line of the file which is not empty and does not have a comment with `#`
-func firstNonCommentLine(path string) (string, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return "", err
-	}
-	defer f.Close()
-	// go line by line
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		// skip empty lines
-		if line == "" {
-			continue
-		}
-		// skip comments
-		if strings.HasPrefix(line, "#") {
-			continue
-		}
-		// return first line
-		return strings.ToLower(line), nil
-	}
-	// check for error scanning file
-	if err := scanner.Err(); err != nil {
-		return "", err
-	}
-	// first (non comment line) is empty
-	return "", nil
 }
