@@ -139,7 +139,7 @@ func {{ .OperationID }}(c *echo.Context) error {
 
 
     {{ range .Responses }}
-    // {{ .StatusCode }} => {{ .Description }}
+    // {{ .StatusCode }} => {{ replace .Description "\n" "" }}
     {{- end }}
 	return (*c).String(http.StatusNotImplemented, "Temporary handler stub.")
 }
