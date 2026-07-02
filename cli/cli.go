@@ -1,8 +1,8 @@
 package cli
 
 import (
+	"bufio"
 	"errors"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -176,28 +176,50 @@ func init() {
 
 // automatische spec erkennung 💃
 func detectSpecType(specPath string) (isAsync bool, isOpenAPI bool, err error) {
-	f, err := os.Open(specPath)
+	firstLine, err := firstNonCommentLine(specPath)
 	if err != nil {
 		return false, false, err
 	}
-	defer f.Close()
 
-	buf := make([]byte, 1024*1024)
-	n, err := io.ReadFull(f, buf)
-	if err != nil && !errors.Is(err, io.ErrUnexpectedEOF) {
-		return false, false, err
-	}
-	text := strings.ToLower(string(buf[:n]))
-
-	if strings.Contains(text, "\"asyncapi\"") || strings.HasPrefix(text, "asyncapi:") {
+	if strings.Contains(firstLine, "\"asyncapi\"") || strings.HasPrefix(firstLine, "asyncapi:") {
 		return true, false, nil
 	}
-	if strings.Contains(text, "\"openapi\"") || strings.HasPrefix(text, "openapi:") {
+	if strings.Contains(firstLine, "\"openapi\"") || strings.HasPrefix(firstLine, "openapi:") {
 		return false, true, nil
 	}
 	//veraltete "schreibweise" jetzt openapi
-	if strings.Contains(text, "\"swagger\"") || strings.HasPrefix(text, "swagger:") {
+	if strings.Contains(firstLine, "\"swagger\"") || strings.HasPrefix(firstLine, "swagger:") {
 		return false, true, nil
 	}
 	return false, false, nil
+}
+
+// firstNonCommentLine returns the first line of the file which is not empty and does not have a comment with `#`
+func firstNonCommentLine(path string) (string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	// go line by line
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		// skip empty lines
+		if line == "" {
+			continue
+		}
+		// skip comments
+		if strings.HasPrefix(line, "#") {
+			continue
+		}
+		// return first line
+		return strings.ToLower(line), nil
+	}
+	// check for error scanning file
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+	// first (non comment line) is empty
+	return "", nil
 }
