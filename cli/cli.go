@@ -123,9 +123,25 @@ var generateCmd = &cobra.Command{
 				})
 			case componentSpec:
 				log.Info().Msgf("Detected component spec %s - we parse and generate", specPath)
-				// construct full spec file
-				// parse
+				_, err := parser.ParseComponentSpecFile(specPath)
+				if err != nil {
+					log.Error().Err(err).Msg("Component-Spec: not a valid spec")
+					continue
+				}
+				config := gen.GeneratorConfig{
+					OpenAPIPath:  specPath, // deal as openapi spec
+					OutputPath:   projectDestination,
+					ModuleName:   projectName,
+					DatabaseName: "database",
+					Flags: gen.Flags{
+						AddDatabase: false,
+						AddFrontend: false,
+					},
+				}
 				// generate components (entities) only
+				if err := gen.GenerateComponents(config); err != nil {
+					log.Error().Err(err).Msg("Component-Spec: Error generating")
+				}
 			default:
 				log.Error().Msgf("Datei %s ist weder gültige AsyncAPI- noch gültige OpenAPI-Spec.", specPath)
 				// TODO Needs default case code for no spec given

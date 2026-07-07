@@ -7,6 +7,7 @@ require (
 	github.com/a-h/templ v0.2.663
 	github.com/cucumber/godog v0.12.5
 	github.com/getkin/kin-openapi v0.133.0
+	github.com/ghodss/yaml v1.0.0
 	github.com/gobeam/stringy v0.0.7
 	github.com/huandu/xstrings v1.5.0
 	github.com/labstack/echo/v5 v5.0.3
@@ -20,7 +21,6 @@ require (
 	dario.cat/mergo v1.0.2 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.4.0 // indirect
-	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-openapi/swag/jsonname v0.25.4 // indirect
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/google/uuid v1.6.0 // indirect
