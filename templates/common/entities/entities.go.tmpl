@@ -4,12 +4,49 @@ package entities
 {{ template "imports" .Imports }}
 
 {{ range $SchemaName, $TypeDefs := .SchemaDefs -}}
-  type {{ $SchemaName }} struct {
-  {{- template "structs" $TypeDefs }}
-  }
+	{{- if len $TypeDefs }}
+		{{- $FirstTypeDef := index $TypeDefs 0 }}
+		{{- if eq $FirstTypeDef.Kind "allof" }}
+			{{- /* Generate intermediate types for non-ref AllOf variants */ -}}
+			{{- range $variant := $FirstTypeDef.Variants }}
+				{{- if not $variant.IsRef }}
+type {{ $variant.Name }} struct {
+{{- template "structs" $variant.Props }}
+}
 
-  func (v *{{ $SchemaName }}) Validate() error {
+func (v *{{ $variant.Name }}) Validate() error {
+{{- template "validate" $variant.Props }}
+}
+
+				{{- end }}
+			{{- end }}
+
+			{{- /* Generate main struct with embedded variant types */ -}}
+	type {{ $SchemaName }} struct {
+		{{- range $variant := $FirstTypeDef.Variants }}
+		{{ $variant.Name }}
+		{{- end }}
+	}
+
+	func (v *{{ $SchemaName }}) Validate() error {
+		{{- range $variant := $FirstTypeDef.Variants }}
+		if err := v.{{ $variant.Name }}.Validate(); err != nil {
+			return err
+		}
+		{{- end }}
+		return nil
+	}
+
+		{{- else }}
+			{{- /* Regular struct generation */ -}}
+	type {{ $SchemaName }} struct {
+	{{- template "structs" $TypeDefs }}
+	}
+
+	func (v *{{ $SchemaName }}) Validate() error {
 	{{- template "validate" $TypeDefs }}
-  }
+	}
 
+		{{- end }}
+	{{- end }}
 {{ end }}

@@ -1,12 +1,14 @@
 package generator
 
 import (
+	"fmt"
 	"math"
 	"path/filepath"
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gobeam/stringy"
+	"github.com/rs/zerolog/log"
 )
 
 var IMPORT_UUID bool
@@ -28,6 +30,18 @@ type TypeDefinition struct {
 	Maximum     float64
 	MarshalName string
 	NestedTypes []TypeDefinition
+	Kind        string              // Composite kind: "allof", "anyof", "oneof" — empty for regular schemas
+	Variants    []VariantDefinition // Variants for composite schemas (used when Kind is set)
+}
+
+// VariantDefinition represents a variant of a composite schema (allOf, anyOf, oneOf).
+// For allOf, variants are embedded types in the resulting struct.
+// For anyOf/oneOf, variants represent alternative types to be chosen from.
+type VariantDefinition struct {
+	Name      string           // Type name for inline variants, or ref target name for $ref variants
+	IsRef     bool             // True if this variant is a $ref to an already-generated type
+	RefTarget string           // Go type name of the referenced type (e.g., "User")
+	Props     []TypeDefinition // Property definitions for inline object variants
 }
 
 type ImportDefinition struct {
@@ -39,37 +53,58 @@ type ImportsConfig struct {
 	ImportDefs []ImportDefinition
 }
 
+// schemaQueue is a helper for queuing schemas for type definition generation.
+type schemaQueue struct {
+	Name   string
+	Schema *openapi3.SchemaRef
+}
+
 // Aus den Schemas in Components die Typdefinitionen und generiert entities,imports,structs und validate files
 func GenerateTypes(spec *openapi3.T, pConf ProjectConfig) {
-	if spec != nil && spec.Components != nil {
-		schemaDefs := generateTypeDefs(&spec.Components.Schemas)
-		imports := generateImports()
-		var conf ModelConfig
-		conf.Imports = imports
-		conf.ProjectName = pConf.Name
+	if spec == nil || spec.Components == nil {
+		return
+	}
+	schemaDefs := generateTypeDefs(&spec.Components.Schemas)
+	imports := generateImports()
+	var conf ModelConfig
+	conf.Imports = imports
+	conf.ProjectName = pConf.Name
 
-		for schema, defs := range schemaDefs {
-			//log.Debug().Str("Operationname", schema).Msg("SchemaDefs")
-			conf.SchemaDefs = map[string][]TypeDefinition{schema: defs}
-			fileName := strings.ToLower(schema) + ".go"
-			filePath := filepath.Join(pConf.Path, EntitiesPkg, fileName)
-			templateFiles := []string{
-				"templates/common/entities/entities.go.tmpl",
-				"templates/common/entities/imports.tmpl",
-				"templates/common/entities/structs.tmpl",
-				"templates/common/entities/validate.tmpl",
-			}
-			createFileFromTemplates(filePath, templateFiles, conf)
+	for schema, defs := range schemaDefs {
+		//log.Debug().Str("Operationname", schema).Msg("SchemaDefs")
+		conf.SchemaDefs = map[string][]TypeDefinition{schema: defs}
+		fileName := strings.ToLower(schema) + ".go"
+		filePath := filepath.Join(pConf.Path, EntitiesPkg, fileName)
+		templateFiles := []string{
+			"templates/common/entities/entities.go.tmpl",
+			"templates/common/entities/imports.tmpl",
+			"templates/common/entities/structs.tmpl",
+			"templates/common/entities/validate.tmpl",
 		}
+		createFileFromTemplates(filePath, templateFiles, conf)
 	}
 }
 
 func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
-	schemaDefs := make(map[string][]TypeDefinition, len(*schemas))
+	schemaDefs := make(map[string][]TypeDefinition)
+	// build schemas into queue
+	queue := []schemaQueue{}
 	for schemaName, ref := range *schemas {
-		// log.Debug().Str("schemaName", schemaName).Any("value", ref.Value.Type).Msg("Read schema")
+		queue = append(queue, schemaQueue{schemaName, ref})
+	}
+
+	for len(queue) > 0 {
+		// pop
+		first := queue[0]
+		queue = queue[1:]
+		schemaName := first.Name
+		ref := first.Schema
+		// process schema
 		var goType string
-		if ref.Value.Type.Includes("number") {
+		if ref.RefPath() != nil { // skip refs
+			log.Debug().Any("ref", ref).Msg("Skipping schema in type def because it is a $ref")
+			continue
+		} else if ref.Value.Type.Includes("number") {
 			switch ref.Value.Format {
 			case "float":
 				goType = "float32"
@@ -88,6 +123,8 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				floatOrMax(ref.Value.Max),
 				stringy.New(schemaName).LcFirst(),
 				[]TypeDefinition{},
+				"",
+				nil,
 			}}
 		} else if ref.Value.Type.Includes("integer") {
 			goType = "int"
@@ -104,6 +141,8 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				floatOrMax(ref.Value.Max),
 				stringy.New(schemaName).LcFirst(),
 				[]TypeDefinition{},
+				"",
+				nil,
 			}}
 		} else if ref.Value.Type.Includes("boolean") {
 			goType = "bool"
@@ -117,6 +156,8 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				floatOrMax(ref.Value.Max),
 				stringy.New(schemaName).LcFirst(),
 				[]TypeDefinition{},
+				"",
+				nil,
 			}}
 		} else if ref.Value.Type.Includes("string") {
 			switch ref.Value.Format {
@@ -141,6 +182,8 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				floatOrMax(ref.Value.Max),
 				stringy.New(schemaName).LcFirst(),
 				[]TypeDefinition{},
+				"",
+				nil,
 			}}
 		} else if ref.Value.Type.Includes("array") {
 			items, _ := toGoType(ref.Value.Items)
@@ -155,9 +198,67 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				floatOrMax(ref.Value.Max),
 				stringy.New(schemaName).LcFirst(),
 				[]TypeDefinition{},
+				"",
+				nil,
 			}}
 		} else if ref.Value.Type.Includes("object") {
 			schemaDefs[schemaName] = generatePropertyDefs(&ref.Value.Properties)
+		} else if ref.Value.AllOf != nil {
+			variants := make([]VariantDefinition, 0, len(ref.Value.AllOf))
+			for i, variant := range ref.Value.AllOf {
+				if variant.Ref != "" {
+					// $ref variant — already has a generated type, embed it directly
+					splitRef := strings.Split(variant.Ref, "/")
+					targetType := splitRef[len(splitRef)-1]
+					variants = append(variants, VariantDefinition{
+						Name:      targetType,
+						IsRef:     true,
+						RefTarget: targetType,
+					})
+				} else if variant.Value != nil && variant.Value.Type.Includes("object") {
+					// Inline object variant — generate an intermediate type with its properties
+					propDefs := generatePropertyDefs(&variant.Value.Properties)
+					variants = append(variants, VariantDefinition{
+						Name:  fmt.Sprintf("%sAllofPart%d", schemaName, i),
+						IsRef: false,
+						Props: propDefs,
+					})
+				} else if variant.Value != nil {
+					// Non-object, non-ref variant (e.g., type constraints on a primitive base type)
+					log.Warn().
+						Str("schema", schemaName).
+						Int("variantIndex", i).
+						Str("type", strings.Join(variant.Value.Type.Slice(), ",")).
+						Msg("Ignoring non-object AllOf variant")
+				} else {
+					log.Warn().
+						Str("schema", schemaName).
+						Int("variantIndex", i).
+						Msg("Ignoring nil AllOf variant")
+				}
+			}
+			schemaDefs[schemaName] = []TypeDefinition{{
+				Name:        schemaName,
+				Type:        "struct",
+				MinLength:   ref.Value.MinLength,
+				MaxLength:   uintOrMax(ref.Value.MaxLength),
+				Pattern:     ref.Value.Pattern,
+				Minimum:     floatOrMin(ref.Value.Min),
+				Maximum:     floatOrMax(ref.Value.Max),
+				MarshalName: stringy.New(schemaName).LcFirst(),
+				NestedTypes: nil,
+				Kind:        "allof",
+				Variants:    variants,
+			}}
+			log.Info().Any("spec", ref).Any("type", schemaDefs[schemaName]).Msg("ALL_OF finished creating type")
+		} else if ref.Value.AnyOf != nil {
+			log.Warn().
+				Str("schema", schemaName).
+				Msg("anyOf detected but not yet implemented, skipping")
+		} else if ref.Value.OneOf != nil {
+			log.Warn().
+				Str("schema", schemaName).
+				Msg("oneOf detected but not yet implemented, skipping")
 		}
 	}
 	return schemaDefs
@@ -190,6 +291,12 @@ func generatePropertyDefs(properties *openapi3.Schemas) []TypeDefinition {
 	for name, property := range *properties {
 		goType, nested := toGoType(property)
 		var nestedGoTypes []TypeDefinition
+
+		// Handle allOf inside properties: extract ref target or create inline type
+		if goType == "" && property.Value != nil && property.Value.AllOf != nil {
+			goType, nested = processAllOfProperty(name, property.Value.AllOf)
+		}
+
 		if nested {
 			nestedGoTypes = generatePropertyDefs(&property.Value.Properties)
 		}
@@ -204,6 +311,8 @@ func generatePropertyDefs(properties *openapi3.Schemas) []TypeDefinition {
 			floatOrMax(property.Value.Max),
 			stringy.New(name).LcFirst(),
 			nestedGoTypes,
+			"",
+			nil,
 		}
 		typeDefs[i], i = propertyDef, i+1
 	}
@@ -213,6 +322,11 @@ func generatePropertyDefs(properties *openapi3.Schemas) []TypeDefinition {
 
 // schema type to generated go type
 func toGoType(sRef *openapi3.SchemaRef) (goType string, nested bool) {
+	// Resolve $ref first — applies to any type (including object types without explicit "type:")
+	if sRef.Ref != "" {
+		splitRef := strings.Split(sRef.Ref, "/")
+		return splitRef[len(splitRef)-1], false
+	}
 	if sRef.Value.Type.Includes("number") {
 		switch sRef.Value.Format {
 		case "float":
@@ -253,14 +367,12 @@ func toGoType(sRef *openapi3.SchemaRef) (goType string, nested bool) {
 			} else {
 				goType = "map[string]??"
 			}
-		} else if sRef.Ref != "" {
-			// checks if object type is defined by reference elsewhere in the schema
-			splitRef := strings.Split(sRef.Ref, "/")
-			goType = splitRef[len(splitRef)-1]
 		} else {
 			goType = "struct"
 			nested = true
 		}
+	} else if sRef.Value.AllOf != nil {
+		// allOf at property level — caught by generatePropertyDefs fallback
 	} else {
 		types := sRef.Value.Type.Slice()
 		if len(types) > 0 {
@@ -268,6 +380,23 @@ func toGoType(sRef *openapi3.SchemaRef) (goType string, nested bool) {
 		}
 	}
 	return goType, nested
+}
+
+// processAllOfProperty resolves an allOf inside a property schema.
+// For single $ref allOf (e.g., skuRef: allOf: [$ref: Reference]),
+// it returns the ref target type. For mixed allOf (ref + inline object),
+// it logs a warning and falls back to the first ref.
+func processAllOfProperty(name string, allOf openapi3.SchemaRefs) (goType string, nested bool) {
+	for _, variant := range allOf {
+		if variant.Ref != "" {
+			splitRef := strings.Split(variant.Ref, "/")
+			return splitRef[len(splitRef)-1], false
+		} else if variant.Value != nil && variant.Value.Type.Includes("object") {
+			return "struct", true
+		}
+	}
+	log.Warn().Str("property", name).Msg("allOf property has no $ref or object variant")
+	return "", false
 }
 
 func generateImports() ImportsConfig {
