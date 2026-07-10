@@ -1,0 +1,11 @@
+{{ define "entity_regular" }}
+
+type {{ ucfirst (camelcase .SchemaName) }} struct {
+{{ template "structs" .TypeDefs }}
+}
+
+func (v *{{ ucfirst (camelcase .SchemaName) }}) Validate() error {
+{{ template "validate" .TypeDefs }}
+}
+
+{{ end }}

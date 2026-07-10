@@ -1,0 +1,33 @@
+{{ define "entity_allof" }}
+
+{{ range $variant := .Variants }}
+	{{ if not $variant.IsRef }}
+
+type {{ ucfirst (camelcase $variant.Name) }} struct {
+{{ template "structs" $variant.Props }}
+}
+
+func (v *{{ ucfirst (camelcase $variant.Name) }}) Validate() error {
+{{ template "validate" $variant.Props }}
+}
+
+	{{ end }}
+{{ end }}
+
+{{/* Generate main struct with embedded variant types */}}
+type {{ ucfirst (camelcase .SchemaName) }} struct {
+{{ range $variant := .Variants }}
+	{{ ucfirst (camelcase $variant.Name) }}
+{{ end }}
+}
+
+func (v *{{ ucfirst (camelcase .SchemaName) }}) Validate() error {
+{{ range $variant := .Variants }}
+	if err := v.{{ ucfirst (camelcase $variant.Name) }}.Validate(); err != nil {
+		return err
+	}
+{{ end }}
+	return nil
+}
+
+{{ end }}

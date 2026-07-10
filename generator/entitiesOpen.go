@@ -80,6 +80,10 @@ func GenerateTypes(spec *openapi3.T, pConf ProjectConfig) {
 			"templates/common/entities/imports.tmpl",
 			"templates/common/entities/structs.tmpl",
 			"templates/common/entities/validate.tmpl",
+			"templates/common/entities/entity_allof.tmpl",
+			"templates/common/entities/entity_anyof.tmpl",
+			"templates/common/entities/entity_oneof.tmpl",
+			"templates/common/entities/entity_regular.tmpl",
 		}
 		createFileFromTemplates(filePath, templateFiles, conf)
 	}
@@ -209,7 +213,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				if variant.Ref != "" {
 					// $ref variant — already has a generated type, embed it directly
 					splitRef := strings.Split(variant.Ref, "/")
-					targetType := toUpperCamelCase(splitRef[len(splitRef)-1])
+					targetType := PascalCase(splitRef[len(splitRef)-1])
 					variants = append(variants, VariantDefinition{
 						Name:      targetType,
 						IsRef:     true,
@@ -219,7 +223,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 					// Inline object variant — generate an intermediate type with its properties
 					propDefs := generatePropertyDefs(&variant.Value.Properties)
 					variants = append(variants, VariantDefinition{
-						Name:  fmt.Sprintf("%sPart%d", toUpperCamelCase(schemaName), i),
+						Name:  fmt.Sprintf("%sPart%d", PascalCase(schemaName), i),
 						IsRef: false,
 						Props: propDefs,
 					})
@@ -250,7 +254,6 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				Kind:        "allof",
 				Variants:    variants,
 			}}
-			log.Info().Any("spec", ref).Any("type", schemaDefs[schemaName]).Msg("ALL_OF finished creating type")
 		} else if ref.Value.AnyOf != nil {
 			log.Warn().
 				Str("schema", schemaName).
@@ -285,8 +288,8 @@ func floatOrMax(x *float64) float64 {
 	return math.MaxFloat64
 }
 
-// toUpperCamelCase converts a name to UpperCamelCase (PascalCase) for exported type names
-func toUpperCamelCase(name string) string {
+// PascalCase converts a name to UpperCamelCase (PascalCase) for exported type names
+func PascalCase(name string) string {
 	// Use the existing camelcase function and capitalize first letter
 	camel := camelcase(name)
 	return stringy.New(camel).UcFirst()

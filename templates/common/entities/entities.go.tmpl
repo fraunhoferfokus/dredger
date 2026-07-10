@@ -3,50 +3,21 @@ package entities
 
 {{ template "imports" .Imports }}
 
-{{ range $SchemaName, $TypeDefs := .SchemaDefs -}}
-	{{- if len $TypeDefs }}
+{{ range $SchemaName, $TypeDefs := .SchemaDefs }}
+	{{ if len $TypeDefs }}
 		{{- $FirstTypeDef := index $TypeDefs 0 }}
-		{{- if eq $FirstTypeDef.Kind "allof" }}
-			{{- /* Generate intermediate types for non-ref AllOf variants */ -}}
-			{{- range $variant := $FirstTypeDef.Variants }}
-				{{- if not $variant.IsRef }}
-				type {{ camelcase $variant.Name }} struct {
-{{- template "structs" $variant.Props }}
-}
+		{{ if eq $FirstTypeDef.Kind "allof" }}
+			{{ template "entity_allof" (dict "SchemaName" $SchemaName "Variants" $FirstTypeDef.Variants) }}
 
-					func (v *{{ camelcase $variant.Name }}) Validate() error {
-{{- template "validate" $variant.Props }}
-}
+		{{ else if eq $FirstTypeDef.Kind "anyof" }}
+			{{ template "entity_anyof" (dict "SchemaName" $SchemaName "Variants" $FirstTypeDef.Variants) }}
 
-				{{- end }}
-			{{- end }}
+		{{ else if eq $FirstTypeDef.Kind "oneof" }}
+			{{ template "entity_oneof" (dict "SchemaName" $SchemaName "Variants" $FirstTypeDef.Variants) }}
 
-			{{- /* Generate main struct with embedded variant types */ -}}
-			type {{ ucfirst (camelcase $SchemaName) }} struct {
-				{{- range $variant := $FirstTypeDef.Variants }}
-				{{ ucfirst (camelcase $variant.Name) }}
-		{{- end }}
-	}
+		{{ else }}
+			{{ template "entity_regular" (dict "SchemaName" $SchemaName "TypeDefs" $TypeDefs) }}
 
-	func (v *{{ ucfirst (camelcase $SchemaName) }}) Validate() error {
-		{{- range $variant := $FirstTypeDef.Variants }}
-		if err := v.{{ ucfirst (camelcase $variant.Name) }}.Validate(); err != nil {
-			return err
-		}
-		{{- end }}
-		return nil
-	}
-
-		{{- else }}
-				{{- /* Regular struct generation */ -}}
-				type {{ ucfirst (camelcase $SchemaName) }} struct {
-	{{- template "structs" $TypeDefs }}
-	}
-
-		func (v *{{ ucfirst (camelcase $SchemaName) }}) Validate() error {
-	{{- template "validate" $TypeDefs }}
-	}
-
-		{{- end }}
-	{{- end }}
+		{{ end }}
+	{{ end }}
 {{ end }}
