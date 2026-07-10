@@ -115,7 +115,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 			case "double":
 				goType = "float64"
 			default:
-				goType = "float"
+				goType = "float64" // as float does not exist
 			}
 			schemaDefs[schemaName] = []TypeDefinition{{
 				schemaName,
@@ -350,7 +350,7 @@ func toGoType(sRef *openapi3.SchemaRef) (goType string, nested bool) {
 		case "double":
 			goType = "float64"
 		default:
-			goType = "float"
+			goType = "float64" // as float does not exists
 		}
 	} else if sRef.Value.Type.Includes("integer") {
 		goType = "int"
