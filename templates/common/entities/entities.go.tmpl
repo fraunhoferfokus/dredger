@@ -6,7 +6,10 @@ package entities
 {{ range $SchemaName, $TypeDefs := .SchemaDefs }}
 	{{ if len $TypeDefs }}
 		{{- $FirstTypeDef := index $TypeDefs 0 }}
-		{{ if eq $FirstTypeDef.Kind "allof" }}
+        {{ if eq $FirstTypeDef.Kind "alias" }}
+            type {{ $FirstTypeDef.Name }} {{ $FirstTypeDef.Type }}
+
+		{{ else if eq $FirstTypeDef.Kind "allof" }}
 			{{ template "entity_allof" (dict "SchemaName" $SchemaName "Variants" $FirstTypeDef.Variants) }}
 
 		{{ else if eq $FirstTypeDef.Kind "anyof" }}

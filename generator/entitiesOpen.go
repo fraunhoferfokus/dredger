@@ -30,7 +30,7 @@ type TypeDefinition struct {
 	Maximum     float64
 	MarshalName string
 	NestedTypes []TypeDefinition
-	Kind        string              // Composite kind: "allof", "anyof", "oneof" — empty for regular schemas
+	Kind        string              // Composite kind: "allof", "anyof", "oneof", "alias" — empty for regular schemas
 	Variants    []VariantDefinition // Variants for composite schemas (used when Kind is set)
 }
 
@@ -105,9 +105,17 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 		ref := first.Schema
 		// process schema
 		var goType string
-		if ref.Ref != "" { // skip refs
-			log.Debug().Any("ref", ref).Msg("Skipping schema in type def because it is a $ref")
-			continue
+		if ref.Ref != "" { // refs are just aliases
+			originalType := PascalCase(filepath.Base(ref.Ref))
+			schemaDefs[schemaName] = []TypeDefinition{{
+				schemaName,
+				originalType,
+				0, 0, "", 0, 0, // ignore length (etc) requirements
+				stringy.New(schemaName).LcFirst(),
+				[]TypeDefinition{},
+				"alias", nil,
+			}}
+			log.Info().Str("ref", ref.Ref).Msg("Processing ref as type")
 		} else if ref.Value.Type.Includes("number") {
 			switch ref.Value.Format {
 			case "float":
