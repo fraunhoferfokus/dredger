@@ -216,60 +216,11 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 		} else if ref.Value.Type.Includes("object") {
 			schemaDefs[schemaName] = generatePropertyDefs(&ref.Value.Properties)
 		} else if ref.Value.AllOf != nil {
-			variants := make([]VariantDefinition, 0, len(ref.Value.AllOf))
-			for i, variant := range ref.Value.AllOf {
-				if variant.Ref != "" {
-					// $ref variant — already has a generated type, embed it directly
-					splitRef := strings.Split(variant.Ref, "/")
-					targetType := PascalCase(splitRef[len(splitRef)-1])
-					variants = append(variants, VariantDefinition{
-						Name:      targetType,
-						IsRef:     true,
-						RefTarget: targetType,
-					})
-				} else if variant.Value != nil && variant.Value.Type.Includes("object") {
-					// Inline object variant — generate an intermediate type with its properties
-					propDefs := generatePropertyDefs(&variant.Value.Properties)
-					variants = append(variants, VariantDefinition{
-						Name:  fmt.Sprintf("%sPart%d", PascalCase(schemaName), i),
-						IsRef: false,
-						Props: propDefs,
-					})
-				} else if variant.Value != nil {
-					// Non-object, non-ref variant (e.g., type constraints on a primitive base type)
-					log.Warn().
-						Str("schema", schemaName).
-						Int("variantIndex", i).
-						Str("type", strings.Join(variant.Value.Type.Slice(), ",")).
-						Msg("Ignoring non-object AllOf variant")
-				} else {
-					log.Warn().
-						Str("schema", schemaName).
-						Int("variantIndex", i).
-						Msg("Ignoring nil AllOf variant")
-				}
-			}
-			schemaDefs[schemaName] = []TypeDefinition{{
-				Name:        schemaName,
-				Type:        "struct",
-				MinLength:   ref.Value.MinLength,
-				MaxLength:   uintOrMax(ref.Value.MaxLength),
-				Pattern:     ref.Value.Pattern,
-				Minimum:     floatOrMin(ref.Value.Min),
-				Maximum:     floatOrMax(ref.Value.Max),
-				MarshalName: stringy.New(schemaName).LcFirst(),
-				NestedTypes: nil,
-				Kind:        "allof",
-				Variants:    variants,
-			}}
+			schemaDefs[schemaName] = generateComposedType(ref, &ref.Value.AllOf, schemaName, "allof")
 		} else if ref.Value.AnyOf != nil {
-			log.Warn().
-				Str("schema", schemaName).
-				Msg("anyOf detected but not yet implemented, skipping")
+			schemaDefs[schemaName] = generateComposedType(ref, &ref.Value.AnyOf, schemaName, "anyof")
 		} else if ref.Value.OneOf != nil {
-			log.Warn().
-				Str("schema", schemaName).
-				Msg("oneOf detected but not yet implemented, skipping")
+			schemaDefs[schemaName] = generateComposedType(ref, &ref.Value.OneOf, schemaName, "oneof")
 		}
 	}
 	return schemaDefs
@@ -397,6 +348,59 @@ func toGoType(sRef *openapi3.SchemaRef) (goType string, nested bool) {
 		}
 	}
 	return goType, nested
+}
+
+// generateComposedType returns the TypeDefinition for a composed type so with `kind` = "allof", "anyof", "oneof".
+// ref is the original openapi schema.
+// schema is the type to be composed of.
+// schemaName is the name of the new schema (type).
+func generateComposedType(ref *openapi3.SchemaRef, schema *openapi3.SchemaRefs, schemaName, kind string) []TypeDefinition {
+	variants := make([]VariantDefinition, 0, len(*schema))
+	for i, variant := range *schema {
+		if variant.Ref != "" {
+			// $ref variant — already has a generated type, embed it directly
+			splitRef := strings.Split(variant.Ref, "/")
+			targetType := PascalCase(splitRef[len(splitRef)-1])
+			variants = append(variants, VariantDefinition{
+				Name:      targetType,
+				IsRef:     true,
+				RefTarget: targetType,
+			})
+		} else if variant.Value != nil && variant.Value.Type.Includes("object") {
+			// Inline object variant — generate an intermediate type with its properties
+			propDefs := generatePropertyDefs(&variant.Value.Properties)
+			variants = append(variants, VariantDefinition{
+				Name:  fmt.Sprintf("%sPart%d", PascalCase(schemaName), i),
+				IsRef: false,
+				Props: propDefs,
+			})
+		} else if variant.Value != nil {
+			// Non-object, non-ref variant (e.g., type constraints on a primitive base type)
+			log.Warn().
+				Str("schema", schemaName).
+				Int("variantIndex", i).
+				Str("type", strings.Join(variant.Value.Type.Slice(), ",")).
+				Msgf("Ignoring non-object %s variant", kind)
+		} else {
+			log.Warn().
+				Str("schema", schemaName).
+				Int("variantIndex", i).
+				Msgf("Ignoring nil %s variant", kind)
+		}
+	}
+	return []TypeDefinition{{
+		Name:        schemaName,
+		Type:        "struct",
+		MinLength:   ref.Value.MinLength,
+		MaxLength:   uintOrMax(ref.Value.MaxLength),
+		Pattern:     ref.Value.Pattern,
+		Minimum:     floatOrMin(ref.Value.Min),
+		Maximum:     floatOrMax(ref.Value.Max),
+		MarshalName: stringy.New(schemaName).LcFirst(),
+		NestedTypes: nil,
+		Kind:        kind,
+		Variants:    variants,
+	}}
 }
 
 func generateImports() ImportsConfig {
