@@ -209,7 +209,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				if variant.Ref != "" {
 					// $ref variant — already has a generated type, embed it directly
 					splitRef := strings.Split(variant.Ref, "/")
-					targetType := splitRef[len(splitRef)-1]
+					targetType := toUpperCamelCase(splitRef[len(splitRef)-1])
 					variants = append(variants, VariantDefinition{
 						Name:      targetType,
 						IsRef:     true,
@@ -219,7 +219,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 					// Inline object variant — generate an intermediate type with its properties
 					propDefs := generatePropertyDefs(&variant.Value.Properties)
 					variants = append(variants, VariantDefinition{
-						Name:  fmt.Sprintf("%sAllofPart%d", schemaName, i),
+						Name:  fmt.Sprintf("%sPart%d", toUpperCamelCase(schemaName), i),
 						IsRef: false,
 						Props: propDefs,
 					})
@@ -283,6 +283,13 @@ func floatOrMax(x *float64) float64 {
 		return *x
 	}
 	return math.MaxFloat64
+}
+
+// toUpperCamelCase converts a name to UpperCamelCase (PascalCase) for exported type names
+func toUpperCamelCase(name string) string {
+	// Use the existing camelcase function and capitalize first letter
+	camel := camelcase(name)
+	return stringy.New(camel).UcFirst()
 }
 
 func generatePropertyDefs(properties *openapi3.Schemas) []TypeDefinition {
