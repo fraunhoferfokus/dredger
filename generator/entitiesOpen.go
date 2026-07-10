@@ -101,7 +101,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 		ref := first.Schema
 		// process schema
 		var goType string
-		if ref.RefPath() != nil { // skip refs
+		if ref.Ref != "" { // skip refs
 			log.Debug().Any("ref", ref).Msg("Skipping schema in type def because it is a $ref")
 			continue
 		} else if ref.Value.Type.Includes("number") {
@@ -292,11 +292,6 @@ func generatePropertyDefs(properties *openapi3.Schemas) []TypeDefinition {
 		goType, nested := toGoType(property)
 		var nestedGoTypes []TypeDefinition
 
-		// Handle allOf inside properties: extract ref target or create inline type
-		if goType == "" && property.Value != nil && property.Value.AllOf != nil {
-			goType, nested = processAllOfProperty(name, property.Value.AllOf)
-		}
-
 		if nested {
 			nestedGoTypes = generatePropertyDefs(&property.Value.Properties)
 		}
@@ -327,6 +322,17 @@ func toGoType(sRef *openapi3.SchemaRef) (goType string, nested bool) {
 		splitRef := strings.Split(sRef.Ref, "/")
 		return splitRef[len(splitRef)-1], false
 	}
+
+	// Handle allOf — resolve single $ref allOf to the ref target type before type checks
+	if sRef.Value != nil && sRef.Value.AllOf != nil {
+		for _, variant := range sRef.Value.AllOf {
+			if variant.Ref != "" {
+				splitRef := strings.Split(variant.Ref, "/")
+				return splitRef[len(splitRef)-1], false
+			}
+		}
+	}
+
 	if sRef.Value.Type.Includes("number") {
 		switch sRef.Value.Format {
 		case "float":
@@ -371,32 +377,8 @@ func toGoType(sRef *openapi3.SchemaRef) (goType string, nested bool) {
 			goType = "struct"
 			nested = true
 		}
-	} else if sRef.Value.AllOf != nil {
-		// allOf at property level — caught by generatePropertyDefs fallback
-	} else {
-		types := sRef.Value.Type.Slice()
-		if len(types) > 0 {
-			goType = types[0]
-		}
 	}
 	return goType, nested
-}
-
-// processAllOfProperty resolves an allOf inside a property schema.
-// For single $ref allOf (e.g., skuRef: allOf: [$ref: Reference]),
-// it returns the ref target type. For mixed allOf (ref + inline object),
-// it logs a warning and falls back to the first ref.
-func processAllOfProperty(name string, allOf openapi3.SchemaRefs) (goType string, nested bool) {
-	for _, variant := range allOf {
-		if variant.Ref != "" {
-			splitRef := strings.Split(variant.Ref, "/")
-			return splitRef[len(splitRef)-1], false
-		} else if variant.Value != nil && variant.Value.Type.Includes("object") {
-			return "struct", true
-		}
-	}
-	log.Warn().Str("property", name).Msg("allOf property has no $ref or object variant")
-	return "", false
 }
 
 func generateImports() ImportsConfig {
