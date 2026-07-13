@@ -263,6 +263,9 @@ func generatePropertyDefs(properties *openapi3.Schemas) []TypeDefinition {
 
 		if nested {
 			nestedGoTypes = generatePropertyDefs(&property.Value.Properties)
+			if len(nestedGoTypes) == 0 { // allow empty structs
+				goType += "{}"
+			}
 		}
 
 		propertyDef := TypeDefinition{
