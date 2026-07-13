@@ -106,7 +106,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 		// process schema
 		var goType string
 		if ref.Ref != "" { // refs are just aliases
-			originalType := PascalCase(filepath.Base(ref.Ref))
+			originalType := extractRefType(ref.Ref)
 			schemaDefs[schemaName] = []TypeDefinition{{
 				schemaName,
 				originalType,
@@ -288,16 +288,15 @@ func generatePropertyDefs(properties *openapi3.Schemas) []TypeDefinition {
 func toGoType(sRef *openapi3.SchemaRef) (goType string, nested bool) {
 	// Resolve $ref first — applies to any type (including object types without explicit "type:")
 	if sRef.Ref != "" {
-		splitRef := strings.Split(sRef.Ref, "/")
-		return splitRef[len(splitRef)-1], false
+		goType := extractRefType(sRef.Ref)
+		return goType, false
 	}
 
 	// Handle allOf — resolve single $ref allOf to the ref target type before type checks
 	if sRef.Value != nil && sRef.Value.AllOf != nil {
 		for _, variant := range sRef.Value.AllOf {
 			if variant.Ref != "" {
-				splitRef := strings.Split(variant.Ref, "/")
-				return splitRef[len(splitRef)-1], false
+				return extractRefType(variant.Ref), false
 			}
 		}
 	}
@@ -337,8 +336,7 @@ func toGoType(sRef *openapi3.SchemaRef) (goType string, nested bool) {
 	} else if sRef.Value.Type.Includes("object") {
 		if sRef.Value.AdditionalProperties.Schema != nil {
 			if sRef.Value.AdditionalProperties.Schema.Ref != "" {
-				splitRef := strings.Split(sRef.Value.AdditionalProperties.Schema.Ref, "/")
-				goType = "map[string]" + splitRef[len(splitRef)-1]
+				goType = "map[string]" + extractRefType(sRef.Value.AdditionalProperties.Schema.Ref)
 			} else {
 				goType = "map[string]??"
 			}
@@ -359,8 +357,7 @@ func generateComposedType(ref *openapi3.SchemaRef, schema *openapi3.SchemaRefs, 
 	for i, variant := range *schema {
 		if variant.Ref != "" {
 			// $ref variant — already has a generated type, embed it directly
-			splitRef := strings.Split(variant.Ref, "/")
-			targetType := PascalCase(splitRef[len(splitRef)-1])
+			targetType := extractRefType(variant.Ref)
 			variants = append(variants, VariantDefinition{
 				Name:      targetType,
 				IsRef:     true,
@@ -417,4 +414,15 @@ func generateImports() ImportsConfig {
 	}
 
 	return conf
+}
+
+// extractRefType returns the corresponding go type for a given ref.
+func extractRefType(ref string) string {
+	splited := strings.Split(ref, "/")
+	if len(splited) == 0 {
+		log.Error().Str("ref", ref).Msg("Failed to extract ref type")
+		return "NotImplemented" // return invalid type
+	}
+	refObject := splited[len(splited)-1]
+	return PascalCase(refObject)
 }
