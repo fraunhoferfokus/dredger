@@ -22,5 +22,9 @@ package entities
 			{{ template "entity_regular" (dict "SchemaName" $SchemaName "TypeDefs" $TypeDefs) }}
 
 		{{ end }}
+    {{- else }}
+    {{- /* Empty struct */}}
+    {{ template "entity_regular" (dict "SchemaName" $SchemaName "TypeDefs" $TypeDefs) }}
+
 	{{ end }}
 {{ end }}
