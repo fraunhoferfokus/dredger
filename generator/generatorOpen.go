@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"unicode"
@@ -46,6 +47,27 @@ var (
 	Config ProjectConfig
 )
 
+// globalPaths accumulates paths from all OpenAPI specs for merging
+var globalPaths []PathConfig
+
+// globalOpenAPIPaths accumulates all OpenAPI file names for reference
+var globalOpenAPIPaths []string
+
+// globalAddAuth tracks if any spec has per-endpoint auth
+var globalAddAuth bool
+
+// globalAddGlobalAuth tracks if any spec has global auth
+var globalAddGlobalAuth bool
+
+// ResetGlobalPaths clears all accumulated paths and flags
+// Call this before processing a new set of specs
+func ResetGlobalPaths() {
+	globalPaths = nil
+	globalOpenAPIPaths = nil
+	globalAddAuth = false
+	globalAddGlobalAuth = false
+}
+
 // GenerateServer ist der Entry-Point für das OpenAPI-Scaffolding.
 func GenerateServer(conf GeneratorConfig) error {
 	spec := &openapi3.T{}
@@ -61,6 +83,9 @@ func GenerateServer(conf GeneratorConfig) error {
 	// Initialisiere Projekt-Konfiguration
 	Config.Name = conf.ModuleName
 	Config.Path = conf.OutputPath
+
+	// Store the spec path for later use in rest.go
+	conf.OpenAPIPath = fs.GetFileNameWithEnding(conf.OpenAPIPath)
 
 	// API‐Key‐Security erkennen
 	if spec.Components != nil {
@@ -104,8 +129,74 @@ func GenerateServer(conf GeneratorConfig) error {
 	generateReadme(conf, serverConf)
 	generateDockerfile(conf, serverConf)
 
+	// Accumulate paths from this spec for later merged rest.go generation
+	accumulatePaths(spec, conf)
+
 	log.Info().Msg("Created all files successfully.")
 	return nil
+}
+
+// accumulatePaths collects paths from a spec for eventual merged rest.go generation
+func accumulatePaths(spec *openapi3.T, genConf GeneratorConfig) {
+	// Track global auth state
+	if genConf.AddAuth {
+		globalAddAuth = true
+	}
+	for _, item := range spec.Security {
+		for key := range item {
+			if key == genConf.ApiKeySecurityName {
+				globalAddGlobalAuth = true
+				break
+			}
+		}
+	}
+
+	// Accumulate all paths from this spec
+	for path, pathObj := range spec.Paths.Map() {
+		var newPath PathConfig
+		newPath.Path = convertPathParams(path)
+
+		for method, op := range pathObj.Operations() {
+			if !slices.Contains(op.Tags, "builtin") {
+				opConfig, err := generateHandlerFuncStub(op, method, newPath.Path, genConf)
+
+				if err != nil {
+					log.Err(err).Msg("Skipping generation of handler function for endpoint " + method + " " + path)
+				}
+
+				newPath.Operations = append(newPath.Operations, opConfig)
+			}
+		}
+
+		globalPaths = append(globalPaths, newPath)
+	}
+}
+
+// GenerateRestFromAccumulatedPaths generates the rest.go file from all accumulated paths
+// This should be called after all specs have been processed
+func GenerateRestFromAccumulatedPaths(moduleName string, flags Flags, openAPIPath string) {
+	conf := HandlerConfig{
+		Paths:         globalPaths,
+		OpenAPIPath:   openAPIPath,
+		AddAuth:       globalAddAuth,
+		AddGlobalAuth: globalAddGlobalAuth,
+		ModuleName:    moduleName,
+		Flags:         flags,
+	}
+
+	fileName := "rest.go"
+	filePath := filepath.Join(Config.Path, RestPkg, fileName)
+	templateFile := "templates/openapi/rest/handler.go.tmpl"
+	createFileFromTemplate(filePath, templateFile, conf)
+
+	fileName = "restSvc.go"
+	filePath = filepath.Join(Config.Path, RestPkg, fileName)
+	templateFile = "templates/openapi/rest/restSvc.go.tmpl"
+	// Only create restSvc.go if it doesn't exist (keep user customizations)
+	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+		createFileFromTemplate(filePath, templateFile, conf)
+	}
+	log.Info().Msg("rest.go generated from accumulated paths.")
 }
 
 // createProjectPathDirectory legt die Grundordner an.

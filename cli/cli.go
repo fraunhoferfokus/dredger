@@ -66,6 +66,9 @@ var generateCmd = &cobra.Command{
 		}
 		projectDestination := filepath.Join(projectPath)
 
+		// Reset global accumulators for this run
+		gen.ResetGlobalPaths()
+
 		specPaths := args
 
 		for _, specPath := range specPaths {
@@ -152,6 +155,21 @@ var generateCmd = &cobra.Command{
 
 		// IDEE: Array mit allen specPaths, welche OpenAPI sind, da sie für den OpenAPIName gebraucht werden, wenn es OpenAPI ist
 		gen.GenerateMain(allOpenAPINames, projectDestination, projectName, openapi, asyncapi, databaseFlag, frontendFlag)
+
+		// After all OpenAPI specs are processed, generate merged rest.go
+		if openapi && len(allOpenAPINames) > 0 {
+			// Use the first spec's path as the OpenAPIName for the merged rest.go
+			openAPIName := allOpenAPINames[0].OpenAPIPath
+			if fs := filepath.Base(openAPIName); fs != openAPIName {
+				openAPIName = fs
+			}
+			gen.GenerateRestFromAccumulatedPaths(projectName, gen.Flags{
+				AddDatabase: databaseFlag,
+				AddFrontend: frontendFlag,
+				OpenAPI:     openapi,
+				AsyncAPI:    asyncapi,
+			}, openAPIName)
+		}
 
 		// Create go.mod if not exist
 		fileName := "go.mod"
