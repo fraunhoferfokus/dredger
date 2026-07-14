@@ -172,11 +172,39 @@ func accumulatePaths(spec *openapi3.T, genConf GeneratorConfig) {
 	}
 }
 
+// deduplicatePaths removes duplicate operations with the same path and method
+func deduplicatePaths(paths []PathConfig) []PathConfig {
+	// Map to track unique path+method combinations
+	seen := make(map[string]bool)
+	var result []PathConfig
+
+	for _, pathConfig := range paths {
+		var uniqueOperations []OperationConfig
+		for _, op := range pathConfig.Operations {
+			// Create a unique key from path and method
+			key := pathConfig.Path + "|" + op.Method
+			if !seen[key] {
+				seen[key] = true
+				uniqueOperations = append(uniqueOperations, op)
+			}
+		}
+		// Only add path if it has unique operations
+		if len(uniqueOperations) > 0 {
+			pathConfig.Operations = uniqueOperations
+			result = append(result, pathConfig)
+		}
+	}
+	return result
+}
+
 // GenerateRestFromAccumulatedPaths generates the rest.go file from all accumulated paths
 // This should be called after all specs have been processed
 func GenerateRestFromAccumulatedPaths(moduleName string, flags Flags, openAPIPath string) {
+	// Deduplicate paths before generating rest.go
+	uniquePaths := deduplicatePaths(globalPaths)
+
 	conf := HandlerConfig{
-		Paths:         globalPaths,
+		Paths:         uniquePaths,
 		OpenAPIPath:   openAPIPath,
 		AddAuth:       globalAddAuth,
 		AddGlobalAuth: globalAddGlobalAuth,
