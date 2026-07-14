@@ -38,10 +38,12 @@ type TypeDefinition struct {
 // For allOf, variants are embedded types in the resulting struct.
 // For anyOf/oneOf, variants represent alternative types to be chosen from.
 type VariantDefinition struct {
-	Name      string           // Type name for inline variants, or ref target name for $ref variants
-	IsRef     bool             // True if this variant is a $ref to an already-generated type
-	RefTarget string           // Go type name of the referenced type (e.g., "User")
-	Props     []TypeDefinition // Property definitions for inline object variants
+	Name      string              // Type name for inline variants, or ref target name for $ref variants
+	IsRef     bool                // True if this variant is a $ref to an already-generated type
+	RefTarget string              // Go type name of the referenced type (e.g., "User")
+	Props     []TypeDefinition    // Property definitions for inline object variants
+	Kind      string              // "" for a ref or inline object; "allof"/"anyof"/"oneof" for a nested composite variant
+	Variants  []VariantDefinition // Sub-variants for nested composite variants (used when Kind is set)
 }
 
 type ImportDefinition struct {
@@ -84,6 +86,7 @@ func GenerateTypes(spec *openapi3.T, pConf ProjectConfig) {
 			"templates/common/entities/entity_anyof.tmpl",
 			"templates/common/entities/entity_oneof.tmpl",
 			"templates/common/entities/entity_regular.tmpl",
+			"templates/common/entities/variant_types.tmpl",
 		}
 		createFileFromTemplates(filePath, templateFiles, conf)
 	}
@@ -356,38 +359,7 @@ func toGoType(sRef *openapi3.SchemaRef) (goType string, nested bool) {
 // schema is the type to be composed of.
 // schemaName is the name of the new schema (type).
 func generateComposedType(ref *openapi3.SchemaRef, schema *openapi3.SchemaRefs, schemaName, kind string) []TypeDefinition {
-	variants := make([]VariantDefinition, 0, len(*schema))
-	for i, variant := range *schema {
-		if variant.Ref != "" {
-			// $ref variant — already has a generated type, embed it directly
-			targetType := extractRefType(variant.Ref)
-			variants = append(variants, VariantDefinition{
-				Name:      targetType,
-				IsRef:     true,
-				RefTarget: targetType,
-			})
-		} else if variant.Value != nil && variant.Value.Type.Includes("object") {
-			// Inline object variant — generate an intermediate type with its properties
-			propDefs := generatePropertyDefs(&variant.Value.Properties)
-			variants = append(variants, VariantDefinition{
-				Name:  fmt.Sprintf("%sPart%d", PascalCase(schemaName), i),
-				IsRef: false,
-				Props: propDefs,
-			})
-		} else if variant.Value != nil {
-			// Non-object, non-ref variant (e.g., type constraints on a primitive base type)
-			log.Warn().
-				Str("schema", schemaName).
-				Int("variantIndex", i).
-				Str("type", strings.Join(variant.Value.Type.Slice(), ",")).
-				Msgf("Ignoring non-object %s variant", kind)
-		} else {
-			log.Warn().
-				Str("schema", schemaName).
-				Int("variantIndex", i).
-				Msgf("Ignoring nil %s variant", kind)
-		}
-	}
+	variants := buildVariants(schema, PascalCase(schemaName), kind)
 	return []TypeDefinition{{
 		Name:        schemaName,
 		Type:        "struct",
@@ -401,6 +373,64 @@ func generateComposedType(ref *openapi3.SchemaRef, schema *openapi3.SchemaRefs, 
 		Kind:        kind,
 		Variants:    variants,
 	}}
+}
+
+// buildVariants builds the variant definitions for the subschemas of a composite
+// (allOf/anyOf/oneOf). baseName is the PascalCase name used to derive helper type
+// names for inline variants; kind is the parent composite kind, used only for logging.
+func buildVariants(schema *openapi3.SchemaRefs, baseName, kind string) []VariantDefinition {
+	variants := make([]VariantDefinition, 0, len(*schema))
+	for i, variant := range *schema {
+		partName := fmt.Sprintf("%sPart%d", baseName, i)
+		switch {
+		case variant.Ref != "":
+			// $ref variant — already has a generated type, embed it directly
+			targetType := extractRefType(variant.Ref)
+			variants = append(variants, VariantDefinition{
+				Name:      targetType,
+				IsRef:     true,
+				RefTarget: targetType,
+			})
+		case variant.Value == nil:
+			log.Warn().
+				Str("schema", baseName).
+				Int("variantIndex", i).
+				Msgf("Ignoring nil %s variant", kind)
+		case variant.Value.AllOf != nil:
+			variants = append(variants, VariantDefinition{
+				Name:     partName,
+				Kind:     "allof",
+				Variants: buildVariants(&variant.Value.AllOf, partName, "allof"),
+			})
+		case variant.Value.AnyOf != nil:
+			variants = append(variants, VariantDefinition{
+				Name:     partName,
+				Kind:     "anyof",
+				Variants: buildVariants(&variant.Value.AnyOf, partName, "anyof"),
+			})
+		case variant.Value.OneOf != nil:
+			variants = append(variants, VariantDefinition{
+				Name:     partName,
+				Kind:     "oneof",
+				Variants: buildVariants(&variant.Value.OneOf, partName, "oneof"),
+			})
+		case variant.Value.Type.Includes("object"):
+			// Inline object variant — generate an intermediate type with its properties
+			variants = append(variants, VariantDefinition{
+				Name:  partName,
+				IsRef: false,
+				Props: generatePropertyDefs(&variant.Value.Properties),
+			})
+		default:
+			// Non-object, non-ref, non-composite variant (e.g. a bare primitive constraint)
+			log.Warn().
+				Str("schema", baseName).
+				Int("variantIndex", i).
+				Str("type", strings.Join(variant.Value.Type.Slice(), ",")).
+				Msgf("Ignoring non-object %s variant", kind)
+		}
+	}
+	return variants
 }
 
 func generateImports() ImportsConfig {

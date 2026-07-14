@@ -1,0 +1,23 @@
+{{ define "variant_types" }}
+{{ range $variant := .Variants }}
+	{{ if not $variant.IsRef }}
+		{{ if eq $variant.Kind "" }}
+
+type {{ ucfirst (camelcase $variant.Name) }} struct {
+{{ template "structs" $variant.Props }}
+}
+
+func (v *{{ ucfirst (camelcase $variant.Name) }}) Validate() error {
+{{ template "validate" $variant.Props }}
+}
+
+		{{ else if eq $variant.Kind "allof" }}
+{{ template "entity_allof" (dict "SchemaName" $variant.Name "Variants" $variant.Variants) }}
+		{{ else if eq $variant.Kind "anyof" }}
+{{ template "entity_anyof" (dict "SchemaName" $variant.Name "Variants" $variant.Variants) }}
+		{{ else if eq $variant.Kind "oneof" }}
+{{ template "entity_oneof" (dict "SchemaName" $variant.Name "Variants" $variant.Variants) }}
+		{{ end }}
+	{{ end }}
+{{ end }}
+{{ end }}
