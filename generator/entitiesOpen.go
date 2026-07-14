@@ -87,6 +87,7 @@ func GenerateTypes(spec *openapi3.T, pConf ProjectConfig) {
 			"templates/common/entities/entity_oneof.tmpl",
 			"templates/common/entities/entity_regular.tmpl",
 			"templates/common/entities/variant_types.tmpl",
+			"templates/common/entities/property_types.tmpl",
 		}
 		createFileFromTemplates(filePath, templateFiles, conf)
 	}
@@ -217,7 +218,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				nil,
 			}}
 		} else if ref.Value.Type.Includes("object") {
-			schemaDefs[schemaName] = generatePropertyDefs(&ref.Value.Properties)
+			schemaDefs[schemaName] = generatePropertyDefs(&ref.Value.Properties, PascalCase(schemaName))
 		} else if ref.Value.AllOf != nil {
 			schemaDefs[schemaName] = generateComposedType(ref, &ref.Value.AllOf, schemaName, "allof")
 		} else if ref.Value.AnyOf != nil {
@@ -257,37 +258,80 @@ func PascalCase(name string) string {
 	return stringy.New(camel).UcFirst()
 }
 
-func generatePropertyDefs(properties *openapi3.Schemas) []TypeDefinition {
+// generatePropertyDefs builds the property definitions for an object's properties.
+// prefix is the PascalCase name of the enclosing type, used to derive unique helper
+// type names for properties whose schema is itself a composite or nested object.
+func generatePropertyDefs(properties *openapi3.Schemas, prefix string) []TypeDefinition {
 	typeDefs := make([]TypeDefinition, len(*properties))
 	i := 0
 	for name, property := range *properties {
-		goType, nested := toGoType(property)
-		var nestedGoTypes []TypeDefinition
+		propertyDef := TypeDefinition{
+			Name:        name,
+			MinLength:   property.Value.MinLength,
+			MaxLength:   uintOrMax(property.Value.MaxLength),
+			Pattern:     property.Value.Pattern,
+			Minimum:     floatOrMin(property.Value.Min),
+			Maximum:     floatOrMax(property.Value.Max),
+			MarshalName: stringy.New(name).LcFirst(),
+		}
 
-		if nested {
-			nestedGoTypes = generatePropertyDefs(&property.Value.Properties)
-			if len(nestedGoTypes) == 0 { // allow empty structs
-				goType += "{}"
+		goType, nested := toGoType(property)
+
+		// A property whose schema is a composite (oneOf/anyOf, or an allOf that
+		// toGoType can't reduce to a single $ref) has no direct Go type. Generate a
+		// named helper composite type in the same file and reference it by name.
+		if goType == "" && !nested && property.Ref == "" {
+			if kind := compositeKind(property); kind != "" {
+				helperName := PascalCase(prefix) + PascalCase(name)
+				propertyDef.Type = helperName
+				propertyDef.Kind = kind
+				propertyDef.Variants = buildVariants(compositeSchemas(property, kind), helperName, kind)
+				typeDefs[i], i = propertyDef, i+1
+				continue
 			}
 		}
 
-		propertyDef := TypeDefinition{
-			name,
-			goType,
-			property.Value.MinLength,
-			uintOrMax(property.Value.MaxLength),
-			property.Value.Pattern,
-			floatOrMin(property.Value.Min),
-			floatOrMax(property.Value.Max),
-			stringy.New(name).LcFirst(),
-			nestedGoTypes,
-			"",
-			nil,
+		if nested {
+			nestedGoTypes := generatePropertyDefs(&property.Value.Properties, PascalCase(prefix)+PascalCase(name))
+			if len(nestedGoTypes) == 0 { // allow empty structs
+				goType += "{}"
+			}
+			propertyDef.NestedTypes = nestedGoTypes
 		}
+		propertyDef.Type = goType
 		typeDefs[i], i = propertyDef, i+1
 	}
 
 	return typeDefs
+}
+
+// compositeKind returns "allof"/"anyof"/"oneof" if the schema is a composite, else "".
+func compositeKind(sRef *openapi3.SchemaRef) string {
+	if sRef.Value == nil {
+		return ""
+	}
+	switch {
+	case sRef.Value.AllOf != nil:
+		return "allof"
+	case sRef.Value.AnyOf != nil:
+		return "anyof"
+	case sRef.Value.OneOf != nil:
+		return "oneof"
+	}
+	return ""
+}
+
+// compositeSchemas returns the subschemas of a composite for the given kind.
+func compositeSchemas(sRef *openapi3.SchemaRef, kind string) *openapi3.SchemaRefs {
+	switch kind {
+	case "allof":
+		return &sRef.Value.AllOf
+	case "anyof":
+		return &sRef.Value.AnyOf
+	case "oneof":
+		return &sRef.Value.OneOf
+	}
+	return nil
 }
 
 // schema type to generated go type
@@ -419,7 +463,7 @@ func buildVariants(schema *openapi3.SchemaRefs, baseName, kind string) []Variant
 			variants = append(variants, VariantDefinition{
 				Name:  partName,
 				IsRef: false,
-				Props: generatePropertyDefs(&variant.Value.Properties),
+				Props: generatePropertyDefs(&variant.Value.Properties, partName),
 			})
 		default:
 			// Non-object, non-ref, non-composite variant (e.g. a bare primitive constraint)

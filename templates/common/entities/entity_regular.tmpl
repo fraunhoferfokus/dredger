@@ -1,5 +1,7 @@
 {{ define "entity_regular" }}
 
+{{ template "property_types" .TypeDefs }}
+
 type {{ ucfirst (camelcase .SchemaName) }} struct {
 {{ template "structs" .TypeDefs }}
 }

@@ -3,6 +3,8 @@
 	{{ if not $variant.IsRef }}
 		{{ if eq $variant.Kind "" }}
 
+{{ template "property_types" $variant.Props }}
+
 type {{ ucfirst (camelcase $variant.Name) }} struct {
 {{ template "structs" $variant.Props }}
 }
