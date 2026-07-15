@@ -123,6 +123,9 @@ func generateFrontend(spec *openapi3.T, conf GeneratorConfig) {
 		spec.AddOperation("/events", http.MethodPost, op)
 	}
 
+	// add SSE server to core
+	createFileFromTemplate(filepath.Join(Config.Path, "core", "sse.go"), "templates/common/core/sse.go.tmpl", conf)
+
 	log.Info().Msg("Created Frontend successfully.")
 }
 
