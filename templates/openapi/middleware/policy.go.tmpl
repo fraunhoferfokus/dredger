@@ -305,7 +305,10 @@ func PolicyHandler(next echo.HandlerFunc) echo.HandlerFunc {
 			case Authorize:
 				{
 					log.Warn().Msg("Access prohibited by authorization")
-					c.Response().Header().Set("WWW-Authenticate", "Basic realm="+core.AppConfig.Realm)
+			        // only use basic auth if custom handlers are not set
+					if ExtCheckAuthHook == nil {
+						c.Response().Header().Set("WWW-Authenticate", "Basic realm="+core.AppConfig.Realm)
+					}
 					return c.NoContent(http.StatusUnauthorized)
 				}
 			case Deny:
