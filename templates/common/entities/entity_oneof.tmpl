@@ -1,0 +1,31 @@
+{{ define "entity_oneof" }}
+
+{{ template "variant_types" (dict "Variants" .Variants) }}
+
+{{/* Generate main struct with oneOf alternative types */}}
+type {{ ucfirst (camelcase .SchemaName) }} struct {
+{{ range $variant := .Variants }}
+{{ if $variant.IsRef }}
+	{{ ucfirst (camelcase $variant.RefTarget) }} `json:"{{ $variant.Name }}"`
+{{ else }}
+	{{ ucfirst (camelcase $variant.Name) }}
+{{ end }}
+{{ end }}
+}
+
+func (v *{{ ucfirst (camelcase .SchemaName) }}) Validate() error {
+{{ range $variant := .Variants }}
+{{ if $variant.IsRef }}
+	if err := v.{{ ucfirst (camelcase $variant.RefTarget) }}.Validate(); err != nil {
+		return err
+	}
+{{ else }}
+	if err := v.{{ ucfirst (camelcase $variant.Name) }}.Validate(); err != nil {
+		return err
+	}
+{{ end }}
+{{ end }}
+	return nil
+}
+
+{{ end }}

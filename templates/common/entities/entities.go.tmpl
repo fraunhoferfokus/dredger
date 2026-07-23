@@ -3,13 +3,29 @@ package entities
 
 {{ template "imports" .Imports }}
 
-{{ range $SchemaName, $TypeDefs := .SchemaDefs -}}
-  type {{ $SchemaName }} struct {
-  {{- template "structs" $TypeDefs }}
-  }
+{{ range $SchemaName, $TypeDefs := .SchemaDefs }}
+	{{ if len $TypeDefs }}
+		{{- $FirstTypeDef := index $TypeDefs 0 }}
+		{{- $isSchemaDef := eq $FirstTypeDef.Name $SchemaName }}
+        {{ if and $isSchemaDef (eq $FirstTypeDef.Kind "alias") }}
+            type {{ $FirstTypeDef.Name }} {{ $FirstTypeDef.Type }}
 
-  func (v *{{ $SchemaName }}) Validate() error {
-	{{- template "validate" $TypeDefs }}
-  }
+		{{ else if and $isSchemaDef (eq $FirstTypeDef.Kind "allof") }}
+			{{ template "entity_allof" (dict "SchemaName" $SchemaName "Variants" $FirstTypeDef.Variants) }}
 
+		{{ else if and $isSchemaDef (eq $FirstTypeDef.Kind "anyof") }}
+			{{ template "entity_anyof" (dict "SchemaName" $SchemaName "Variants" $FirstTypeDef.Variants) }}
+
+		{{ else if and $isSchemaDef (eq $FirstTypeDef.Kind "oneof") }}
+			{{ template "entity_oneof" (dict "SchemaName" $SchemaName "Variants" $FirstTypeDef.Variants) }}
+
+		{{ else }}
+			{{ template "entity_regular" (dict "SchemaName" $SchemaName "TypeDefs" $TypeDefs) }}
+
+		{{ end }}
+    {{- else }}
+    {{- /* Empty struct */}}
+    {{ template "entity_regular" (dict "SchemaName" $SchemaName "TypeDefs" $TypeDefs) }}
+
+	{{ end }}
 {{ end }}

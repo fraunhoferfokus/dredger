@@ -18,7 +18,7 @@ func generateLogger(conf GeneratorConfig) {
 	templateFile := "templates/common/core/log/log.go.tmpl"
 	createFileFromTemplate(filePath, templateFile, conf)
 
-	// event.go & zerolog.go & loki.go
+	// event.go & zerolog.go & loki.go & silent_paths.go
 	createFileFromTemplate(
 		filepath.Join(conf.OutputPath, LoggerPkg, "event.go"),
 		"templates/common/core/log/logger/event.go",
@@ -40,6 +40,16 @@ func generateLogger(conf GeneratorConfig) {
 	filePath = filepath.Join(conf.OutputPath, MiddlewarePackage, fileName)
 	templateFile = "templates/openapi/middleware/logger.go.tmpl"
 	createFileFromTemplate(filePath, templateFile, conf)
+
+	// Silent paths as separate file
+	targetFile := filepath.Join(conf.OutputPath, MiddlewarePackage, "silentPaths.go")
+	if !fs.CheckIfFileExists(targetFile) { // dont overwrite
+		createFileFromTemplate(
+			targetFile,
+			"templates/openapi/middleware/silentPaths.go.tmpl",
+			conf,
+		)
+	}
 
 	log.Info().Msg("Created logger successfully.")
 }

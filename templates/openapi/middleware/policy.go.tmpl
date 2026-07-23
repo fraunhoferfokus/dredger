@@ -12,8 +12,8 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v5"
-	"github.com/open-policy-agent/opa/ast"
-	"github.com/open-policy-agent/opa/rego"
+	"github.com/open-policy-agent/opa/v1/ast"
+	"github.com/open-policy-agent/opa/v1/rego"
 
 	"{{ lcfirst ( camelcase .ModuleName ) }}/core"
 	"{{ lcfirst ( camelcase .ModuleName ) }}/core/log"
@@ -24,6 +24,19 @@ var (
 	authz string
 
 	policyCompiler *ast.Compiler
+)
+
+// Extension hooks for session-based authentication.
+// Set by editable code (mainSvc.go).
+var (
+	// ExtCheckAuthHook checks for an active session.
+	// If it returns ("", false), the legacy Basic/Bearer auth is tried instead.
+	ExtCheckAuthHook func(c *echo.Context) (role string, authorized bool)
+
+	// ExtAuthServiceActive reports whether the auth subsystem is active.
+	// When false, the system is in initial state and allows open access.
+	// When not defined (== nil) the auth is active (no open access by default).
+	ExtAuthServiceActive func() bool
 )
 
 // Default values
@@ -58,7 +71,7 @@ const (
 	NotFound
 )
 
-type Input map[string]interface{}
+type Input map[string]any
 
 func checkAuthorization(authorizationHeader string) (string, bool) {
     log.Debug().Msg("Check authorization")
@@ -194,11 +207,27 @@ func checkPolicy(c *echo.Context) Action {
 		return Logout
 	}
 
-	// extract input from request
-	authorization := req.Header.Get("Authorization")
-	role, authorized := checkAuthorization(authorization)
-	if !authorized && core.AppConfig.OpaSvc == "" && core.AppConfig.Policy == "" && (core.AppConfig.ParticipantUser != "" || core.AppConfig.StaffUser != "") {
-		log.Debug().Str("authorization", authorization).Msg("Authorization failed")
+	role, authorized := "", false
+
+	// Use Sesion-based auth via extension hook if available.
+	// Otherwise fallback to Basic/Bearer.
+	if ExtCheckAuthHook != nil {
+		role, authorized = ExtCheckAuthHook(c)
+	} else {
+		authorization := req.Header.Get("Authorization")
+		role, authorized = checkAuthorization(authorization)
+	}
+
+	// Check if auth is active (or initial state) -> if not return user authentication
+	if !authorized && ExtAuthServiceActive != nil && !ExtAuthServiceActive() {
+		log.Debug().Str("role", role).Msg("Auth NOT active (initial state), granted unauthorized user authorization")
+		role, authorized = "user", true
+	}
+
+	// Hard require if no auth and enforcement is active
+	if !authorized && core.AppConfig.OpaSvc == "" && core.AppConfig.Policy == "" &&
+		(core.AppConfig.ParticipantUser != "" || core.AppConfig.StaffUser != "") {
+		log.Debug().Msg("Authorization failed")
 		return Authorize
 	}
 
@@ -276,7 +305,10 @@ func PolicyHandler(next echo.HandlerFunc) echo.HandlerFunc {
 			case Authorize:
 				{
 					log.Warn().Msg("Access prohibited by authorization")
-					c.Response().Header().Set("WWW-Authenticate", "Basic realm="+core.AppConfig.Realm)
+			        // only use basic auth if custom handlers are not set
+					if ExtCheckAuthHook == nil {
+						c.Response().Header().Set("WWW-Authenticate", "Basic realm="+core.AppConfig.Realm)
+					}
 					return c.NoContent(http.StatusUnauthorized)
 				}
 			case Deny:

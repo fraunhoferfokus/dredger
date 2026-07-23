@@ -1,0 +1,12 @@
+{{ define "property_types" }}
+{{ range . }}
+	{{ if eq .Kind "allof" }}
+{{ template "entity_allof" (dict "SchemaName" .Type "Variants" .Variants) }}
+	{{ else if eq .Kind "anyof" }}
+{{ template "entity_anyof" (dict "SchemaName" .Type "Variants" .Variants) }}
+	{{ else if eq .Kind "oneof" }}
+{{ template "entity_oneof" (dict "SchemaName" .Type "Variants" .Variants) }}
+	{{ end }}
+	{{ if .NestedTypes }}{{ template "property_types" .NestedTypes }}{{ end }}
+{{ end }}
+{{ end }}

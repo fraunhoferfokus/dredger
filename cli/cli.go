@@ -2,7 +2,6 @@ package cli
 
 import (
 	"errors"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -67,6 +66,9 @@ var generateCmd = &cobra.Command{
 		}
 		projectDestination := filepath.Join(projectPath)
 
+		// Reset global accumulators for this run
+		gen.ResetGlobalPaths()
+
 		specPaths := args
 
 		for _, specPath := range specPaths {
@@ -75,14 +77,14 @@ var generateCmd = &cobra.Command{
 				// Ignore stray arguments from malformed line breaks
 				continue
 			}
-			isAsync, isOpen, err := detectSpecType(specPath)
+			specType, err := detectSpecType(specPath)
 			if err != nil {
 				log.Error().Err(err).Msg("Konnte Spec-Datei nicht öffnen oder lesen")
 				continue
 			}
 
-			switch {
-			case isAsync:
+			switch specType {
+			case asyncApiSpec:
 				log.Info().Msgf("Erkannt: AsyncAPI-Spec %s – wir parsen & generieren", specPath)
 				_, err := parser.ParseAsyncAPISpecFile(specPath)
 				if err != nil {
@@ -103,7 +105,7 @@ var generateCmd = &cobra.Command{
 					log.Error().Err(err).Msg("AsyncAPI: Fehler beim Generieren")
 				}
 				asyncapi = true
-			case isOpen:
+			case openApiSpec:
 				log.Info().Msgf("Erkannt: OpenAPI-Spec %s – wir parsen & generieren", specPath)
 				config := gen.GeneratorConfig{
 					OpenAPIPath:  specPath,
@@ -122,9 +124,30 @@ var generateCmd = &cobra.Command{
 				allOpenAPINames = append(allOpenAPINames, gen.OpenAPIConfig{
 					OpenAPIPath: specPath,
 				})
+			case componentSpec:
+				log.Info().Msgf("Detected component spec %s - we parse and generate", specPath)
+				_, err := parser.ParseComponentSpecFile(specPath)
+				if err != nil {
+					log.Error().Err(err).Msg("Component-Spec: not a valid spec")
+					continue
+				}
+				config := gen.GeneratorConfig{
+					OpenAPIPath:  specPath, // deal as openapi spec
+					OutputPath:   projectDestination,
+					ModuleName:   projectName,
+					DatabaseName: "database",
+					Flags: gen.Flags{
+						AddDatabase: false,
+						AddFrontend: false,
+					},
+				}
+				// generate components (entities) only
+				if err := gen.GenerateComponents(config); err != nil {
+					log.Error().Err(err).Msg("Component-Spec: Error generating")
+				}
 			default:
 				log.Error().Msgf("Datei %s ist weder gültige AsyncAPI- noch gültige OpenAPI-Spec.", specPath)
-				//Needs default case code for no spec given
+				// TODO Needs default case code for no spec given
 				// GenerateDefault
 			}
 
@@ -132,6 +155,21 @@ var generateCmd = &cobra.Command{
 
 		// IDEE: Array mit allen specPaths, welche OpenAPI sind, da sie für den OpenAPIName gebraucht werden, wenn es OpenAPI ist
 		gen.GenerateMain(allOpenAPINames, projectDestination, projectName, openapi, asyncapi, databaseFlag, frontendFlag)
+
+		// After all OpenAPI specs are processed, generate merged rest.go
+		if openapi && len(allOpenAPINames) > 0 {
+			// Use the first spec's path as the OpenAPIName for the merged rest.go
+			openAPIName := allOpenAPINames[0].OpenAPIPath
+			if fs := filepath.Base(openAPIName); fs != openAPIName {
+				openAPIName = fs
+			}
+			gen.GenerateRestFromAccumulatedPaths(projectName, gen.Flags{
+				AddDatabase: databaseFlag,
+				AddFrontend: frontendFlag,
+				OpenAPI:     openapi,
+				AsyncAPI:    asyncapi,
+			}, openAPIName)
+		}
 
 		// Create go.mod if not exist
 		fileName := "go.mod"
@@ -172,32 +210,4 @@ func init() {
 	generateCmd.Flags().BoolVarP(&databaseFlag, "database", "D", false, "füge SQLite3-Datenbank in den generierten Code ein")
 	generateCmd.Flags().BoolVarP(&frontendFlag, "frontend", "f", false, "füge Frontend-Code hinzu")
 
-}
-
-// automatische spec erkennung 💃
-func detectSpecType(specPath string) (isAsync bool, isOpenAPI bool, err error) {
-	f, err := os.Open(specPath)
-	if err != nil {
-		return false, false, err
-	}
-	defer f.Close()
-
-	buf := make([]byte, 1024*1024)
-	n, err := io.ReadFull(f, buf)
-	if err != nil && !errors.Is(err, io.ErrUnexpectedEOF) {
-		return false, false, err
-	}
-	text := strings.ToLower(string(buf[:n]))
-
-	if strings.Contains(text, "\"asyncapi\"") || strings.HasPrefix(text, "asyncapi:") {
-		return true, false, nil
-	}
-	if strings.Contains(text, "\"openapi\"") || strings.HasPrefix(text, "openapi:") {
-		return false, true, nil
-	}
-	//veraltete "schreibweise" jetzt openapi
-	if strings.Contains(text, "\"swagger\"") || strings.HasPrefix(text, "swagger:") {
-		return false, true, nil
-	}
-	return false, false, nil
 }

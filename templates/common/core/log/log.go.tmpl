@@ -21,8 +21,8 @@ var Warn func() *logger.MultiEvent
 var Error func() *logger.MultiEvent
 var Fatal func() *logger.MultiEvent
 var Panic func() *logger.MultiEvent
-var Print func(v ...interface{})
-var Printf func(format string, v ...interface{})
+var Print func(v ...any)
+var Printf func(format string, v ...any)
 
 // Setup the logger with or without debugging
 func Setup(name string, service string, logFilename string, logJSON bool, lokiServer string, lokiKey string, labels map[string]string, size int8, timeout int, debug bool) {
@@ -38,6 +38,11 @@ func Setup(name string, service string, logFilename string, logJSON bool, lokiSe
 			Str("service", service).
 			Str("name", name).
 			Logger()
+		if debug {
+			json = json.Level(zerolog.DebugLevel)
+		} else {
+			json = json.Level(zerolog.InfoLevel)
+		}
 		log.AddLoggerInfo(&json)
 	} else {
     	// Add console logger
@@ -48,15 +53,18 @@ func Setup(name string, service string, logFilename string, logJSON bool, lokiSe
     		Str("service", service).
     		Str("name", name).
     		Logger()
-    	if logFilename != "" || lokiServer != "" {
-    	    if debug {
-    	       log.AddLoggerDebug(&console)
-    	    } else if logFilename == "-" {
+    	if debug {
+			console = console.Level(zerolog.DebugLevel)
+			log.AddLoggerDebug(&console)
+		} else if logFilename != "" || lokiServer != "" {
+			console = console.Level(zerolog.InfoLevel)
+			if logFilename == "-" {
     	       log.AddLoggerInfo(&console)
     		} else {
     		   log.AddLoggerWarn(&console)
     	    }
     	} else {
+            console = console.Level(zerolog.InfoLevel)
      		log.AddLoggerInfo(&console)
     	}
 	}
@@ -83,8 +91,10 @@ func Setup(name string, service string, logFilename string, logJSON bool, lokiSe
 			Str("name", name).
 			Logger()
 		if debug {
+		    logger = logger.Level(zerolog.DebugLevel)
 			log.AddLoggerDebug(&logger)
 		} else {
+		    logger = logger.Level(zerolog.InfoLevel)
 			log.AddLoggerInfo(&logger)
 		}
 	}
@@ -103,8 +113,10 @@ func Setup(name string, service string, logFilename string, logJSON bool, lokiSe
 			Str("name", name).
 			Logger()
 		if debug {
+		    logger = logger.Level(zerolog.DebugLevel)
 			log.AddLoggerDebug(&logger)
 		} else {
+		    logger = logger.Level(zerolog.InfoLevel)
 			log.AddLoggerInfo(&logger)
 		}
 		log.Info().Msg("Added Loki logger")

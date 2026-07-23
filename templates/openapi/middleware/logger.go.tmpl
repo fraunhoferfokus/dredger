@@ -10,7 +10,13 @@ import (
 // Policy Enforcement Point to validate access permission
 func LoggerHandler(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c *echo.Context) error {
-		log.Info().Str("remote_ip", (*c).Request().RemoteAddr).Str("host", (*c).Request().Host).Str("method", (*c).Request().Method).Str("uri", (*c).Request().URL.Path).Str("user_agent", (*c).Request().UserAgent()).Send()
+	    uri := (*c).Request().URL.Path
+		// set different log level for silent paths
+		if silentPaths[uri] {
+			log.Debug().Str("remote_ip", (*c).Request().RemoteAddr).Str("host", (*c).Request().Host).Str("method", (*c).Request().Method).Str("uri", uri).Str("user_agent", (*c).Request().UserAgent()).Send()
+		} else {
+			log.Info().Str("remote_ip", (*c).Request().RemoteAddr).Str("host", (*c).Request().Host).Str("method", (*c).Request().Method).Str("uri", uri).Str("user_agent", (*c).Request().UserAgent()).Send()
+		}
 		// next handler
 		return next(c)
 	}
