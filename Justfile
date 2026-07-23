@@ -46,30 +46,30 @@ download-deps:
 
 # Download rapidoc, an OpenAPI documentation viewer
 download-rapidoc:
-    curl -o templates/web/js/rapidoc-min.js -L https://unpkg.com/rapidoc/dist/rapidoc-min.js
+    curl -o templates/common/web/js/rapidoc-min.js -L https://unpkg.com/rapidoc/dist/rapidoc-min.js
 
 # Download elements, an OpenAPI documentation viewer (https://stoplight.io/open-source/elements)
 download-elements:
-    curl -o templates/web/js/elements.min.js -L https://unpkg.com/@stoplight/elements/web-components.min.js
-    curl -o templates/web/css/elements.min.css -L https://unpkg.com/@stoplight/elements/styles.min.css
+    curl -o templates/common/web/js/elements.min.js -L https://unpkg.com/@stoplight/elements/web-components.min.js
+    curl -o templates/common/web/css/elements.min.css -L https://unpkg.com/@stoplight/elements/styles.min.css
 
 # Download frontend libraries
 
 # woff Dateien müssen aus dem ZIP manuell nach fonts/ kopiert werden!
 download-bootstrap:
-    curl -o templates/web/css/bootstrap.min.css -L https://cdn.jsdelivr.net/npm/bootstrap@latest/dist/css/bootstrap.min.css
-    curl -o templates/web/css/bootstrap-icons.min.css -L https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css
-    curl -o templates/web/css/bootstrap-icons-1.11.3.zip -L https://github.com/twbs/icons/releases/download/v1.11.3/bootstrap-icons-1.11.3.zip
-    curl -o templates/web/js/bootstrap.bundle.min.js -L https://cdn.jsdelivr.net/npm/bootstrap@latest/dist/js/bootstrap.bundle.min.js
+    curl -o templates/common/web/css/bootstrap.min.css -L https://cdn.jsdelivr.net/npm/bootstrap@latest/dist/css/bootstrap.min.css
+    curl -o templates/common/web/css/bootstrap-icons.min.css -L https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css
+    curl -o templates/common/web/css/bootstrap-icons-1.11.3.zip -L https://github.com/twbs/icons/releases/download/v1.11.3/bootstrap-icons-1.11.3.zip
+    curl -o templates/common/web/js/bootstrap.bundle.min.js -L https://cdn.jsdelivr.net/npm/bootstrap@latest/dist/js/bootstrap.bundle.min.js
 
 download-style: download-bootstrap
-    curl -o templates/web/js/htmx.min.js -L https://unpkg.com/htmx.org@2/dist/htmx.min.js
-    curl -o templates/web/js/hyperscript.js -L https://unpkg.com/hyperscript.org@latest
-    curl -o templates/web/js/sse.js -L https://unpkg.com/htmx-ext-sse@2/sse.js
-    curl -o templates/web/js/rapidoc-min.js -L https://unpkg.com/rapidoc/dist/rapidoc-min.js
-    curl -o templates/web/css/simple.min.css -L https://unpkg.com/simpledotcss/simple.min.css
-    curl -o templates/web/css/pico.min.css -L https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css
-    curl -o templates/web/css/pico.colors.min.css -L https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css
+    curl -o templates/common/web/js/htmx.min.js -L https://unpkg.com/htmx.org@2/dist/htmx.min.js
+    curl -o templates/common/web/js/hyperscript.js -L https://unpkg.com/hyperscript.org@latest
+    curl -o templates/common/web/js/sse.js -L https://unpkg.com/htmx-ext-sse@2/sse.js
+    curl -o templates/common/web/js/rapidoc-min.js -L https://unpkg.com/rapidoc/dist/rapidoc-min.js
+    curl -o templates/common/web/css/simple.min.css -L https://unpkg.com/simpledotcss/simple.min.css
+    curl -o templates/common/web/css/pico.min.css -L https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css
+    curl -o templates/common/web/css/pico.colors.min.css -L https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css
 
 certificate:
     go run $GOROOT/src/crypto/tls/generate_cert.go --host localhost`
