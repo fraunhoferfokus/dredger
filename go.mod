@@ -6,7 +6,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/a-h/templ v0.2.663
 	github.com/cucumber/godog v0.12.5
-	github.com/getkin/kin-openapi v0.143.0
+	github.com/getkin/kin-openapi v0.145.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/gobeam/stringy v0.0.7
 	github.com/huandu/xstrings v1.5.0
@@ -49,7 +49,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/lerenn/asyncapi-codegen v0.63.0
 	github.com/mattn/go-colorable v0.1.15 // indirect
-	github.com/mattn/go-isatty v0.0.23 // indirect
+	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/otiai10/copy v1.14.1
 	github.com/spf13/pflag v1.0.10 // indirect
 	golang.org/x/sys v0.47.0 // indirect
