@@ -385,11 +385,14 @@ func toGoType(sRef *openapi3.SchemaRef) (goType string, nested bool) {
 		goType = "[]" + items
 	} else if sRef.Value.Type.Includes("object") {
 		if sRef.Value.AdditionalProperties.Schema != nil {
-			if sRef.Value.AdditionalProperties.Schema.Ref != "" {
-				goType = "map[string]" + extractRefType(sRef.Value.AdditionalProperties.Schema.Ref)
-			} else {
-				goType = "map[string]??"
+			// The value schema may be a $ref or an inline schema; toGoType handles both.
+			// A value that has no direct Go type (nested object, composite) falls back
+			// to `any` so the generated code still compiles.
+			valueType, valueNested := toGoType(sRef.Value.AdditionalProperties.Schema)
+			if valueType == "" || valueNested {
+				valueType = "any"
 			}
+			goType = "map[string]" + valueType
 		} else {
 			goType = "struct"
 			nested = true
