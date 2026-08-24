@@ -32,6 +32,7 @@ type TypeDefinition struct {
 	NestedTypes []TypeDefinition
 	Kind        string              // Composite kind: "allof", "anyof", "oneof", "alias" — empty for regular schemas
 	Variants    []VariantDefinition // Variants for composite schemas (used when Kind is set)
+	Required    bool                // True if the enclosing schema lists this property in `required`
 }
 
 // VariantDefinition represents a variant of a composite schema (allOf, anyOf, oneOf).
@@ -117,7 +118,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				0, 0, "", 0, 0, // ignore length (etc) requirements
 				stringy.New(schemaName).LcFirst(),
 				[]TypeDefinition{},
-				"alias", nil,
+				"alias", nil, false,
 			}}
 			log.Info().Str("ref", ref.Ref).Msg("Processing ref as type")
 		} else if ref.Value.Type.Includes("number") {
@@ -141,6 +142,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				[]TypeDefinition{},
 				"alias", // a non-object schema is a named type, not a one-field struct
 				nil,
+				false,
 			}}
 		} else if ref.Value.Type.Includes("integer") {
 			goType = "int"
@@ -159,6 +161,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				[]TypeDefinition{},
 				"alias", // a non-object schema is a named type, not a one-field struct
 				nil,
+				false,
 			}}
 		} else if ref.Value.Type.Includes("boolean") {
 			goType = "bool"
@@ -174,6 +177,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				[]TypeDefinition{},
 				"alias", // a non-object schema is a named type, not a one-field struct
 				nil,
+				false,
 			}}
 		} else if ref.Value.Type.Includes("string") {
 			switch ref.Value.Format {
@@ -200,6 +204,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				[]TypeDefinition{},
 				"alias", // a non-object schema is a named type, not a one-field struct
 				nil,
+				false,
 			}}
 		} else if ref.Value.Type.Includes("array") {
 			items, _ := toGoType(ref.Value.Items)
@@ -216,9 +221,10 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				[]TypeDefinition{},
 				"alias", // a non-object schema is a named type, not a one-field struct
 				nil,
+				false,
 			}}
 		} else if ref.Value.Type.Includes("object") {
-			schemaDefs[schemaName] = generatePropertyDefs(&ref.Value.Properties, PascalCase(schemaName))
+			schemaDefs[schemaName] = generatePropertyDefs(&ref.Value.Properties, PascalCase(schemaName), ref.Value.Required)
 		} else if ref.Value.AllOf != nil {
 			schemaDefs[schemaName] = generateComposedType(ref, &ref.Value.AllOf, schemaName, "allof")
 		} else if ref.Value.AnyOf != nil {
@@ -261,12 +267,17 @@ func PascalCase(name string) string {
 // generatePropertyDefs builds the property definitions for an object's properties.
 // prefix is the PascalCase name of the enclosing type, used to derive unique helper
 // type names for properties whose schema is itself a composite or nested object.
-func generatePropertyDefs(properties *openapi3.Schemas, prefix string) []TypeDefinition {
+func generatePropertyDefs(properties *openapi3.Schemas, prefix string, required []string) []TypeDefinition {
+	isRequired := make(map[string]bool, len(required))
+	for _, name := range required {
+		isRequired[name] = true
+	}
 	typeDefs := make([]TypeDefinition, len(*properties))
 	i := 0
 	for name, property := range *properties {
 		propertyDef := TypeDefinition{
 			Name:        name,
+			Required:    isRequired[name],
 			MinLength:   property.Value.MinLength,
 			MaxLength:   uintOrMax(property.Value.MaxLength),
 			Pattern:     property.Value.Pattern,
@@ -292,7 +303,7 @@ func generatePropertyDefs(properties *openapi3.Schemas, prefix string) []TypeDef
 		}
 
 		if nested {
-			nestedGoTypes := generatePropertyDefs(&property.Value.Properties, PascalCase(prefix)+PascalCase(name))
+			nestedGoTypes := generatePropertyDefs(&property.Value.Properties, PascalCase(prefix)+PascalCase(name), property.Value.Required)
 			if len(nestedGoTypes) == 0 { // allow empty structs
 				goType += "{}"
 			}
@@ -466,7 +477,7 @@ func buildVariants(schema *openapi3.SchemaRefs, baseName, kind string) []Variant
 			variants = append(variants, VariantDefinition{
 				Name:  partName,
 				IsRef: false,
-				Props: generatePropertyDefs(&variant.Value.Properties, partName),
+				Props: generatePropertyDefs(&variant.Value.Properties, partName, variant.Value.Required),
 			})
 		default:
 			// Non-object, non-ref, non-composite variant (e.g. a bare primitive constraint)
