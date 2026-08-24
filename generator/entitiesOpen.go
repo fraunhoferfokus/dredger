@@ -139,7 +139,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				floatOrMax(ref.Value.Max),
 				stringy.New(schemaName).LcFirst(),
 				[]TypeDefinition{},
-				"",
+				"alias", // a non-object schema is a named type, not a one-field struct
 				nil,
 			}}
 		} else if ref.Value.Type.Includes("integer") {
@@ -157,7 +157,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				floatOrMax(ref.Value.Max),
 				stringy.New(schemaName).LcFirst(),
 				[]TypeDefinition{},
-				"",
+				"alias", // a non-object schema is a named type, not a one-field struct
 				nil,
 			}}
 		} else if ref.Value.Type.Includes("boolean") {
@@ -172,7 +172,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				floatOrMax(ref.Value.Max),
 				stringy.New(schemaName).LcFirst(),
 				[]TypeDefinition{},
-				"",
+				"alias", // a non-object schema is a named type, not a one-field struct
 				nil,
 			}}
 		} else if ref.Value.Type.Includes("string") {
@@ -198,7 +198,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				floatOrMax(ref.Value.Max),
 				stringy.New(schemaName).LcFirst(),
 				[]TypeDefinition{},
-				"",
+				"alias", // a non-object schema is a named type, not a one-field struct
 				nil,
 			}}
 		} else if ref.Value.Type.Includes("array") {
@@ -214,7 +214,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				floatOrMax(ref.Value.Max),
 				stringy.New(schemaName).LcFirst(),
 				[]TypeDefinition{},
-				"",
+				"alias", // a non-object schema is a named type, not a one-field struct
 				nil,
 			}}
 		} else if ref.Value.Type.Includes("object") {

@@ -10,6 +10,10 @@ package entities
         {{ if and $isSchemaDef (eq $FirstTypeDef.Kind "alias") }}
             type {{ $FirstTypeDef.Name }} {{ $FirstTypeDef.Type }}
 
+            func (v *{{ $FirstTypeDef.Name }}) Validate() error {
+                return nil
+            }
+
 		{{ else if and $isSchemaDef (eq $FirstTypeDef.Kind "allof") }}
 			{{ template "entity_allof" (dict "SchemaName" $SchemaName "Variants" $FirstTypeDef.Variants) }}
 
