@@ -1,0 +1,23 @@
+package middleware
+
+import (
+	"net/http"
+
+	echoMiddleware "github.com/labstack/echo/v5/middleware"
+)
+
+// GetCSRFConfig returns the configuration for echov5s CSRF middleware.
+func GetCSRFConfig() echoMiddleware.CSRFConfig {
+	return echoMiddleware.CSRFConfig{
+		TokenLength:    32,
+		TokenLookup:    "header:X-CSRF-Token,form:_csrf",
+		ContextKey:     "csrf",
+		CookieName:     "_csrf",
+		CookiePath:     "/",
+		CookieSecure:   true,
+		CookieHTTPOnly: false,
+		CookieSameSite: http.SameSiteLaxMode,
+		CookieMaxAge:   3600,
+	}
+
+}

@@ -34,6 +34,7 @@ import (
 
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo-contrib/v5/echoprometheus"
+	echoMiddleware "github.com/labstack/echo/v5/middleware"
 	// "go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 )
 
@@ -88,6 +89,7 @@ func main() {
 	e := echo.New()
 	e.Use(echoprometheus.NewMiddleware(core.AppConfig.Service)) // add middleware to gather metrics
 	e.Use(middleware.CORSConfigFromEnv()) // set custom cors config
+	e.Use(echoMiddleware.CSRFWithConfig(middleware.GetCSRFConfig()))
 
 	// custom main, start async so it can wait on shutdown signal for cleanup
     go mainSvc(ctx, cancel, e)
