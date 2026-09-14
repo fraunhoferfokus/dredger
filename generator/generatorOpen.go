@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"embed"
 	"errors"
+	"maps"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -89,7 +90,10 @@ func GenerateServer(conf GeneratorConfig) error {
 
 	// API‐Key‐Security erkennen
 	if spec.Components != nil {
-		for key, scheme := range spec.Components.SecuritySchemes {
+		// Sorted so that, when several apiKey schemes qualify, the same one is
+		// always picked instead of a random map-iteration winner.
+		for _, key := range slices.Sorted(maps.Keys(spec.Components.SecuritySchemes)) {
+			scheme := spec.Components.SecuritySchemes[key]
 			if scheme != nil && scheme.Value != nil && scheme.Value.Type == "apiKey" {
 				conf.AddAuth = true
 				conf.ApiKeyHeaderName = scheme.Value.Name
@@ -152,12 +156,18 @@ func accumulatePaths(spec *openapi3.T, genConf GeneratorConfig) {
 		}
 	}
 
-	// Accumulate all paths from this spec
-	for path, pathObj := range spec.Paths.Map() {
+	// Accumulate all paths from this spec. Paths and operations both come out of
+	// maps, so iterate them sorted (paths alphabetically, methods alphabetically)
+	// to keep route registration order stable.
+	pathsMap := spec.Paths.Map()
+	for _, path := range slices.Sorted(maps.Keys(pathsMap)) {
+		pathObj := pathsMap[path]
 		var newPath PathConfig
 		newPath.Path = convertPathParams(path)
 
-		for method, op := range pathObj.Operations() {
+		ops := pathObj.Operations()
+		for _, method := range slices.Sorted(maps.Keys(ops)) {
+			op := ops[method]
 			if !slices.Contains(op.Tags, "builtin") {
 				opConfig, err := generateHandlerFuncStub(op, method, newPath.Path, genConf)
 

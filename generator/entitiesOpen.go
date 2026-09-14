@@ -2,8 +2,10 @@ package generator
 
 import (
 	"fmt"
+	"maps"
 	"math"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -73,7 +75,10 @@ func GenerateTypes(spec *openapi3.T, pConf ProjectConfig) {
 	conf.Imports = imports
 	conf.ProjectName = pConf.Name
 
-	for schema, defs := range schemaDefs {
+	// Sort by schema name so the emission order (and thus which file wins a
+	// lower-cased filename collision) is stable across runs.
+	for _, schema := range slices.Sorted(maps.Keys(schemaDefs)) {
+		defs := schemaDefs[schema]
 		//log.Debug().Str("Operationname", schema).Msg("SchemaDefs")
 		conf.SchemaDefs = map[string][]TypeDefinition{schema: defs}
 		fileName := strings.ToLower(schema) + ".go"
@@ -98,8 +103,9 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 	schemaDefs := make(map[string][]TypeDefinition)
 	// build schemas into queue
 	queue := []schemaQueue{}
-	for schemaName, ref := range *schemas {
-		queue = append(queue, schemaQueue{schemaName, ref})
+	// Sorted so schemas are processed in a stable order across runs.
+	for _, schemaName := range slices.Sorted(maps.Keys(*schemas)) {
+		queue = append(queue, schemaQueue{schemaName, (*schemas)[schemaName]})
 	}
 
 	for len(queue) > 0 {
@@ -274,7 +280,10 @@ func generatePropertyDefs(properties *openapi3.Schemas, prefix string, required 
 	}
 	typeDefs := make([]TypeDefinition, len(*properties))
 	i := 0
-	for name, property := range *properties {
+	// Properties are stored in a map, so iterate sorted by property name to give
+	// generated struct fields (and their Validate() bodies) a stable order.
+	for _, name := range slices.Sorted(maps.Keys(*properties)) {
+		property := (*properties)[name]
 		propertyDef := TypeDefinition{
 			Name:        name,
 			Required:    isRequired[name],
