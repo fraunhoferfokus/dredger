@@ -1,17 +1,20 @@
 package generator
 
 import (
+	fs "dredger/fileUtils"
 	"path/filepath"
 
 	"github.com/rs/zerolog/log"
 )
 
 func generateCSRF(conf GeneratorConfig) {
-	log.Info().Msg("Adding csrf middleware.")
-
 	// Binder-Middleware
 	fileName := "csrf.go"
-	filePath := filepath.Join(conf.OutputPath, MiddlewarePackage, fileName)
+	path := filepath.Join(conf.OutputPath, MiddlewarePackage, fileName)
 	templateFile := "templates/openapi/middleware/csrf.go.tmpl"
-	createFileFromTemplate(filePath, templateFile, conf)
+	if fs.CheckIfFileExists(path) { // dont overwrite as CSRF policy is service specific
+		log.Info().Msg("Keeping existing csrf middleware.")
+	}
+	log.Info().Msg("Adding csrf middleware.")
+	createFileFromTemplate(path, templateFile, conf)
 }
