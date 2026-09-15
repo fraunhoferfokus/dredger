@@ -14,6 +14,7 @@ func generateCSRF(conf GeneratorConfig) {
 	templateFile := "templates/openapi/middleware/csrf.go.tmpl"
 	if fs.CheckIfFileExists(path) { // dont overwrite as CSRF policy is service specific
 		log.Info().Msg("Keeping existing csrf middleware.")
+		return
 	}
 	log.Info().Msg("Adding csrf middleware.")
 	createFileFromTemplate(path, templateFile, conf)

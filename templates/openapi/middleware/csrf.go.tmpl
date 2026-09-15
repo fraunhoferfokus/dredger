@@ -8,8 +8,8 @@ import (
 )
 
 // GetCSRFConfig returns the configuration for echov5s CSRF middleware.
-func GetCSRFConfig() echoMiddleware.CSRFConfig {
-	return echoMiddleware.CSRFConfig{
+func GetCSRFConfig() *echoMiddleware.CSRFConfig {
+	return &echoMiddleware.CSRFConfig{
 		TokenLength:    32,
 		TokenLookup:    "header:X-CSRF-Token,form:_csrf",
 		ContextKey:     "csrf",
