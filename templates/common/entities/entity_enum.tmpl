@@ -1,0 +1,28 @@
+{{ define "entity_enum" }}
+
+{{- $TypeName := ucfirst (camelcase .SchemaName) }}
+type {{ $TypeName }} string
+
+const (
+{{- range $Variant := .TypeDef.Enum }}
+    {{ print $TypeName (ucfirst (camelcase $Variant)) }} {{ $TypeName }} = "{{ $Variant }}"
+{{- end }}
+)
+
+{{- $validVariants := print "valid" $TypeName "Variants" }}
+var {{ $validVariants }} = map[{{$TypeName}}]struct{} {
+{{- range $Variant := .TypeDef.Enum }}
+    {{ print $TypeName (ucfirst (camelcase $Variant)) }}: {},
+{{- end }}
+}
+
+func (val *{{ ucfirst (camelcase .SchemaName) }}) Validate() error {
+    if _, ok := {{$validVariants}}[*val]; !ok {
+        return fmt.Errorf("Invalid {{ $TypeName }} variant '%s'", *val)
+    }
+    return nil
+}
+
+func (val *{{ $TypeName }}) String() string { return string(*val) }
+
+{{ end }}

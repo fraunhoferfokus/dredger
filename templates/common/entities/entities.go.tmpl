@@ -7,7 +7,7 @@ package entities
 	{{ if len $TypeDefs }}
 		{{- $FirstTypeDef := index $TypeDefs 0 }}
 		{{- $isSchemaDef := eq $FirstTypeDef.Name $SchemaName }}
-        {{ if and $isSchemaDef (eq $FirstTypeDef.Kind "alias") }}
+        {{ if and $isSchemaDef (eq $FirstTypeDef.Kind "alias") (eq (len $FirstTypeDef.Enum) 0) }}
             type {{ $FirstTypeDef.Name }} {{ $FirstTypeDef.Type }}
 
             func (v *{{ $FirstTypeDef.Name }}) Validate() error {
@@ -22,6 +22,9 @@ package entities
 
 		{{ else if and $isSchemaDef (eq $FirstTypeDef.Kind "oneof") }}
 			{{ template "entity_oneof" (dict "SchemaName" $SchemaName "Variants" $FirstTypeDef.Variants) }}
+
+        {{ else if not (eq (len $FirstTypeDef.Enum) 0) }}
+			{{ template "entity_enum" (dict "SchemaName" $SchemaName "TypeDef" $FirstTypeDef) }}
 
 		{{ else }}
 			{{ template "entity_regular" (dict "SchemaName" $SchemaName "TypeDefs" $TypeDefs) }}

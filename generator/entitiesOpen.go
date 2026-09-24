@@ -35,6 +35,7 @@ type TypeDefinition struct {
 	Kind        string              // Composite kind: "allof", "anyof", "oneof", "alias" — empty for regular schemas
 	Variants    []VariantDefinition // Variants for composite schemas (used when Kind is set)
 	Required    bool                // True if the enclosing schema lists this property in `required`
+	Enum        []string            // Enum variants, if nil or empty the type is not an enum
 }
 
 // VariantDefinition represents a variant of a composite schema (allOf, anyOf, oneOf).
@@ -94,6 +95,7 @@ func GenerateTypes(spec *openapi3.T, pConf ProjectConfig) {
 			"templates/common/entities/entity_regular.tmpl",
 			"templates/common/entities/variant_types.tmpl",
 			"templates/common/entities/property_types.tmpl",
+			"templates/common/entities/entity_enum.tmpl",
 		}
 		createFileFromTemplates(filePath, templateFiles, conf)
 	}
@@ -124,7 +126,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				0, 0, "", 0, 0, // ignore length (etc) requirements
 				stringy.New(schemaName).LcFirst(),
 				[]TypeDefinition{},
-				"alias", nil, false,
+				"alias", nil, false, nil,
 			}}
 			log.Info().Str("ref", ref.Ref).Msg("Processing ref as type")
 		} else if ref.Value.Type.Includes("number") {
@@ -149,6 +151,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				"alias", // a non-object schema is a named type, not a one-field struct
 				nil,
 				false,
+				nil,
 			}}
 		} else if ref.Value.Type.Includes("integer") {
 			goType = "int"
@@ -168,6 +171,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				"alias", // a non-object schema is a named type, not a one-field struct
 				nil,
 				false,
+				nil,
 			}}
 		} else if ref.Value.Type.Includes("boolean") {
 			goType = "bool"
@@ -184,8 +188,10 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				"alias", // a non-object schema is a named type, not a one-field struct
 				nil,
 				false,
+				nil,
 			}}
 		} else if ref.Value.Type.Includes("string") {
+			var enum []string
 			switch ref.Value.Format {
 			case "binary":
 				goType = "[]byte"
@@ -197,6 +203,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				goType = "uuid.UUID"
 			default:
 				goType = "string"
+				enum = toStringVariantSlice(ref.Value.Enum, schemaName)
 			}
 			schemaDefs[schemaName] = []TypeDefinition{{
 				schemaName,
@@ -211,6 +218,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				"alias", // a non-object schema is a named type, not a one-field struct
 				nil,
 				false,
+				enum,
 			}}
 		} else if ref.Value.Type.Includes("array") {
 			items, _ := toGoType(ref.Value.Items)
@@ -228,6 +236,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				"alias", // a non-object schema is a named type, not a one-field struct
 				nil,
 				false,
+				nil,
 			}}
 		} else if ref.Value.Type.Includes("object") {
 			schemaDefs[schemaName] = generatePropertyDefs(&ref.Value.Properties, PascalCase(schemaName), ref.Value.Required)
@@ -261,6 +270,31 @@ func floatOrMax(x *float64) float64 {
 		return *x
 	}
 	return math.MaxFloat64
+}
+
+// toStringVariantSlice casts all items from any to string.
+// Non-strings are skipped. Duplicates and duplicates after renaming it (camelCase + ucFirst) are skipped as well.
+// schemaName is only used for logging.
+func toStringVariantSlice(items []any, schemaName string) []string {
+	result := []string{}
+	duplicats := map[string]string{}
+	for i, v := range items {
+		s, ok := v.(string)
+		if !ok {
+			log.Warn().Str("schemaName", schemaName).Any("Value", v).Int("Index", i).Msg("Enum variant is not a string, skipping")
+			continue
+		}
+		sName := ucFirst(camelcase(s))
+		if originalVariant, ok := duplicats[sName]; ok {
+			// detected duplicate
+			log.Error().Str("schemaName", schemaName).Str("variant1", originalVariant).Str("variant2", s).Str("variantTyped", sName).
+				Msg("Duplicate enum variant (after renaming variants to camelcase). Proceeding without variant2")
+			continue
+		}
+		duplicats[sName] = s
+		result = append(result, s)
+	}
+	return result
 }
 
 // PascalCase converts a name to UpperCamelCase (PascalCase) for exported type names
