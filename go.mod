@@ -15,8 +15,6 @@ require (
 	github.com/spf13/cobra v1.10.2
 )
 
-replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.16
-
 require (
 	dario.cat/mergo v1.0.2 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
