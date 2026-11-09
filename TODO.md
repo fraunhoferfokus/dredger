@@ -23,3 +23,4 @@
 ### Features for generated code
 - allow form data
 - valitate body against entitiy struct, f.e. with "github.com/go-playground/validator/v10" and custom validator if yaml HAS TO BE supported
+- IPv6 in echo

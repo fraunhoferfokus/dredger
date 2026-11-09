@@ -161,7 +161,9 @@ func createSchemas(spec *openapi3.T) (schemas Schemas) {
 	schemas.IsNotEmpty = false
 
 	if spec != nil && spec.Components != nil && spec.Components.Schemas != nil {
+		// MapKeys() returns keys in map-iteration order, so sort for stable output.
 		schemaStrings := toString(reflect.ValueOf(spec.Components.Schemas).MapKeys())
+		slices.Sort(schemaStrings)
 
 		for i := range schemaStrings {
 			tmpSchemaName := schemaStrings[i]
@@ -178,9 +180,10 @@ func createSchemas(spec *openapi3.T) (schemas Schemas) {
 
 				// add properties
 				schema.Properties = make([]PropertyConf, 0)
-				tmpSchemaPropertyNames := reflect.ValueOf(spec.Components.Schemas[tmpSchemaName].Value.Properties).MapKeys()
+				tmpSchemaPropertyNames := toString(reflect.ValueOf(spec.Components.Schemas[tmpSchemaName].Value.Properties).MapKeys())
+				slices.Sort(tmpSchemaPropertyNames)
 				for j := range tmpSchemaPropertyNames {
-					tmpSchemaPropertyName := tmpSchemaPropertyNames[j].Interface().(string)
+					tmpSchemaPropertyName := tmpSchemaPropertyNames[j]
 					var tmpPropertyConf PropertyConf
 					tmpPropertyConf.Name = tmpSchemaPropertyName
 					tmpPropertyConf.LabelName = strings.Title(tmpSchemaPropertyName)

@@ -4,6 +4,7 @@ import (
 	extCmd "dredger/cmd"
 	fs "dredger/fileUtils"
 	"errors"
+	"maps"
 	"os"
 	pathMod "path"
 	"path/filepath"
@@ -81,7 +82,12 @@ func generateHandlerFuncStub(op *openapi3.Operation, method string, path string,
 		}
 	}
 
-	for resKey, resRef := range op.Responses.Map() {
+	// Responses live in a map; emit them in a stable order (status codes
+	// ascending, "default" last) so the generated `// NNN =>` comments don't
+	// shuffle between runs.
+	responses := op.Responses.Map()
+	for _, resKey := range sortedResponseCodes(responses) {
+		resRef := responses[resKey]
 		if !validateStatusCode(resKey) && resKey != "default" {
 			log.Warn().Msg("Status code " + resKey + " for endpoint " + methodPath + " is not a valid status code.")
 		}
@@ -178,11 +184,18 @@ func generateHandlerFuncs(spec *openapi3.T, genConf GeneratorConfig) {
 		}
 	}
 
-	for path, pathObj := range spec.Paths.Map() {
+	// Paths and operations both come out of maps, so iterate them sorted
+	// (paths alphabetically, methods alphabetically) to keep the generated
+	// handler set and route registration order stable.
+	pathsMap := spec.Paths.Map()
+	for _, path := range slices.Sorted(maps.Keys(pathsMap)) {
+		pathObj := pathsMap[path]
 		var newPath PathConfig
 		newPath.Path = convertPathParams(path)
 
-		for method, op := range pathObj.Operations() {
+		ops := pathObj.Operations()
+		for _, method := range slices.Sorted(maps.Keys(ops)) {
+			op := ops[method]
 			if !slices.Contains(op.Tags, "builtin") {
 				opConfig, err := generateHandlerFuncStub(op, method, newPath.Path, genConf)
 

@@ -2,8 +2,10 @@ package generator
 
 import (
 	"fmt"
+	"maps"
 	"math"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -32,6 +34,8 @@ type TypeDefinition struct {
 	NestedTypes []TypeDefinition
 	Kind        string              // Composite kind: "allof", "anyof", "oneof", "alias" — empty for regular schemas
 	Variants    []VariantDefinition // Variants for composite schemas (used when Kind is set)
+	Required    bool                // True if the enclosing schema lists this property in `required`
+	Enum        []string            // Enum variants, if nil or empty the type is not an enum
 }
 
 // VariantDefinition represents a variant of a composite schema (allOf, anyOf, oneOf).
@@ -72,7 +76,10 @@ func GenerateTypes(spec *openapi3.T, pConf ProjectConfig) {
 	conf.Imports = imports
 	conf.ProjectName = pConf.Name
 
-	for schema, defs := range schemaDefs {
+	// Sort by schema name so the emission order (and thus which file wins a
+	// lower-cased filename collision) is stable across runs.
+	for _, schema := range slices.Sorted(maps.Keys(schemaDefs)) {
+		defs := schemaDefs[schema]
 		//log.Debug().Str("Operationname", schema).Msg("SchemaDefs")
 		conf.SchemaDefs = map[string][]TypeDefinition{schema: defs}
 		fileName := strings.ToLower(schema) + ".go"
@@ -88,6 +95,7 @@ func GenerateTypes(spec *openapi3.T, pConf ProjectConfig) {
 			"templates/common/entities/entity_regular.tmpl",
 			"templates/common/entities/variant_types.tmpl",
 			"templates/common/entities/property_types.tmpl",
+			"templates/common/entities/entity_enum.tmpl",
 		}
 		createFileFromTemplates(filePath, templateFiles, conf)
 	}
@@ -97,8 +105,9 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 	schemaDefs := make(map[string][]TypeDefinition)
 	// build schemas into queue
 	queue := []schemaQueue{}
-	for schemaName, ref := range *schemas {
-		queue = append(queue, schemaQueue{schemaName, ref})
+	// Sorted so schemas are processed in a stable order across runs.
+	for _, schemaName := range slices.Sorted(maps.Keys(*schemas)) {
+		queue = append(queue, schemaQueue{schemaName, (*schemas)[schemaName]})
 	}
 
 	for len(queue) > 0 {
@@ -117,7 +126,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				0, 0, "", 0, 0, // ignore length (etc) requirements
 				stringy.New(schemaName).LcFirst(),
 				[]TypeDefinition{},
-				"alias", nil,
+				"alias", nil, false, nil,
 			}}
 			log.Info().Str("ref", ref.Ref).Msg("Processing ref as type")
 		} else if ref.Value.Type.Includes("number") {
@@ -139,7 +148,9 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				floatOrMax(ref.Value.Max),
 				stringy.New(schemaName).LcFirst(),
 				[]TypeDefinition{},
-				"",
+				"alias", // a non-object schema is a named type, not a one-field struct
+				nil,
+				false,
 				nil,
 			}}
 		} else if ref.Value.Type.Includes("integer") {
@@ -157,7 +168,9 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				floatOrMax(ref.Value.Max),
 				stringy.New(schemaName).LcFirst(),
 				[]TypeDefinition{},
-				"",
+				"alias", // a non-object schema is a named type, not a one-field struct
+				nil,
+				false,
 				nil,
 			}}
 		} else if ref.Value.Type.Includes("boolean") {
@@ -172,10 +185,13 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				floatOrMax(ref.Value.Max),
 				stringy.New(schemaName).LcFirst(),
 				[]TypeDefinition{},
-				"",
+				"alias", // a non-object schema is a named type, not a one-field struct
+				nil,
+				false,
 				nil,
 			}}
 		} else if ref.Value.Type.Includes("string") {
+			var enum []string
 			switch ref.Value.Format {
 			case "binary":
 				goType = "[]byte"
@@ -187,6 +203,7 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				goType = "uuid.UUID"
 			default:
 				goType = "string"
+				enum = toStringVariantSlice(ref.Value.Enum, schemaName)
 			}
 			schemaDefs[schemaName] = []TypeDefinition{{
 				schemaName,
@@ -198,8 +215,10 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				floatOrMax(ref.Value.Max),
 				stringy.New(schemaName).LcFirst(),
 				[]TypeDefinition{},
-				"",
+				"alias", // a non-object schema is a named type, not a one-field struct
 				nil,
+				false,
+				enum,
 			}}
 		} else if ref.Value.Type.Includes("array") {
 			items, _ := toGoType(ref.Value.Items)
@@ -214,11 +233,13 @@ func generateTypeDefs(schemas *openapi3.Schemas) map[string][]TypeDefinition {
 				floatOrMax(ref.Value.Max),
 				stringy.New(schemaName).LcFirst(),
 				[]TypeDefinition{},
-				"",
+				"alias", // a non-object schema is a named type, not a one-field struct
+				nil,
+				false,
 				nil,
 			}}
 		} else if ref.Value.Type.Includes("object") {
-			schemaDefs[schemaName] = generatePropertyDefs(&ref.Value.Properties, PascalCase(schemaName))
+			schemaDefs[schemaName] = generatePropertyDefs(&ref.Value.Properties, PascalCase(schemaName), ref.Value.Required)
 		} else if ref.Value.AllOf != nil {
 			schemaDefs[schemaName] = generateComposedType(ref, &ref.Value.AllOf, schemaName, "allof")
 		} else if ref.Value.AnyOf != nil {
@@ -251,6 +272,31 @@ func floatOrMax(x *float64) float64 {
 	return math.MaxFloat64
 }
 
+// toStringVariantSlice casts all items from any to string.
+// Non-strings are skipped. Duplicates and duplicates after renaming it (camelCase + ucFirst) are skipped as well.
+// schemaName is only used for logging.
+func toStringVariantSlice(items []any, schemaName string) []string {
+	result := []string{}
+	duplicats := map[string]string{}
+	for i, v := range items {
+		s, ok := v.(string)
+		if !ok {
+			log.Warn().Str("schemaName", schemaName).Any("Value", v).Int("Index", i).Msg("Enum variant is not a string, skipping")
+			continue
+		}
+		sName := ucFirst(camelcase(s))
+		if originalVariant, ok := duplicats[sName]; ok {
+			// detected duplicate
+			log.Error().Str("schemaName", schemaName).Str("variant1", originalVariant).Str("variant2", s).Str("variantTyped", sName).
+				Msg("Duplicate enum variant (after renaming variants to camelcase). Proceeding without variant2")
+			continue
+		}
+		duplicats[sName] = s
+		result = append(result, s)
+	}
+	return result
+}
+
 // PascalCase converts a name to UpperCamelCase (PascalCase) for exported type names
 func PascalCase(name string) string {
 	// Use the existing camelcase function and capitalize first letter
@@ -261,12 +307,20 @@ func PascalCase(name string) string {
 // generatePropertyDefs builds the property definitions for an object's properties.
 // prefix is the PascalCase name of the enclosing type, used to derive unique helper
 // type names for properties whose schema is itself a composite or nested object.
-func generatePropertyDefs(properties *openapi3.Schemas, prefix string) []TypeDefinition {
+func generatePropertyDefs(properties *openapi3.Schemas, prefix string, required []string) []TypeDefinition {
+	isRequired := make(map[string]bool, len(required))
+	for _, name := range required {
+		isRequired[name] = true
+	}
 	typeDefs := make([]TypeDefinition, len(*properties))
 	i := 0
-	for name, property := range *properties {
+	// Properties are stored in a map, so iterate sorted by property name to give
+	// generated struct fields (and their Validate() bodies) a stable order.
+	for _, name := range slices.Sorted(maps.Keys(*properties)) {
+		property := (*properties)[name]
 		propertyDef := TypeDefinition{
 			Name:        name,
+			Required:    isRequired[name],
 			MinLength:   property.Value.MinLength,
 			MaxLength:   uintOrMax(property.Value.MaxLength),
 			Pattern:     property.Value.Pattern,
@@ -292,7 +346,7 @@ func generatePropertyDefs(properties *openapi3.Schemas, prefix string) []TypeDef
 		}
 
 		if nested {
-			nestedGoTypes := generatePropertyDefs(&property.Value.Properties, PascalCase(prefix)+PascalCase(name))
+			nestedGoTypes := generatePropertyDefs(&property.Value.Properties, PascalCase(prefix)+PascalCase(name), property.Value.Required)
 			if len(nestedGoTypes) == 0 { // allow empty structs
 				goType += "{}"
 			}
@@ -385,11 +439,14 @@ func toGoType(sRef *openapi3.SchemaRef) (goType string, nested bool) {
 		goType = "[]" + items
 	} else if sRef.Value.Type.Includes("object") {
 		if sRef.Value.AdditionalProperties.Schema != nil {
-			if sRef.Value.AdditionalProperties.Schema.Ref != "" {
-				goType = "map[string]" + extractRefType(sRef.Value.AdditionalProperties.Schema.Ref)
-			} else {
-				goType = "map[string]??"
+			// The value schema may be a $ref or an inline schema; toGoType handles both.
+			// A value that has no direct Go type (nested object, composite) falls back
+			// to `any` so the generated code still compiles.
+			valueType, valueNested := toGoType(sRef.Value.AdditionalProperties.Schema)
+			if valueType == "" || valueNested {
+				valueType = "any"
 			}
+			goType = "map[string]" + valueType
 		} else {
 			goType = "struct"
 			nested = true
@@ -463,7 +520,7 @@ func buildVariants(schema *openapi3.SchemaRefs, baseName, kind string) []Variant
 			variants = append(variants, VariantDefinition{
 				Name:  partName,
 				IsRef: false,
-				Props: generatePropertyDefs(&variant.Value.Properties, partName),
+				Props: generatePropertyDefs(&variant.Value.Properties, partName, variant.Value.Required),
 			})
 		default:
 			// Non-object, non-ref, non-composite variant (e.g. a bare primitive constraint)

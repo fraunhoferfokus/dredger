@@ -6,7 +6,7 @@
     {{ template "structs" .NestedTypes}}
   }
 
-  {{- else }} {{ .Type }} `json:"{{ .MarshalName }}" yaml:"{{ .MarshalName }}" xml:"{{ .MarshalName }}" form:"{{ .MarshalName }}"`
+  {{- else }}{{ $omitempty := "" }}{{ if not .Required }}{{ $omitempty = ",omitempty" }}{{ end }} {{ .Type }} `json:"{{ .MarshalName }}{{ $omitempty }}" yaml:"{{ .MarshalName }}{{ $omitempty }}" xml:"{{ .MarshalName }}{{ $omitempty }}" form:"{{ .MarshalName }}"`
   {{- end -}}
 {{ end }}
 
