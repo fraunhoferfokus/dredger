@@ -6,11 +6,11 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/a-h/templ v0.2.663
 	github.com/cucumber/godog v0.12.5
-	github.com/getkin/kin-openapi v0.145.0
+	github.com/getkin/kin-openapi v0.149.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/gobeam/stringy v0.0.7
 	github.com/huandu/xstrings v1.5.0
-	github.com/labstack/echo/v5 v5.0.3
+	github.com/labstack/echo/v5 v5.4.1
 	github.com/rs/zerolog v1.35.1
 	github.com/spf13/cobra v1.10.2
 )
@@ -28,7 +28,7 @@ require (
 	github.com/oasdiff/yaml v0.1.1 // indirect
 	github.com/oasdiff/yaml3 v0.0.14 // indirect
 	github.com/otiai10/mint v1.6.3 // indirect
-	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2 // indirect
+	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
 	golang.org/x/crypto v0.54.0 // indirect

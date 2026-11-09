@@ -35,6 +35,7 @@ update: download-rapidoc download-elements download-style
 tools:
     go install golang.org/x/tools/cmd/goimports@latest
     go install github.com/a-h/templ/cmd/templ@latest
+    go install golang.org/x/vuln/cmd/govulncheck@latest  # check dependencies
 
 # Download all necessary libraries and tidy up go mod
 download-deps:
@@ -91,3 +92,9 @@ push: gitleaks
 # changes for git
 status:
     git status -s
+
+check-deps:
+    govulncheck ./...
+
+check-deps-verbose:
+    govulncheck -show=verbose ./...
