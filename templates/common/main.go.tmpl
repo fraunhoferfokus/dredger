@@ -89,10 +89,12 @@ func main() {
 	e := echo.New()
 	e.Use(echoprometheus.NewMiddleware(core.AppConfig.Service)) // add middleware to gather metrics
 	e.Use(middleware.CORSConfigFromEnv()) // set custom cors config
-	// add optional csrf config (nil means disabled)
-	csrfConfig := middleware.GetCSRFConfig()
-	if csrfConfig != nil {
-    	e.Use(echoMiddleware.CSRFWithConfig(*csrfConfig))
+	// add csrf config if enabled
+	if core.AppConfig.CsrfActive {
+	    log.Info().Msg("Starting with CSRF protection")
+    	e.Use(echoMiddleware.CSRFWithConfig(middleware.GetCSRFConfig()))
+	} else {
+	    log.Info().Msg("Starting WITHOUT CSRF protection")
 	}
 
 	// custom main, start async so it can wait on shutdown signal for cleanup
