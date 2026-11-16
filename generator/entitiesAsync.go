@@ -20,6 +20,7 @@ type TypeDefinitionAsync struct {
 	Minimum     float64
 	Maximum     float64
 	MarshalName string
+	Required    bool // currently is not read from spec and always true. Only used to be compatible with openapi entities
 	NestedTypes []TypeDefinitionAsync
 }
 
@@ -72,6 +73,7 @@ func generateAsyncMessagePayloads(messages map[string]*asyncapiv3.Message) map[s
 				Name:        stringy.New(propName).UcFirst(), // e.g., "station_id" → "StationID"
 				Type:        goType,
 				MarshalName: propName,
+				Required:    true,
 			}
 			fields = append(fields, field)
 		}
